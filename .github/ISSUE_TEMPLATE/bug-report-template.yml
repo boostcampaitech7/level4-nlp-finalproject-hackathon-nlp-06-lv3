@@ -1,0 +1,58 @@
+name: Bug Report
+title: "[BUG] "
+description: Report a bug or issue in the project.
+labels: ["Type: Bug", "Priority: Medium", "Status: Pending"]
+body:
+  - type: checkboxes
+    id: no-duplicate-bug
+    attributes:
+      label: "⚠️ Please check for similar bug reports"
+      description: "이미 보고된 버그 중 중복되는 것이 없는지 확인해 주세요."
+      options:
+        - label: "이전에 보고된 [버그 리포트](https://github.com/boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-06-lv3/issues?q=+is%3Aissue+label%3A%22Type%3A+Bug%22+) 중 중복되는 것이 없습니다."
+          required: true
+
+  - type: textarea
+    id: bug-description
+    validations:
+      required: true
+    attributes:
+      label: "📄 버그 설명"
+      description: "버그가 발생한 상황과 증상을 자세히 설명해주세요."
+      placeholder: "예: 사용자 로그인 시 500 에러가 발생하여 로그인이 되지 않습니다."
+
+  - type: textarea
+    id: bug-steps
+    validations:
+      required: true
+    attributes:
+      label: "📝 재현 단계"
+      description: "버그를 재현할 수 있는 단계를 순서대로 작성해주세요."
+      placeholder: "예: 1. 로그인 페이지로 이동. 2. 사용자 이름과 비밀번호 입력. 3. 로그인 버튼 클릭."
+
+  - type: textarea
+    id: expected-behavior
+    validations:
+      required: true
+    attributes:
+      label: "✅ 기대되는 동작"
+      description: "버그가 발생하지 않는 정상적인 동작을 설명해주세요."
+      placeholder: "예: 로그인 시 정상적으로 사용자 대시보드로 이동해야 합니다."
+
+  - type: textarea
+    id: actual-behavior
+    validations:
+      required: true
+    attributes:
+      label: "❌ 실제 동작"
+      description: "버그 발생 시 실제로 일어난 동작을 설명해주세요."
+      placeholder: "예: 500 에러가 발생하며 로그인에 실패합니다."
+
+  - type: textarea
+    id: related-issues
+    validations:
+      required: false
+    attributes:
+      label: "🔗 관련 이슈"
+      description: "이 버그와 관련된 이전 이슈가 있다면 이슈 번호를 간단히 언급해주세요."
+      placeholder: "예: 관련 이슈 - #12, #14"

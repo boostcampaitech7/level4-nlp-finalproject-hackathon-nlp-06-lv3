@@ -1,0 +1,18 @@
+[flake8]
+max-line-length = 120
+ignore = E203, W503
+exclude =
+    # Do not include package initializers
+    __init__.py,
+    # No need to traverse our git directory
+    .git,
+    # There's no value in checking cache directories
+    __pycache__,
+    # No need to include the output path
+    output,
+    # No need to include the data path
+    data,
+    # Do not include the virtual environment
+    .venv,
+max-complexity = 10
+statistics = true
