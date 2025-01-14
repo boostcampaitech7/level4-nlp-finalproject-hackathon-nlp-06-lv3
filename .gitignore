@@ -184,3 +184,6 @@ baseline*.ipynb
 .DS_Store
 
 wandb/
+
+# playground
+playground/
