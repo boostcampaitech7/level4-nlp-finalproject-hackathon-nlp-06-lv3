@@ -1,0 +1,26 @@
+AWS Budgets: My Zero-Spend Budget has exceeded your alert threshold
+budgets@costalerts.amazonaws.com
+1월 4일 (토) 오전 3:41 (9일 전)
+
+Description: awslogo
+
+
+
+Dear AWS Customer,
+
+You requested that we alert you when the actual cost associated with your My Zero-Spend Budget budget exceeds $0.01 for the current month. The month actual cost associated with this budget is $0.60. You can find additional details below and by accessing the AWS Budgets dashboard.
+
+Budget Name	Budget Type	Budgeted Amount	Alert Type	Alert Threshold	ACTUAL Amount
+My Zero-Spend Budget	Cost	$1.00	ACTUAL	> $0.01	$0.60
+
+Go to the AWS Budgets dashboard
+
+
+
+
+
+
+
+If you wish to stop receiving notifications, please click here to request opting out of this notification. Please do not reply directly to this email. If you have any questions or comments regarding this email, please contact us at https://aws.amazon.com/support
+
+This message was produced and distributed by Amazon Web Services, Inc., 410 Terry Avenue North, Seattle, Washington 98109-5210. AWS will not be bound by, and specifically objects to, any term, condition or other provision which is different from or in addition to the provisions of the AWS Customer Agreement or AWS Enterprise Agreement between AWS and you (whether or not it would materially alter such AWS Customer Agreement or AWS Enterprise Agreement) and which is submitted in any order, receipt, acceptance, confirmation, correspondence or otherwise, unless AWS specifically agrees to such provision in a written instrument signed by AWS.

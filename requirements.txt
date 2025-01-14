@@ -1,2 +1,8 @@
 langchain_community
 langchain_upstage
+
+
+# Linting
+black==24.10.0
+flake8==7.1.1
+isort==5.13.2
