@@ -139,7 +139,17 @@ class MessageHandler:
 
         return body
 
-    def process_headers(service, message):
+    @staticmethod
+    def process_headers(message) -> dict[str, str]:
+        """
+        Parsing header to dictionary
+
+        Args:
+            message: Gmail Message Object
+
+        Returns:
+            dict[str, str]: parsed header
+        """
         payload = message.get("payload", {})
         headers = payload.get("headers", [])
         return {
@@ -163,7 +173,7 @@ def main():
             message_id = message_metadata["id"]
             message = gmail_service.get_message_details(message_id)
             body = MessageHandler.process_message(gmail_service.service, message)
-            headers = MessageHandler.process_headers(gmail_service.service, message)
+            headers = MessageHandler.process_headers(message)
 
             mail = Mail(
                 headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
