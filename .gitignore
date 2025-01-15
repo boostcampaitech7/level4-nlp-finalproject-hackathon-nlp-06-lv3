@@ -179,6 +179,7 @@ pyrightconfig.json
 
 *.csv
 output*/
+*.json
 
 baseline*.ipynb
 .DS_Store
