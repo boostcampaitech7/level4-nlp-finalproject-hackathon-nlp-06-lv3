@@ -1,5 +1,4 @@
 import base64
-import json
 import os.path
 
 from google.auth.transport.requests import Request
