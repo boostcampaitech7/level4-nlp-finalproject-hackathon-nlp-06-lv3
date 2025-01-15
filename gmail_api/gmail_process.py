@@ -38,15 +38,6 @@ class GmailService:
 
         return build("gmail", "v1", credentials=creds)
 
-    def get_user_profile(self):
-        """
-        Retrieves the user's Gmail profile information.
-        Returns:
-            profile (dict): User profile details.
-        """
-        profile = self.service.users().getProfile(userId="me").execute()
-        return profile
-
     def get_last_n_messages(self, n):
         """
         Fetches the list of last N messages.
@@ -68,19 +59,6 @@ class GmailService:
         """
         return self.service.users().messages().get(userId="me", id=message_id).execute()
 
-    def get_threads_from_last_n_messages(self, n):
-        """
-        Fetches threads from the list of last N messages.
-
-        Args:
-            n (int): Number of messages to fetch
-
-        Returns:
-            threads (set): Set of threads
-        """
-        message_list = self.get_last_n_messages(n)
-        return set(message["threadId"] for message in message_list["messages"])
-
 
 class MessageHandler:
     @staticmethod
@@ -97,99 +75,53 @@ class MessageHandler:
         return str(decoded_data, encoding="utf-8")
 
     @staticmethod
-    def save_attachment(service, message_id, part, save_dir="Downloaded_files"):
+    def process_message_part(service, message_id: str, part: dict):
         """
-        Saves an attachment from a message part to the local file system.
-        Args:
-            service: Gmail API service object.
-            message_id (str): ID of the Gmail message.
-            part (dict): Message part containing the attachment.
-            save_dir (str): Directory to save attachments.
-        """
-        att_id = part["body"]["attachmentId"]
-        att = service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
-        data = att["data"].replace("-", "+").replace("_", "/")
-        file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
-
-        os.makedirs(save_dir, exist_ok=True)
-        filepath = os.path.join(save_dir, part["filename"])
-
-        with open(filepath, "wb") as file:
-            file.write(file_data)
-        print(f"Attachment saved: {filepath}")
-
-    @staticmethod
-    def process_message_part(service, message_id: str, part: dict, target_body_type: str):
-        """
-        Recursively processes a MessagePart, decoding bodies and saving attachments.
+        Recursively processes a MessagePart, decoding bodies.
+        Only consider MIME type: text/plain
         Args:
             service: Gmail API service object.
             message_id (str): ID of the Gmail message.
             part (dict): Message part.
-            target_body_type (str): Target Type of Message's body
         """
-        if target_body_type == "plain_text" and part["mimeType"] == "text/plain":
+        # TODO: 다양한 MIME type에 대한 처리
+
+        if part["mimeType"] == "text/plain":
             decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
             print(f"Decoded body: {decoded_data}")
 
-        if (
-            target_body_type == "plain_text"
-            and part["mimeType"] != "text/plain"
-            and "multipart" not in part["mimeType"]
-        ):
-            # TODO: target_body_type과 실제 메일 mimeType이 일치하지 않는 경우, validation 로직 추가하기
-            print("This mail is not written in plain text")
-
-        if target_body_type == "html" and part["mimeType"] == "text/html":
-            decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
-
-        if target_body_type == "text/html" and part["mimeType"] != "text/html" and "multipart" not in part["mimeType"]:
-            # TODO: target_body_type과 실제 메일 mimeType이 일치하지 않는 경우, validation 로직 추가하기
-            print("This mail is not written in html")
-
-        # Save the attachment if the part contains a filename
-        if part.get("filename"):
-            MessageHandler.save_attachment(service, message_id, part)
-
-        # Recursively process sub-parts
-        if "parts" in part:
+        if "multipart" in part["mimeType"]:
             for sub_part in part["parts"]:
-                MessageHandler.process_message_part(service, message_id, sub_part, target_body_type)
+                MessageHandler.process_message_part(service, message_id, sub_part)
 
     @staticmethod
-    def process_message(service, message, target_body_type):
+    def process_message(service, message):
         """
-        Processes a single message, including decoding and saving attachments.
+        Processes a single message, including decoding.
         Args:
             service: Gmail API service object.
             message (dict): Full message details.
-            target_body_type (str): Target Type of Message's body
         """
         print(f"Message ID: {message['id']}")
         print(f"Snippet: {message['snippet']}")
         print(f"Labels: {message.get('labelIds', [])}")
 
         payload = message.get("payload", {})
-        MessageHandler.process_message_part(service, message["id"], payload, target_body_type)
+        MessageHandler.process_message_part(service, message["id"], payload)
 
 
 def main():
     try:
         gmail_service = GmailService()
 
-        # Fetch user profile
-        profile = gmail_service.get_user_profile()
-        print("User Profile:", profile)
-
         # Fetch last N messages
-        n = 1
+        n = 3
         messages = gmail_service.get_last_n_messages(n)
 
         for message_metadata in messages:
             message_id = message_metadata["id"]
             message = gmail_service.get_message_details(message_id)
-            # MessageHandler.process_message의 target_body_type 인자를 "html"으로 바꿔서 HTML 소스 코드 확인 가능
-            MessageHandler.process_message(gmail_service.service, message, "plain_text")
+            MessageHandler.process_message(gmail_service.service, message)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
