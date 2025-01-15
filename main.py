@@ -1,24 +1,47 @@
-import dotenv
+import os
 
-from summary.final_report import total_report
+import dotenv
+from googleapiclient.errors import HttpError
+from langchain_upstage import ChatUpstage
+
+from gmail_api import GmailService, Mail, MessageHandler
+from summary import summarize
 
 
 def main():
     # 초기 환경 설정
     dotenv.load_dotenv()
 
-    # 개별 메일 요약 -> 요약된 개별 메일로 이루어진 리스트
-    with (
-        open("samples/mail1.txt", "r", encoding="utf-8") as file1,
-        open("samples/mail2.txt", "r", encoding="utf-8") as file2,
-    ):
-        individual_summaries = [file1.read(), file2.read()]
+    try:
+        gmail_service = GmailService()
 
-    # 메일 정리 -> 텍스트
-    result = total_report(individual_summaries, debug=True)
+        # Fetch last N messages
+        n = 5
+        messages = gmail_service.get_last_n_messages(n)
+        mail_list = []
+        for message_metadata in messages:
+            message_id = message_metadata["id"]
+            message = gmail_service.get_message_details(message_id)
+            body = MessageHandler.process_message(gmail_service.service, message)
+            headers = MessageHandler.process_headers(message)
 
-    # 어딘가로 전송
-    print(result)
+            mail = Mail(
+                headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
+            )
+            mail_list.append(mail)
+
+        chat = ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model="solar-pro")
+        summary_list = []
+        for idx, mail in enumerate(mail_list):
+            summary = summarize(chat, mail, "summary")
+            summary_list.append(summary)
+
+            print(mail)
+            print(summary)
+            print("=" * 40)
+
+    except HttpError as error:
+        print(f"An error occurred: {error}")
 
 
 if __name__ == "__main__":

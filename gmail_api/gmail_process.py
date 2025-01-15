@@ -6,7 +6,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from mail import Mail
+
+from .mail import Mail
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -130,10 +131,6 @@ class MessageHandler:
             service: Gmail API service object.
             message (dict): Full message details.
         """
-        print(f"Message ID: {message['id']}")
-        print(f"Snippet: {message['snippet']}")
-        print(f"Labels: {message.get('labelIds', [])}")
-
         payload = message.get("payload", {})
         body = MessageHandler.process_message_part(service, message["id"], payload)
 
