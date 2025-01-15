@@ -189,3 +189,6 @@ wandb/
 # playground
 playground/
 gmail_api/credentials.json
+
+# attachment diretory
+gmail_api/downloaded_files

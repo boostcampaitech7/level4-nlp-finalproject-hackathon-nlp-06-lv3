@@ -75,6 +75,25 @@ class MessageHandler:
         return str(decoded_data, encoding="utf-8")
 
     @staticmethod
+    def save_attachment(service, message_id, part, save_dir="Downloaded_files"):
+        """
+        Saves an attachment from a message part to the local file system.
+        Args:
+            service: Gmail API service object.
+            message_id (str): ID of the Gmail message.
+            part (dict): Message part containing the attachment.
+            save_dir (str): Directory to save attachments.
+        """
+        att_id = part["body"]["attachmentId"]
+        att = service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
+        data = att["data"].replace("-", "+").replace("_", "/")
+        file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
+        os.makedirs(save_dir, exist_ok=True)
+        filepath = os.path.join(save_dir, part["filename"])
+        with open(filepath, "wb") as file:
+            file.write(file_data)
+
+    @staticmethod
     def process_message_part(service, message_id: str, part: dict) -> str:
         """
         Recursively processes a MessagePart, decoding bodies.
@@ -91,6 +110,9 @@ class MessageHandler:
         if part["mimeType"] == "text/plain":
             decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
             return decoded_data
+
+        if part.get("filename"):
+            MessageHandler.save_attachment(service, message_id, part)
 
         plain_text = ""
         if "multipart" in part["mimeType"]:
