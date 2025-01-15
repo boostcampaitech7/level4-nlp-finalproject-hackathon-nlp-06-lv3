@@ -1,6 +1,6 @@
 import dotenv
 
-from summary import total_report
+from summary.final_report import total_report
 
 
 def main():
