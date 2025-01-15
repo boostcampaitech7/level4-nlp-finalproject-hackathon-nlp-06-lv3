@@ -11,7 +11,7 @@ class Mail:
         body: str,
         cc: Optional[List[str]] = None,
         # attachments: Optional[List[str]] = None,
-        date: Optional[datetime] = None,
+        date: Optional[str] = None,
     ):
         """
         :param sender: 이메일을 보낸 사람의 주소
@@ -39,7 +39,7 @@ class Mail:
             f"To: {', '.join(self.recipients)}\n"
             f"CC: {', '.join(self.cc)}\n"
             f"Subject: {self.subject}\n"
-            f"Date: {self.date.strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Date: {self.date}\n"
             f"Body:\n{self.body}\n"
             # f"Attachments: {', '.join(self.attachments)}"
         )

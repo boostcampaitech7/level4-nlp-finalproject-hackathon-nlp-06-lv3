@@ -1,4 +1,5 @@
 import base64
+import json
 import os.path
 
 from google.auth.transport.requests import Request
@@ -6,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from mail import Mail
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -75,7 +77,7 @@ class MessageHandler:
         return str(decoded_data, encoding="utf-8")
 
     @staticmethod
-    def save_attachment(service, message_id, part, save_dir="Downloaded_files"):
+    def save_attachment(service, message_id, part, save_dir="downloaded_files"):
         """
         Saves an attachment from a message part to the local file system.
         Args:
@@ -134,7 +136,20 @@ class MessageHandler:
         print(f"Labels: {message.get('labelIds', [])}")
 
         payload = message.get("payload", {})
-        print(MessageHandler.process_message_part(service, message["id"], payload))
+        body = MessageHandler.process_message_part(service, message["id"], payload)
+
+        return body
+
+    def process_headers(service, message):
+        payload = message.get("payload", {})
+        headers = payload.get("headers", [])
+        return {
+            "recipients": next((item["value"] for item in headers if item["name"] == "To"), None),
+            "sender": next((item["value"] for item in headers if item["name"] == "From"), None),
+            "cc": next((item["value"] for item in headers if item["name"] == "Cc"), ""),
+            "subject": next((item["value"] for item in headers if item["name"] == "Subject"), None),
+            "date": next((item["value"] for item in headers if item["name"] == "Date"), None),
+        }
 
 
 def main():
@@ -142,13 +157,22 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
-        n = 1
+        n = 5
         messages = gmail_service.get_last_n_messages(n)
-
+        mail_list = []
         for message_metadata in messages:
             message_id = message_metadata["id"]
             message = gmail_service.get_message_details(message_id)
-            MessageHandler.process_message(gmail_service.service, message)
+            body = MessageHandler.process_message(gmail_service.service, message)
+            headers = MessageHandler.process_headers(gmail_service.service, message)
+
+            mail = Mail(
+                headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
+            )
+            print(mail)
+            mail_list.append(mail)
+
+        return mail_list
 
     except HttpError as error:
         print(f"An error occurred: {error}")
