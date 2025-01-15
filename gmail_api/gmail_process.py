@@ -68,6 +68,19 @@ class GmailService:
         """
         return self.service.users().messages().get(userId="me", id=message_id).execute()
 
+    def get_threads_from_last_n_messages(self, n):
+        """
+        Fetches threads from the list of last N messages.
+
+        Args:
+            n (int): Number of messages to fetch
+
+        Returns:
+            threads (set): Set of threads
+        """
+        message_list = self.get_last_n_messages(n)
+        return set(message["threadId"] for message in message_list["messages"])
+
 
 class MessageHandler:
     @staticmethod
@@ -117,6 +130,7 @@ class MessageHandler:
         # Decode and print the body if it exists
         if "body" in part and "data" in part["body"]:
             decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
+            # TODO: 파일 저장 로직 추가하기
             print(f"Decoded body: {decoded_data}")
 
         # Save the attachment if the part contains a filename
