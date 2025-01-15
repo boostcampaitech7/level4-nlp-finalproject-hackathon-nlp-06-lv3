@@ -75,7 +75,7 @@ class MessageHandler:
         return str(decoded_data, encoding="utf-8")
 
     @staticmethod
-    def process_message_part(service, message_id: str, part: dict):
+    def process_message_part(service, message_id: str, part: dict) -> str:
         """
         Recursively processes a MessagePart, decoding bodies.
         Only consider MIME type: text/plain
@@ -83,16 +83,21 @@ class MessageHandler:
             service: Gmail API service object.
             message_id (str): ID of the Gmail message.
             part (dict): Message part.
+        Returns:
+            str: Plain text of message.
         """
         # TODO: 다양한 MIME type에 대한 처리
 
         if part["mimeType"] == "text/plain":
             decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
-            print(f"Decoded body: {decoded_data}")
+            return decoded_data
 
+        plain_text = ""
         if "multipart" in part["mimeType"]:
             for sub_part in part["parts"]:
-                MessageHandler.process_message_part(service, message_id, sub_part)
+                plain_text += MessageHandler.process_message_part(service, message_id, sub_part)
+
+        return plain_text
 
     @staticmethod
     def process_message(service, message):
@@ -107,7 +112,7 @@ class MessageHandler:
         print(f"Labels: {message.get('labelIds', [])}")
 
         payload = message.get("payload", {})
-        MessageHandler.process_message_part(service, message["id"], payload)
+        print(MessageHandler.process_message_part(service, message["id"], payload))
 
 
 def main():
@@ -115,7 +120,7 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
-        n = 3
+        n = 1
         messages = gmail_service.get_last_n_messages(n)
 
         for message_metadata in messages:
