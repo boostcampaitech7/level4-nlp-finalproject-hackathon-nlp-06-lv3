@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import List, Optional
 
 
@@ -43,16 +42,3 @@ class Mail:
             f"Body:\n{self.body}\n"
             # f"Attachments: {', '.join(self.attachments)}"
         )
-
-
-if __name__ == "__main__":
-    sender = "canolayoo78@gmail.com"
-    recipients = ["yce9110@gmail.com"]
-    subject = "[모둠초밥] 새해 인사 드립니다."
-    body = "2025년 을사년 푸른 뱀의 해가 밝았습니다."
-    cc = ["chamjo@gmail.com"]
-    # attachments: Optional[List[str]] = None,
-    date = datetime.now()
-
-    mail = Mail(sender, recipients, subject, body, cc, date)
-    print(mail)

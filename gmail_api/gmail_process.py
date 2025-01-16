@@ -1,15 +1,13 @@
-import base64
 import os.path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
-from .mail import Mail
+from .utils import decode_base64, save_file
 
-# If modifying these scopes, delete the file token.json.
+# 이 스코프를 수정하면 token.json 파일을 삭제해야 합니다.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 
@@ -20,9 +18,9 @@ class GmailService:
     @staticmethod
     def _authenticate_with_token():
         """
-        Authenticates the user using token.json or performs OAuth2 flow if necessary.
-        Returns:
-            service (Resource): Gmail API service object.
+        token.json을 사용하여 사용자 인증을 진행하거나 필요한 경우 OAuth2 흐름을 수행합니다.
+        반환값:
+            service (Resource): Gmail API 서비스 객체.
         """
         creds = None
         if os.path.exists("token.json"):
@@ -40,78 +38,60 @@ class GmailService:
 
         return build("gmail", "v1", credentials=creds)
 
-    def get_last_n_messages(self, n):
+    def get_today_n_messages(self, date: str, n: int = 100):
         """
-        Fetches the list of last N messages.
-        Args:
-            n (int): Number of messages to fetch.
-        Returns:
-            messages (list): List of message metadata.
+        최근 N개의 메시지를 가져옵니다.
+        인자:
+            date (str): 년/월/일 형식의 가져오기 시작할 날짜 문자열.
+            n (int): 가져올 메시지의 개수.
+        반환값:
+            messages (list): 메시지 메타데이터 목록.
         """
-        message_list = self.service.users().messages().list(userId="me", maxResults=n).execute()
+        message_list = self.service.users().messages().list(userId="me", maxResults=n, q=f"after:{date}").execute()
         return message_list.get("messages", [])
 
     def get_message_details(self, message_id):
         """
-        Fetches details of a single message by ID.
-        Args:
-            message_id (str): ID of the Gmail message.
-        Returns:
-            message (dict): Full message details.
+        주어진 메시지 ID에 대한 상세 정보를 가져옵니다.
+        인자:
+            message_id (str): Gmail 메시지의 ID.
+        반환값:
+            message (dict): 전체 메시지 상세 정보.
         """
         return self.service.users().messages().get(userId="me", id=message_id).execute()
 
 
 class MessageHandler:
     @staticmethod
-    def decode_message_part(data):
-        """
-        Decodes a base64-encoded message part.
-        Args:
-            data (str): Base64-encoded string.
-        Returns:
-            str: Decoded string.
-        """
-        data = data.replace("-", "+").replace("_", "/")
-        decoded_data = base64.b64decode(data)
-        return str(decoded_data, encoding="utf-8")
-
-    @staticmethod
     def save_attachment(service, message_id, part, save_dir="downloaded_files"):
         """
-        Saves an attachment from a message part to the local file system.
-        Args:
-            service: Gmail API service object.
-            message_id (str): ID of the Gmail message.
-            part (dict): Message part containing the attachment.
-            save_dir (str): Directory to save attachments.
+        메시지 부분에서 첨부 파일을 다운로드하여 로컬 파일 시스템에 저장합니다.
+        인자:
+            service: Gmail API 서비스 객체.
+            message_id (str): Gmail 메시지의 ID.
+            part (dict): 첨부 파일을 포함하는 메시지 부분.
+            save_dir (str): 첨부 파일을 저장할 디렉토리.
         """
         att_id = part["body"]["attachmentId"]
         att = service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
-        data = att["data"].replace("-", "+").replace("_", "/")
-        file_data = base64.urlsafe_b64decode(data.encode("UTF-8"))
-        os.makedirs(save_dir, exist_ok=True)
-        filepath = os.path.join(save_dir, part["filename"])
-        with open(filepath, "wb") as file:
-            file.write(file_data)
+        save_file(decode_base64(att["data"]), part["file"])
 
     @staticmethod
     def process_message_part(service, message_id: str, part: dict) -> str:
         """
-        Recursively processes a MessagePart, decoding bodies.
-        Only consider MIME type: text/plain
-        Args:
-            service: Gmail API service object.
-            message_id (str): ID of the Gmail message.
-            part (dict): Message part.
-        Returns:
-            str: Plain text of message.
+        메시지 부분을 재귀적으로 처리하여 본문을 디코딩합니다.
+        MIME 타입: text/plain 만 고려합니다.
+        인자:
+            service: Gmail API 서비스 객체.
+            message_id (str): Gmail 메시지의 ID.
+            part (dict): 메시지 부분.
+        반환값:
+            str: 메시지의 본문 텍스트.
         """
-        # TODO: 다양한 MIME type에 대한 처리
+        # TODO: 다양한 MIME 타입에 대한 처리
 
         if part["mimeType"] == "text/plain":
-            decoded_data = MessageHandler.decode_message_part(part["body"]["data"])
-            return decoded_data
+            return decode_base64(part["body"]["data"])
 
         if part.get("filename"):
             MessageHandler.save_attachment(service, message_id, part)
@@ -126,10 +106,10 @@ class MessageHandler:
     @staticmethod
     def process_message(service, message):
         """
-        Processes a single message, including decoding.
-        Args:
-            service: Gmail API service object.
-            message (dict): Full message details.
+        단일 메시지를 처리하고 본문을 디코딩합니다.
+        인자:
+            service: Gmail API 서비스 객체.
+            message (dict): 전체 메시지 상세 정보.
         """
         payload = message.get("payload", {})
         body = MessageHandler.process_message_part(service, message["id"], payload)
@@ -139,13 +119,13 @@ class MessageHandler:
     @staticmethod
     def process_headers(message) -> dict[str, str]:
         """
-        Parsing header to dictionary
+        메시지의 헤더를 딕셔너리로 파싱합니다.
 
-        Args:
-            message: Gmail Message Object
+        인자:
+            message: Gmail 메시지 객체
 
-        Returns:
-            dict[str, str]: parsed header
+        반환값:
+            dict[str, str]: 파싱된 헤더 정보.
         """
         payload = message.get("payload", {})
         headers = payload.get("headers", [])
@@ -156,33 +136,3 @@ class MessageHandler:
             "subject": next((item["value"] for item in headers if item["name"] == "Subject"), None),
             "date": next((item["value"] for item in headers if item["name"] == "Date"), None),
         }
-
-
-def main():
-    try:
-        gmail_service = GmailService()
-
-        # Fetch last N messages
-        n = 5
-        messages = gmail_service.get_last_n_messages(n)
-        mail_list = []
-        for message_metadata in messages:
-            message_id = message_metadata["id"]
-            message = gmail_service.get_message_details(message_id)
-            body = MessageHandler.process_message(gmail_service.service, message)
-            headers = MessageHandler.process_headers(message)
-
-            mail = Mail(
-                headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
-            )
-            print(mail)
-            mail_list.append(mail)
-
-        return mail_list
-
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-
-
-if __name__ == "__main__":
-    main()

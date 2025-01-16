@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 import dotenv
 from googleapiclient.errors import HttpError
@@ -16,8 +17,9 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
-        n = 5
-        messages = gmail_service.get_last_n_messages(n)
+        today_date = datetime.today().strftime("%Y/%m/%d")
+        n = 100
+        messages = gmail_service.get_today_n_messages(today_date, n)
         mail_list = []
         for message_metadata in messages:
             message_id = message_metadata["id"]
