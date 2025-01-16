@@ -1,18 +1,12 @@
-import os
 from datetime import datetime
 
-import dotenv
 from googleapiclient.errors import HttpError
-from langchain_upstage import ChatUpstage
 
+from agents import SummaryAgent
 from gmail_api import GmailService, Mail, MessageHandler
-from summary import summarize
 
 
 def main():
-    # 초기 환경 설정
-    dotenv.load_dotenv()
-
     try:
         gmail_service = GmailService()
 
@@ -32,16 +26,22 @@ def main():
             )
             mail_list.append(mail)
 
-        chat = ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model="solar-pro")
+        # 개별 메일 요약
+        summay_agent = SummaryAgent("single")
         summary_list = []
-        for idx, mail in enumerate(mail_list):
-            summary = summarize(chat, mail, "summary")
+        for mail in mail_list:
+            summary = summay_agent.summarize(mail)
             summary_list.append(summary)
 
             print(mail)
             print(summary)
             print("=" * 40)
 
+        report_agent = SummaryAgent("final")
+        report = report_agent.summarize(summary_list)
+
+        print("=============FINAL_REPORT================")
+        print(report)
     except HttpError as error:
         print(f"An error occurred: {error}")
 
