@@ -2,7 +2,7 @@ import base64
 import os
 
 
-def decode_base64(data: str) -> str:
+def decode_base64(data: str) -> bytes:
     """
     base64로 인코딩된 메시지 부분을 디코딩합니다.
     인자:
@@ -11,8 +11,7 @@ def decode_base64(data: str) -> str:
         str: 디코딩된 문자열.
     """
     data = data.replace("-", "+").replace("_", "/")
-    decoded_data = base64.b64decode(data)
-    return str(decoded_data, encoding="utf-8")
+    return base64.b64decode(data)
 
 
 def save_file(file_data: str, file_name: str = "attachment", save_dir: str = "downloaded_files") -> None:

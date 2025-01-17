@@ -74,7 +74,7 @@ class MessageHandler:
         """
         att_id = part["body"]["attachmentId"]
         att = service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
-        save_file(decode_base64(att["data"]), part["file"])
+        save_file(decode_base64(att["data"]), part["filename"])
 
     @staticmethod
     def process_message_part(service, message_id: str, part: dict) -> str:
@@ -89,16 +89,24 @@ class MessageHandler:
             str: 메시지의 본문 텍스트.
         """
         # TODO: 다양한 MIME 타입에 대한 처리
+        mime_type = part["mimeType"]
+        body_data = part.get("body", {}).get("data")
 
-        if part["mimeType"] == "text/plain":
-            return decode_base64(part["body"]["data"])
+        # 1) text/plain 처리
+        if mime_type == "text/plain" and body_data:
+            decoded_bytes = decode_base64(body_data)
+            return decoded_bytes.decode("utf-8", errors="replace")
 
-        if part.get("filename"):
+        # 2) 첨부파일 처리
+        if part.get("filename"):  # 파일명이 있으면 첨부
             MessageHandler.save_attachment(service, message_id, part)
+            # 첨부파일이므로 본문에는 추가할 텍스트가 없음
+            return ""
 
+        # 3) multipart인 경우 하위 파트 재귀 처리
         plain_text = ""
-        if "multipart" in part["mimeType"]:
-            for sub_part in part["parts"]:
+        if "multipart" in mime_type:
+            for sub_part in part.get("parts", []):
                 plain_text += MessageHandler.process_message_part(service, message_id, sub_part)
 
         return plain_text

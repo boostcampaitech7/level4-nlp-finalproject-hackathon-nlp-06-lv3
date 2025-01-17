@@ -1,4 +1,4 @@
-from datetime import datetime
+# from datetime import datetime
 
 from googleapiclient.errors import HttpError
 
@@ -11,7 +11,7 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
-        today_date = datetime.today().strftime("%Y/%m/%d")
+        today_date = "2025/01/14"  # datetime.today().strftime("%Y/%m/%d")
         n = 100
         messages = gmail_service.get_today_n_messages(today_date, n)
         mail_list = []
