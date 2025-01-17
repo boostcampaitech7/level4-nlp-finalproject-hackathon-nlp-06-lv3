@@ -8,7 +8,7 @@ def decode_base64(data: str) -> bytes:
     인자:
         data (str): base64로 인코딩된 문자열.
     반환값:
-        str: 디코딩된 문자열.
+        bytes: 디코드 결과 바이트 스트림.
     """
     data = data.replace("-", "+").replace("_", "/")
     return base64.b64decode(data)
