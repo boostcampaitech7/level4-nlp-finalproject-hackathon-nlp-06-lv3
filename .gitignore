@@ -179,6 +179,7 @@ pyrightconfig.json
 
 *.csv
 output*/
+*.json
 
 baseline*.ipynb
 .DS_Store
@@ -187,3 +188,7 @@ wandb/
 
 # playground
 playground/
+gmail_api/credentials.json
+
+# attachment diretory
+*downloaded_files*
