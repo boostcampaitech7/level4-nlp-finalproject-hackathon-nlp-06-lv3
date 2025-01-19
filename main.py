@@ -37,8 +37,19 @@ def main():
             print(summary)
             print("=" * 40)
 
+        # 개별 메일 분류
+        classification_agent = SummaryAgent("classification")
+        category_list = []
+        for mail in mail_list:
+            category = classification_agent.summarize(mail)
+            category_list.append(category)
+
+            print(mail)
+            print(category)
+            print("=" * 40)
+
         report_agent = SummaryAgent("final")
-        report = report_agent.summarize(summary_list)
+        report = report_agent.summarize(summary_list, category_list)
 
         print("=============FINAL_REPORT================")
         print(report)
