@@ -24,7 +24,9 @@ def main():
             mail = Mail(
                 headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
             )
-            mail_list.append(mail)
+            # 룰베이스 분류
+            if "(광고)" not in mail.subject:
+                mail_list.append(mail)
 
         # 개별 메일 요약
         summay_agent = SummaryAgent("single")
