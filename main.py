@@ -30,7 +30,7 @@ def main():
         summay_agent = SummaryAgent("single")
         summary_list = []
         for mail in mail_list:
-            summary = summay_agent.summarize(mail)
+            summary = summay_agent.process(mail)
             summary_list.append(summary)
 
             print(mail)
@@ -38,7 +38,7 @@ def main():
             print("=" * 40)
 
         report_agent = SummaryAgent("final")
-        report = report_agent.summarize(summary_list)
+        report = report_agent.process(summary_list)
 
         print("=============FINAL_REPORT================")
         print(report)
