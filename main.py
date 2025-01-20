@@ -24,21 +24,29 @@ def main():
             mail = Mail(
                 headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
             )
-            mail_list.append(mail)
+            # 룰베이스 분류
+            if "(광고)" not in mail.subject:
+                mail_list.append(mail)
 
-        # 개별 메일 요약
+        # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("single")
+        classification_agent = SummaryAgent("classification")
         summary_list = []
+        category_list = []
+
         for mail in mail_list:
             summary = summay_agent.summarize(mail)
             summary_list.append(summary)
+            category = classification_agent.summarize(mail)
+            category_list.append(category)
 
             print(mail)
             print(summary)
+            print(category)
             print("=" * 40)
 
         report_agent = SummaryAgent("final")
-        report = report_agent.summarize(summary_list)
+        report = report_agent.summarize(summary_list, category_list)
 
         print("=============FINAL_REPORT================")
         print(report)
