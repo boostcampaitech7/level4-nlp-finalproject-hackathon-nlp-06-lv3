@@ -192,3 +192,6 @@ gmail_api/credentials.json
 
 # attachment diretory
 *downloaded_files*
+
+# custom
+test.ipynb
