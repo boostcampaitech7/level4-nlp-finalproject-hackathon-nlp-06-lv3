@@ -28,25 +28,20 @@ def main():
             if "(광고)" not in mail.subject:
                 mail_list.append(mail)
 
-        # 개별 메일 요약
+        # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("single")
+        classification_agent = SummaryAgent("classification")
         summary_list = []
+        category_list = []
+
         for mail in mail_list:
             summary = summay_agent.summarize(mail)
             summary_list.append(summary)
-
-            print(mail)
-            print(summary)
-            print("=" * 40)
-
-        # 개별 메일 분류
-        classification_agent = SummaryAgent("classification")
-        category_list = []
-        for mail in mail_list:
             category = classification_agent.summarize(mail)
             category_list.append(category)
 
             print(mail)
+            print(summary)
             print(category)
             print("=" * 40)
 
