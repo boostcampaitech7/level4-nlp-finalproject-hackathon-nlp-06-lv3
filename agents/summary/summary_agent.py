@@ -15,6 +15,7 @@ class SummaryAgent(BaseAgent):
 
     Args:
         summary_type (str): 요약 유형을 지정하는 문자열입니다(예: 'final', 'single' 등).
+        model_name (str): 사용할 Upstage AI 모델명입니다(예: 'solar-pro', 'solar-mini').
         temperature (float, optional): 모델 생성에 사용되는 파라미터로, 0에 가까울수록
             결정론적(deterministic) 결과가, 1에 가까울수록 다양성이 높은 결과가 나옵니다.
         seed (int, optional): 모델 결과의 재현성을 높이기 위해 사용하는 난수 시드 값입니다.
@@ -23,8 +24,8 @@ class SummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, summary_type: str, temperature=None, seed=None):
-        super().__init__(model="solar-pro", temperature=temperature, seed=seed)
+    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
+        super().__init__(model=model_name, temperature=temperature, seed=seed)
         self.summary_type = summary_type
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
@@ -41,7 +42,7 @@ class SummaryAgent(BaseAgent):
         """
         return ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model=model, temperature=temperature, seed=seed)
 
-    def process(self, mail: list | Mail) -> str:
+    def process(self, mail: list | Mail, model=None) -> str:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 문자열 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 ChatUpstage 모델에 요약 요청을 보냅니다.

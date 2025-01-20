@@ -2,7 +2,7 @@
 
 from googleapiclient.errors import HttpError
 
-from agents import SummaryAgent
+from agents import SelfRefineAgent, SummaryAgent
 from gmail_api import GmailService, Mail, MessageHandler
 
 
@@ -27,7 +27,7 @@ def main():
             mail_list.append(mail)
 
         # 개별 메일 요약
-        summay_agent = SummaryAgent("single")
+        summay_agent = SummaryAgent("solar-pro", "single")
         summary_list = []
         for mail in mail_list:
             summary = summay_agent.process(mail)
@@ -37,11 +37,13 @@ def main():
             print(summary)
             print("=" * 40)
 
-        report_agent = SummaryAgent("final")
-        report = report_agent.process(summary_list)
+        report_agent = SummaryAgent("solar-pro", "final")
+        self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
+        report = self_refine_agent.process(summary_list, report_agent)
         print("=============FINAL_REPORT================")
         print(report)
+
     except HttpError as error:
         print(f"An error occurred: {error}")
 
