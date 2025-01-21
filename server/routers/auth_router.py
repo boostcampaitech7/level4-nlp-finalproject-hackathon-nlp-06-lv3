@@ -37,4 +37,4 @@ async def google_callback(request: Request):
     code = request.query_params.get("code")
     if not code:
         raise HTTPException(status_code=400, detail="Code parameter is required.")
-    return code
+    return {"code": code}
