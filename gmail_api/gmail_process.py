@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from .utils import decode_base64, save_file
+from .utils import decode_base64, replace_image_from, save_file
 
 # 이 스코프를 수정하면 token.json 파일을 삭제해야 합니다.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -121,8 +121,9 @@ class MessageHandler:
         """
         payload = message.get("payload", {})
         body = MessageHandler.process_message_part(service, message["id"], payload)
+        replaced_body = replace_image_from(body)
 
-        return body
+        return replaced_body
 
     @staticmethod
     def process_headers(message) -> dict[str, str]:
