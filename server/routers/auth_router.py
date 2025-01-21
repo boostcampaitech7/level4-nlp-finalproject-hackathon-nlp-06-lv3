@@ -7,6 +7,12 @@ from server.service import auth_service
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+@auth_router.get("/is-login")
+async def is_login(request: Request):
+    user_id = request.session.get("user_id")
+    return {"is_login": bool(user_id), "user_id": user_id}
+
+
 class GoogleAuthRequest(BaseModel):
     code: str
     redirect_uri: str

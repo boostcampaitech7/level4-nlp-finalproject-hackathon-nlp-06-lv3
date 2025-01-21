@@ -33,7 +33,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_KEY"))
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SESSION_KEY"),
+    max_age=180 * 24 * 60 * 60,  # 180일
+    same_site="lax",
+    https_only=True,
+)
 
 app.include_router(auth_router)
 
