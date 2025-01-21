@@ -55,7 +55,7 @@ class SummaryAgent(BaseAgent):
         """
         template = load_template("summary", f"{self.summary_type}.txt")
         if isinstance(mail, list):
-            concated_mails = "\n".join(mail)
+            concated_mails = "\n".join(f"mail: {mail}, category: {category}")
         else:
             concated_mails = str(mail)
 
