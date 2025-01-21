@@ -177,9 +177,10 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
+.vscode/
+
 *.csv
 output*/
-*.json
 
 baseline*.ipynb
 .DS_Store
@@ -196,3 +197,8 @@ gmail_api/credentials.json
 # custom
 test.ipynb
 agents/self_refine/log/*.txt
+
+
+credentials.json
+token.json
+
