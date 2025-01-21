@@ -22,6 +22,7 @@ URL = (
     "https://accounts.google.com/o/oauth2/v2/auth"
     f"?scope={' '.join(scopes)}&"
     f"access_type={access_type}&"
+    f"prompt=consent&"
     f"response_type={response_type}&"
     f"state={state}&"
     f"redirect_uri={redirect_uri}&"

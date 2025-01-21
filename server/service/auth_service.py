@@ -12,10 +12,9 @@ from server.database.connection import database
 # Google OAuth2 setup
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
-REDIRECT_URI = "http://localhost:3000"
 
 
-async def google_authenticatie(code: str):
+async def google_authenticatie(code: str, redirect_uri: str):
     try:
         # Initialize the Google OAuth2 Flow
         flow = Flow.from_client_secrets_file(
@@ -26,7 +25,7 @@ async def google_authenticatie(code: str):
                 "https://www.googleapis.com/auth/userinfo.email",
                 "https://www.googleapis.com/auth/userinfo.profile",
             ],
-            redirect_uri=REDIRECT_URI,
+            redirect_uri=redirect_uri,
         )
 
         flow.fetch_token(code=code)

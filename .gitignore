@@ -177,9 +177,10 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python
 
+.vscode/
+
 *.csv
 output*/
-*.json
 
 baseline*.ipynb
 .DS_Store
@@ -199,3 +200,4 @@ agents/self_refine/log/*.txt
 
 
 client_secrets.json
+

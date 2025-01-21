@@ -9,11 +9,12 @@ auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 class GoogleAuthRequest(BaseModel):
     code: str
+    redirect_uri: str
 
 
 @auth_router.post("/google")
 async def google_auth(request_body: GoogleAuthRequest, request: Request):
-    user_id = await auth_service.google_authenticatie(request_body.code)
+    user_id = await auth_service.google_authenticatie(request_body.code, request_body.redirect_uri)
     request.session["user_id"] = user_id
     return {"user_id": user_id}
 
