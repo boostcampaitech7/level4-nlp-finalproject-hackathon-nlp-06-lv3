@@ -41,23 +41,32 @@ class SelfRefineAgent(BaseAgent):
         """
         return ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model=model, temperature=temperature, seed=seed)
 
-    def process(self, data: Mail | list, model: BaseAgent, max_iteration: int = 3):
+    def logging(self, path, content):
+        diretory = os.path.dirname(path)
+        os.makedirs(diretory, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as file:
+            file.write(content)
+        print(f"{path} 로그 파일이 생성되었습니다.")
+
+    def process(self, data: Mail | list[dict], model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 
         Args:
-            data (Mail | list): 입력 데이터.
+            data (Mail | list[dict]): 입력 데이터.
             model (BaseAgent): 데이터를 처리하는 모델(ex. SummaryAgent).
             max_iteration (int): 최대 Self-refine 반복 횟수.
 
         Return:
             str: Self-refine을 거친 최종 결과물.
         """
+        if isinstance(data, list):
+            concated_mails = "\n".join([f'분류: {item["category"]} 요약: {item["summary"]}' for item in data])
+        else:
+            concated_mails = str(data)
         # 초기 요약
         report = model.process(data)
-
-        if isinstance(data, list):
-            concated_mails = "\n".join(data)
+        self.logging("./agents/self_refine/log/init_report.txt", report)
 
         for i in range(max_iteration):
             feedback_reponse = self.chat.invoke(
@@ -82,8 +91,6 @@ class SelfRefineAgent(BaseAgent):
                 )
             )
             report = report_response.content
-            print(f"---{i}번째-self-refine---")
-            print(f"feedback: {feedback}")
-            print(f"refine 후: {report}")
+            self.logging(f"./agents/self_refine/log/self_refine_{i}.txt", f"feedback: {feedback}\n\n report: {report}")
 
         return report

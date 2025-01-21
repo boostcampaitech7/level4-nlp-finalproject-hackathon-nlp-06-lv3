@@ -32,24 +32,22 @@ def main():
         summay_agent = SummaryAgent("solar-pro", "single")
         classification_agent = SummaryAgent("solar-pro", "classification")
 
-        summary_list = []
-        category_list = []
+        result_list = []
 
         for mail in mail_list:
             summary = summay_agent.process(mail)
-            summary_list.append(summary)
-            category = classification_agent.summarize(mail)
-            category_list.append(category)
+            category = classification_agent.process(mail)
+            result_list.append({"mail": mail, "summary": summary, "category": category})
 
-            print(mail)
-            print(summary)
-            print(category)
-            print("=" * 40)
+            # print(mail)
+            # print(summary)
+            # print(category)
+            # print("=" * 40)
 
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-        report = self_refine_agent.process(summary_list, report_agent)
+        report = self_refine_agent.process(result_list, report_agent)
         print("=============FINAL_REPORT================")
         print(report)
 
