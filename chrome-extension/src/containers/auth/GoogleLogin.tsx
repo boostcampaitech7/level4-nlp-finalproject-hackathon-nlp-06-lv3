@@ -1,6 +1,10 @@
+import { useSetRecoilState } from "recoil"
 import axiosInstance from "@/utils/axiosInstance.ts"
+import { userIdState } from "@/states/auth.ts"
 
-export default function GoogleLoginBtn({ setUserId }: { setUserId: (userId: number) => void }) {
+export default function GoogleLoginBtn() {
+  const setUserId = useSetRecoilState(userIdState)
+
   const googleLogin = () => {
     const redirectUri = chrome.identity.getRedirectURL()
 

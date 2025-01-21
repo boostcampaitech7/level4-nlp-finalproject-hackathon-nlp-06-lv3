@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react"
+import { useRecoilValue, useSetRecoilState } from "recoil"
 import GoogleLoginBtn from "@/containers/auth/GoogleLogin.tsx"
 import axiosInstance from "@/utils/axiosInstance.ts"
+import { isLoginState, userIdState } from "@/states/auth.ts"
 
 function App() {
-  const [userId, setUserId] = useState(0)
+  const setUserId = useSetRecoilState(userIdState)
+  const isLogin = useRecoilValue(isLoginState)
   const [userProfile, setUserProfile] = useState<any>({})
 
   useEffect(() => {
@@ -13,22 +16,20 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (userId === 0) return
+    if (!isLogin) return
     axiosInstance.get("/auth/google/profile").then((res) => {
       setUserProfile(res.data)
     })
-  }, [userId, setUserProfile])
+  }, [isLogin, setUserProfile])
 
   return (
     <div className="flex flex-col w-full px-5 py-10 items-center">
-      {userId !== 0 ? (
+      {isLogin ? (
         <div>
-          <p>userId: {userId}</p>
           <div>
             <p>{userProfile.name}</p>
             <p>{userProfile.email}</p>
             <img src={userProfile.picture} alt="profile" />
-            <p>{userProfile.toString()}</p>
             <button
               type="button"
               onClick={() => {
@@ -43,7 +44,7 @@ function App() {
           </div>
         </div>
       ) : (
-        <GoogleLoginBtn setUserId={setUserId} />
+        <GoogleLoginBtn />
       )}
     </div>
   )
