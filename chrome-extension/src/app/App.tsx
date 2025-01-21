@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import GoogleLoginBtn from "@/app/GoogleLogin.tsx"
+import GoogleLoginBtn from "@/containers/auth/GoogleLogin.tsx"
 import axiosInstance from "@/utils/axiosInstance.ts"
 
 function App() {
