@@ -18,7 +18,7 @@ async def google_authenticatie(code: str, redirect_uri: str):
     try:
         # Initialize the Google OAuth2 Flow
         flow = Flow.from_client_secrets_file(
-            "client_secrets.json",  # Ensure you have this file from Google Cloud Console
+            "credentials.json",  # Ensure you have this file from Google Cloud Console
             scopes=[
                 "openid",
                 "https://www.googleapis.com/auth/gmail.readonly",
