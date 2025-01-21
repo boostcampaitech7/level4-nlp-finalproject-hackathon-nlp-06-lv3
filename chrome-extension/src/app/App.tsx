@@ -7,15 +7,21 @@ function App() {
   const [userProfile, setUserProfile] = useState({})
 
   useEffect(() => {
-    if (userId !== 0) {
-      axios.get("http://localhost:8000/auth/google/profile").then((res) => {
+    axios
+      .get("http://localhost:8000/auth/google/profile", { withCredentials: true })
+      .then((res) => {
         setUserProfile(res.data)
       })
-    }
-  }, [userId])
+      .catch(() => {
+        setUserId(0)
+        setUserProfile({})
+      })
+    console.log("hello")
+    //
+  }, [userId, setUserId, setUserProfile])
 
   return (
-    <div className="flex flex-col w-full mx-5 my-10 items-center">
+    <div className="flex flex-col w-full px-5 py-10 items-center">
       {userId !== 0 ? (
         <div>
           <p>userId: {userId}</p>
