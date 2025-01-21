@@ -1,8 +1,7 @@
 import base64
 import os
 import re
-
-from .document_parse import parse_document
+from collections import deque
 
 
 def decode_base64(data: str) -> bytes:
@@ -23,48 +22,63 @@ def save_file(file_data: str, file_name: str = "attachment", save_dir: str = "do
     파일 데이터를 정해진 경로에 저장합니다.
 
     인자:
-        file_data (str): 문자열로 인코딩된 파일 정보.
-        file_path (str): 파일을 저장할 경로.
+        file_data (str): 저장할 파일 정보.
+        file_path (str): 저장할 파일 이름름.
     반환값:
         file_path (str): 파일을 저장한 경로.
     """
-    os.makedirs(save_dir, exist_ok=True)
-    file_path = os.path.join(save_dir, file_name)
-    with open(file_path, "wb") as file:
-        file.write(file_data)
-
-    return file_path
-
-
-def replace_match(match):
-    """
-    정규 표현식으로 매칭된 파일명을 파싱된 파일 내용으로로 대체합니다.
-
-    인자자:
-        match (re.Match): 정규 표현식으로 매칭된 객체.
-    반환값:
-        str: 파일의 내용을 반환하거나, 파일을 찾을 수 없거나 읽기 오류가
-            발생한 경우 적절한 오류 메시지를 반환합니다.
-    """
-    file_name = match.group(1)
-    file_path = os.path.join("downloaded_files", file_name)
     try:
-        return parse_document(file_path)
-    except FileNotFoundError:
-        return f"[파일 '{file_name}'을(를) 찾을 수 없음]"
+        os.makedirs(save_dir, exist_ok=True)
+        file_path = os.path.join(save_dir, file_name)
+        with open(file_path, "wb") as file:
+            file.write(file_data)
+        return file_path
     except Exception as e:
-        return f"[파일 읽기 에러: {str(e)}]"
+        print(f"An error occurred while saving the file: {e}")
+        return None
 
 
-def replace_image_from(plain_text: str):
+def delete_file(saved_file_path: str) -> bool:
     """
-    주어진 텍스트에서 "[image: 파일명]" 형태로 작성된 패턴을 찾아
-    해당 파일의 파싱 결과로 대체합니다.
+    파일 경로에 저장된 데이터를 삭제합니다.
 
-    인자자:
-        plain_text (str): "[image: 파일명]" 패턴을 대체할 원문.
+    인자:
+        saved_file_path (str): 삭제할 파일의 경로.
     반환값:
-        str: "[image: 파일명]" 패턴이 대체된 수정문.
+        bool: 파일 삭제 성공 여부.
     """
-    pattern = r"\[image: (.+?)\]"
-    return re.sub(pattern, replace_match, plain_text)
+    try:
+        if os.path.exists(saved_file_path):
+            os.remove(saved_file_path)
+            return True
+        else:
+            print(f"The file does not exist: {saved_file_path}")
+            return False
+    except Exception as e:
+        print(f"An error occurred while deleting the file: {e}")
+        return False
+
+
+def replace_image_patten_with(plain_text: str, files: deque) -> str:
+    """
+    `plain_text` 내 `[image: ]` 패턴을 찾아 `files` 리스트의 leftpop 값으로 대체합니다.
+
+    인자:
+        plain_text (str): 대체가 필요한 텍스트.
+        files (deque): 대체할 파일 내용을 포함한 deque.
+    반환값:
+        updated_text (str): 대체가 완료된 텍스트.
+        files (deque): 대체된 뒤 남은 파일 내용을 포함한 deque.
+    """
+    matches = list(re.finditer(r"\[image: (.+?)\]", plain_text))
+
+    if not matches:
+        return plain_text, files
+
+    def replacement(match):
+        # files에서 첫번째 요소를 반환하거나, files가 비어있을 경우 원문을 그대로 반환한다.
+        return files.popleft() if files else match.group(0)
+
+    updated_text = re.sub(r"\[image: (.+?)\]", replacement, plain_text)
+
+    return updated_text, files
