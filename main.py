@@ -35,7 +35,7 @@ def main():
         category_list = []
 
         for mail in mail_list:
-            summary = summay_agent.summarize(mail)
+            summary = summay_agent.process(mail)
             summary_list.append(summary)
             category = classification_agent.summarize(mail)
             category_list.append(category)
@@ -46,7 +46,7 @@ def main():
             print("=" * 40)
 
         report_agent = SummaryAgent("final")
-        report = report_agent.summarize(summary_list, category_list)
+        report = report_agent.process(summary_list)
 
         print("=============FINAL_REPORT================")
         print(report)
