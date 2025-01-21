@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
 import GoogleLoginBtn from "@/app/GoogleLogin.tsx"
+import axiosInstance from "@/utils/axiosInstance.ts"
 
 function App() {
   const [userId, setUserId] = useState(0)
   const [userProfile, setUserProfile] = useState<any>({})
 
   useEffect(() => {
-    axios.get("http://localhost:8000/auth/is-login", { withCredentials: true }).then((res) => {
+    axiosInstance.get("/auth/is-login").then((res) => {
       if (res.data.is_login) setUserId(res.data.user_id)
     })
   }, [])
 
   useEffect(() => {
     if (userId === 0) return
-    axios.get("http://localhost:8000/auth/google/profile", { withCredentials: true }).then((res) => {
+    axiosInstance.get("/auth/google/profile").then((res) => {
       setUserProfile(res.data)
-      console.log(res.data)
     })
   }, [userId, setUserProfile])
 
@@ -33,7 +32,7 @@ function App() {
             <button
               type="button"
               onClick={() => {
-                axios.post("http://localhost:8000/auth/logout").then(() => {
+                axiosInstance.post("/auth/logout").then(() => {
                   setUserId(0)
                   setUserProfile({})
                 })
@@ -44,26 +43,7 @@ function App() {
           </div>
         </div>
       ) : (
-        <>
-          <GoogleLoginBtn setUserId={setUserId} />
-          <button
-            type="button"
-            onClick={() => {
-              axios
-                .get("http://localhost:8000/auth/google/profile", { withCredentials: true })
-                .then((res) => {
-                  setUserProfile(res.data)
-                })
-                .catch((res) => {
-                  console.log("error", res)
-                  setUserId(0)
-                  setUserProfile({})
-                })
-            }}
-          >
-            버튼
-          </button>
-        </>
+        <GoogleLoginBtn setUserId={setUserId} />
       )}
     </div>
   )

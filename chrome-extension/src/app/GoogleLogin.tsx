@@ -1,4 +1,4 @@
-import axios from "axios"
+import axiosInstance from "@/utils/axiosInstance.ts"
 
 export default function GoogleLoginBtn({ setUserId }: { setUserId: (userId: number) => void }) {
   const googleLogin = () => {
@@ -19,7 +19,7 @@ export default function GoogleLoginBtn({ setUserId }: { setUserId: (userId: numb
       }
       const uri = new URL(redirectedUri!)
       const code = uri.searchParams.get("code")
-      axios.post("http://localhost:8000/auth/google", { code, redirect_uri: redirectUri }).then((res) => {
+      axiosInstance.post("/auth/google", { code, redirect_uri: redirectUri }).then((res) => {
         setUserId(res.data.user_id)
       })
     })
