@@ -1,10 +1,7 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": [
-    "@typescript-eslint",
-    "prettier"
-  ],
+  "plugins": ["@typescript-eslint", "prettier"],
   "parserOptions": {
     "project": "./tsconfig.json",
     "createDefaultProgram": true
@@ -16,9 +13,7 @@
     "node": true,
     "es6": true
   },
-  "ignorePatterns": [
-    "node_modules/"
-  ],
+  "ignorePatterns": ["node_modules/", "tailwind.config.js", "postcss.config.js"],
   // eslint 미적용될 폴더나 파일 명시
   "extends": [
     "airbnb",
@@ -41,12 +36,10 @@
     "react/jsx-filename-extension": [
       "warn",
       {
-        "extensions": [
-          ".ts",
-          ".tsx"
-        ]
+        "extensions": [".ts", ".tsx"]
       }
     ],
-    "@typescript-eslint/no-explicit-any": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "import/no-extraneous-dependencies": "off"
   }
 }
