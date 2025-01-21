@@ -37,26 +37,28 @@ async def google_authenticatie(code: str):
         if not user:
             new_user_id = await database.execute(
                 (
-                    "INSERT INTO user_tb (google_id, access_token, refresh_token) "
-                    "VALUES (:google_id, :access_token, :refresh_token)"
+                    "INSERT INTO user_tb (google_id, access_token, refresh_token, expiry) "
+                    "VALUES (:google_id, :access_token, :refresh_token, :expiry)"
                 ),
                 {
                     "google_id": token_info["sub"],
                     "access_token": flow.credentials.token,
                     "refresh_token": flow.credentials.refresh_token,
+                    "expiry": flow.credentials.expiry,
                 },
             )
             return new_user_id
 
         await database.execute(
             (
-                "UPDATE user_tb SET access_token = :access_token, refresh_token = :refresh_token "
+                "UPDATE user_tb SET access_token = :access_token, refresh_token = :refresh_token, expiry = :expiry "
                 "WHERE google_id = :google_id"
             ),
             {
                 "google_id": token_info["sub"],
                 "access_token": flow.credentials.token,
                 "refresh_token": flow.credentials.refresh_token,
+                "expiry": flow.credentials.expiry,
             },
         )
         return user["id"]
@@ -88,7 +90,7 @@ def refresh_access_token(refresh_token: str):
         )
         credentials.refresh(Request())
 
-        new_tokens = {"access_token": credentials.token, "expires_in": credentials.expiry}
+        new_tokens = {"access_token": credentials.token, "expiry": credentials.expiry}
 
         return new_tokens
     except Exception as e:

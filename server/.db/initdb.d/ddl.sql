@@ -1,9 +1,10 @@
 CREATE TABLE user_tb
 (
     id            BIGINT AUTO_INCREMENT PRIMARY KEY,
-    google_id     VARCHAR(50)  NOT NULL UNIQUE,
-    access_token  VARCHAR(255) NOT NULL,
-    refresh_token VARCHAR(255) NOT NULL,
+    google_id     VARCHAR(50)   NOT NULL UNIQUE,
+    access_token  VARCHAR(255)  NOT NULL,
+    refresh_token VARCHAR(255)  NOT NULL,
+    expires_in    TIMESTAMP     NOT NULL,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -16,5 +17,4 @@ CREATE TABLE report_tb
     end        TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
-
+`
