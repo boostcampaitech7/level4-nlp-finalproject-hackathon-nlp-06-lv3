@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from server.service import auth_service
@@ -48,15 +48,9 @@ class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
 
-@auth_router.post("/google/refresh-token")
-async def refresh_google_token(request_body: RefreshTokenRequest):
-    return auth_service.refresh_access_token(request_body.refresh_token)
-
-
-class ProfileRequest(BaseModel):
-    access_token: str
-
-
 @auth_router.get("/google/profile")
-async def google_profile(request_body: ProfileRequest):
-    return auth_service.get_google_profile(request_body.access_token)
+async def google_profile(request: Request):
+    user_id = request.session.get("user_id")
+    if not user_id:  # 세션에 user_id가 없는 경우
+        raise HTTPException(status_code=401, detail="Authentication required. Please log in.")  # Unauthorized
+    return await auth_service.get_google_profile(user_id)

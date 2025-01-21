@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 
 import requests
 from fastapi import HTTPException
@@ -79,7 +80,32 @@ def get_token_info(access_token: str):
         raise HTTPException(status_code=400, detail="Invalid token")
 
 
-def refresh_access_token(refresh_token: str):
+async def get_google_profile(user_id: int):
+    user = await database.fetch_one("SELECT * FROM user_tb WHERE id = :user_id", {"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if is_expired(user["expiry"]):
+        new_tokens = refresh_access_token(user_id, user["refresh_token"])
+        access_token = new_tokens
+    else:
+        access_token = user["access_token"]
+
+    response = requests.get(
+        "https://www.googleapis.com/oauth2/v1/userinfo",
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def is_expired(expiry_time: datetime):
+    expiry_time = expiry_time.replace(tzinfo=timezone.utc)
+    utc_current_time = datetime.now(timezone.utc)
+    return utc_current_time >= expiry_time  # 만료 시간과 현재 시간을 비교
+
+
+def refresh_access_token(user_id: int, refresh_token: str) -> str:
     try:
         credentials = Credentials(
             None,
@@ -90,20 +116,15 @@ def refresh_access_token(refresh_token: str):
         )
         credentials.refresh(Request())
 
-        new_tokens = {"access_token": credentials.token, "expiry": credentials.expiry}
+        database.execute(
+            ("UPDATE user_tb SET access_token = :access_token, expiry = :expiry WHERE id = :user_id"),
+            {
+                "user_id": user_id,
+                "access_token": credentials.token,
+                "expiry": credentials.expiry,
+            },
+        )
 
-        return new_tokens
+        return credentials.token
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Token refresh failed: {str(e)}")
-
-
-def get_google_profile(access_token: str):
-    try:
-        response = requests.get(
-            "https://www.googleapis.com/oauth2/v1/userinfo",
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
-        response.raise_for_status()
-        return response.json()  # Return user profile information
-    except requests.exceptions.RequestException:
-        raise HTTPException(status_code=400, detail="Invalid token")
