@@ -6,13 +6,15 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 
+from server.database.connection import database
+
 # Google OAuth2 setup
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = "http://localhost:3000"
 
 
-def google_authenticatie(code: str):
+async def google_authenticatie(code: str):
     try:
         # Initialize the Google OAuth2 Flow
         flow = Flow.from_client_secrets_file(
@@ -28,16 +30,37 @@ def google_authenticatie(code: str):
 
         flow.fetch_token(code=code)
 
-        credentials = flow.credentials
-        print(credentials)
-        tokens = {
-            "access_token": credentials.token,
-            "refresh_token": credentials.refresh_token,
-            "expires_in": credentials.expiry,
-        }
-        print(tokens)
+        token_info = get_token_info(flow.credentials.token)  # Validate the access token
+        user = await database.fetch_one(
+            "SELECT * FROM user_tb WHERE google_id = :google_id", {"google_id": token_info["sub"]}
+        )
+        if not user:
+            new_user_id = await database.execute(
+                (
+                    "INSERT INTO user_tb (google_id, access_token, refresh_token) "
+                    "VALUES (:google_id, :access_token, :refresh_token)"
+                ),
+                {
+                    "google_id": token_info["sub"],
+                    "access_token": flow.credentials.token,
+                    "refresh_token": flow.credentials.refresh_token,
+                },
+            )
+            return new_user_id
 
-        return tokens
+        await database.execute(
+            (
+                "UPDATE user_tb SET access_token = :access_token, refresh_token = :refresh_token "
+                "WHERE google_id = :google_id"
+            ),
+            {
+                "google_id": token_info["sub"],
+                "access_token": flow.credentials.token,
+                "refresh_token": flow.credentials.refresh_token,
+            },
+        )
+        return user["id"]
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Authentication failed: {str(e)}")
 

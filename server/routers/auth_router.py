@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
 
 from server.service import auth_service
@@ -23,8 +23,16 @@ class GoogleAuthRequest(BaseModel):
 
 
 @auth_router.post("/google")
-async def google_auth(request_body: GoogleAuthRequest):
-    return auth_service.google_authenticatie(request_body.code)
+async def google_auth(request_body: GoogleAuthRequest, request: Request):
+    user_id = await auth_service.google_authenticatie(request_body.code)
+    request.session["user_id"] = user_id
+    return {"user_id": user_id}
+
+
+@auth_router.post("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return {"message": "Logged out"}
 
 
 class ValidateTokenRequest(BaseModel):

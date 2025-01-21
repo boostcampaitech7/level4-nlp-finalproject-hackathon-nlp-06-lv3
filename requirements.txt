@@ -18,3 +18,4 @@ uvicorn
 requests
 databases[aiomysql]
 cryptography
+itsdangerous
