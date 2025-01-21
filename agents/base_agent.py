@@ -30,12 +30,13 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def process(self, data):
+    def process(self, data, model=None):
         """
         데이터를 처리하는 메서드입니다. 하위 클래스에서 구현해야 합니다.
 
         Args:
             data: 처리할 데이터.
+            model: 데이터를 처리하는 모델.
 
         Returns:
             처리 결과.
