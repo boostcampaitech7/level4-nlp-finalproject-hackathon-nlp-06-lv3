@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
+from server.dependencies.session import get_user_id_from_session
 from server.service import auth_service
 
 # Initialize router
@@ -32,10 +33,7 @@ async def logout(request: Request):
 
 
 @auth_router.get("/google/profile")
-async def google_profile(request: Request):
-    user_id = request.session.get("user_id")
-    if not user_id:  # 세션에 user_id가 없는 경우
-        raise HTTPException(status_code=401, detail="Authentication required. Please log in.")  # Unauthorized
+async def google_profile(user_id: int = Depends(get_user_id_from_session)):
     return await auth_service.get_google_profile(user_id)
 
 
