@@ -195,3 +195,4 @@ gmail_api/credentials.json
 
 # custom
 test.ipynb
+agents/self_refine/log/*.txt

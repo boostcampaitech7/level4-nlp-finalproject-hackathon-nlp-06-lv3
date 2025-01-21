@@ -1,13 +1,15 @@
 # from datetime import datetime
 
+from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import SummaryAgent
+from agents import SelfRefineAgent, SummaryAgent
 from gmail_api import GmailService, Mail, MessageHandler
 
 
 def main():
     try:
+        load_dotenv()
         gmail_service = GmailService()
 
         # Fetch last N messages
@@ -29,27 +31,28 @@ def main():
                 mail_list.append(mail)
 
         # 개별 메일 요약, 분류
-        summay_agent = SummaryAgent("single")
-        classification_agent = SummaryAgent("classification")
-        summary_list = []
-        category_list = []
+        summay_agent = SummaryAgent("solar-pro", "single")
+        classification_agent = SummaryAgent("solar-pro", "classification")
+
+        result_list = []
 
         for mail in mail_list:
-            summary = summay_agent.summarize(mail)
-            summary_list.append(summary)
-            category = classification_agent.summarize(mail)
-            category_list.append(category)
+            summary = summay_agent.process(mail)
+            category = classification_agent.process(mail)
+            result_list.append({"mail": mail, "summary": summary, "category": category})
 
-            print(mail)
-            print(summary)
-            print(category)
-            print("=" * 40)
+            # print(mail)
+            # print(summary)
+            # print(category)
+            # print("=" * 40)
 
-        report_agent = SummaryAgent("final")
-        report = report_agent.summarize(summary_list, category_list)
+        report_agent = SummaryAgent("solar-pro", "final")
+        self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
+        report = self_refine_agent.process(result_list, report_agent)
         print("=============FINAL_REPORT================")
         print(report)
+
     except HttpError as error:
         print(f"An error occurred: {error}")
 
