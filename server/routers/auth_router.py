@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
 from server.dependencies.session import get_user_id_from_session
@@ -38,8 +38,5 @@ async def google_profile(user_id: int = Depends(get_user_id_from_session)):
 
 
 @auth_router.get("/google/callback")
-async def google_callback(request: Request):
-    code = request.query_params.get("code")
-    if not code:
-        raise HTTPException(status_code=400, detail="Code parameter is required.")
+async def google_callback(code: str):
     return {"code": code}
