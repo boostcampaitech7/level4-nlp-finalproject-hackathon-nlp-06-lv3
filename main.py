@@ -1,5 +1,6 @@
 # from datetime import datetime
 
+from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
 from agents import SelfRefineAgent, SummaryAgent
@@ -8,6 +9,7 @@ from gmail_api import GmailService, Mail, MessageHandler
 
 def main():
     try:
+        load_dotenv()
         gmail_service = GmailService()
 
         # Fetch last N messages

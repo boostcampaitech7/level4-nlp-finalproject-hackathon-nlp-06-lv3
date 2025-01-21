@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from dotenv import load_dotenv
-
 
 class BaseAgent(ABC):
     """
@@ -14,7 +12,6 @@ class BaseAgent(ABC):
     """
 
     def __init__(self, model: str, temperature=None, seed=None):
-        load_dotenv()
         self.chat = self.initialize_chat(model, temperature, seed)
 
     @abstractmethod
