@@ -1,4 +1,5 @@
 import { useSetRecoilState } from "recoil"
+import { useMutation } from "@tanstack/react-query"
 import axiosInstance from "@/utils/axiosInstance.ts"
 import { userIdState } from "@/states/auth.ts"
 import useToast from "@/hooks/useToast.ts"
@@ -6,6 +7,16 @@ import useToast from "@/hooks/useToast.ts"
 export default function GoogleLoginBtn() {
   const setUserId = useSetRecoilState(userIdState)
   const { addSuccessToast, addErrorToast } = useToast()
+
+  const { mutate: oAuthMutate } = useMutation({
+    mutationFn: (data: any) => {
+      return axiosInstance.post("/auth/google", data)
+    },
+    onSuccess: (data) => {
+      setUserId(data.data.user_id)
+      addSuccessToast("환영합니다!")
+    },
+  })
 
   const googleLogin = () => {
     const redirectUri = chrome.identity.getRedirectURL()
@@ -31,12 +42,9 @@ export default function GoogleLoginBtn() {
         addErrorToast("로그인에 실패했습니다.")
         return
       }
-      const uri = new URL(redirectedUri!)
+      const uri = new URL(redirectedUri)
       const code = uri.searchParams.get("code")
-      axiosInstance.post("/auth/google", { code, redirect_uri: redirectUri }).then((res) => {
-        setUserId(res.data.user_id)
-        addSuccessToast("환영합니다!")
-      })
+      oAuthMutate({ code, redirect_uri: redirectUri })
     })
   }
 

@@ -1,22 +1,23 @@
-import { useEffect } from "react"
-import { useRecoilValue, useSetRecoilState } from "recoil"
-import GoogleLoginBtn from "@/containers/auth/GoogleLogin.tsx"
-import axiosInstance from "@/utils/axiosInstance.ts"
-import { isLoginState, userIdState } from "@/states/auth.ts"
-import UserInfo from "@/containers/profile/UserInfo.tsx"
+import { Suspense } from "react"
+import { RecoilRoot } from "recoil"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import Content from "@/app/Content.tsx"
+import Toast from "@/components/toast/Toast.tsx"
 
 function App() {
-  const isLogin = useRecoilValue(isLoginState)
-  const setUserId = useSetRecoilState(userIdState)
-
-  useEffect(() => {
-    axiosInstance.get("/auth/is-login").then((res) => {
-      if (res.data.is_login) setUserId(res.data.user_id)
-    })
-  }, [])
+  const queryClient = new QueryClient()
 
   return (
-    <div className="flex flex-col w-full px-5 py-10 items-center">{isLogin ? <UserInfo /> : <GoogleLoginBtn />}</div>
+    <QueryClientProvider client={queryClient}>
+      <RecoilRoot>
+        <div className="flex flex-col w-full px-5 py-10 items-center">
+          <Suspense fallback={<div>Loading...</div>}>
+            <Content />
+          </Suspense>
+        </div>
+        <Toast />
+      </RecoilRoot>
+    </QueryClientProvider>
   )
 }
 
