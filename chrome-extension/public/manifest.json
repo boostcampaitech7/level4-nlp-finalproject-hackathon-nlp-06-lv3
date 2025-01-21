@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "Maeil Mail App",
+  "version": "1.0.0",
+  "description": "매일매일 메일을 요약해서 드립니다.",
+  "icons": {
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "permissions": [
+    "sidePanel",
+    "identity",
+    "cookies"
+  ],
+  "side_panel": {
+    "default_path": "index.html"
+  }
+}
