@@ -1,9 +1,11 @@
 import { useSetRecoilState } from "recoil"
 import axiosInstance from "@/utils/axiosInstance.ts"
 import { userIdState } from "@/states/auth.ts"
+import useToast from "@/hooks/useToast.ts"
 
 export default function GoogleLoginBtn() {
   const setUserId = useSetRecoilState(userIdState)
+  const { addSuccessToast, addErrorToast } = useToast()
 
   const googleLogin = () => {
     const redirectUri = chrome.identity.getRedirectURL()
@@ -26,12 +28,14 @@ export default function GoogleLoginBtn() {
 
     chrome.identity.launchWebAuthFlow({ interactive: true, url }, async (redirectedUri) => {
       if (chrome.runtime.lastError || !redirectedUri) {
+        addErrorToast("로그인에 실패했습니다.")
         return
       }
       const uri = new URL(redirectedUri!)
       const code = uri.searchParams.get("code")
       axiosInstance.post("/auth/google", { code, redirect_uri: redirectUri }).then((res) => {
         setUserId(res.data.user_id)
+        addSuccessToast("환영합니다!")
       })
     })
   }
