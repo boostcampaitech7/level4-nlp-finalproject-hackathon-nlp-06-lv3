@@ -3,7 +3,7 @@ import os
 
 from openai import OpenAI
 
-from agents import BaseAgent
+from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 
 from ..utils import REPORT_FEEDBACK_FORMAT, REPORT_REFINE_FORMAT, create_message_arg
@@ -73,6 +73,8 @@ class SelfRefineAgent(BaseAgent):
         self.logging("./agents/self_refine/log/init_report.txt", report)
 
         for i in range(max_iteration):
+            groundness = check_groundness(context=concated_mails, answer=report)
+
             feedback_reponse = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=create_message_arg(
@@ -85,9 +87,13 @@ class SelfRefineAgent(BaseAgent):
                 response_format=REPORT_FEEDBACK_FORMAT,
             )
             feedback = feedback_reponse.choices[0].message.content
-            self.logging(f"./agents/self_refine/log/self_refine_{i}_feedback.txt", feedback)
+            self.logging(
+                f"./agents/self_refine/log/self_refine_{i}_feedback.txt",
+                f"feedback: {feedback}\n groundness: {groundness}",
+            )
             feedback_dict = json.loads(feedback)
-            if feedback_dict["evaluation"] == "STOP":
+
+            if feedback_dict["evaluation"] == "STOP" and groundness == "grounded":
                 break
 
             report_response = self.client.chat.completions.create(

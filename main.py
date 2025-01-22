@@ -14,8 +14,8 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
-        yesterday = "2025/01/20"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
-        n = 1
+        yesterday = "2025/01/10"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
+        n = 10
 
         messages = gmail_service.get_today_n_messages(yesterday, n)
         mail_dict: dict[str, Mail] = {}
