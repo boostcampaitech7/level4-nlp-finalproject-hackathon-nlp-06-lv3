@@ -19,3 +19,7 @@ requests
 databases[aiomysql]
 cryptography
 itsdangerous
+
+# For Evaluating
+rouge-score==0.1.2
+bert-score==0.3.13
