@@ -108,3 +108,7 @@ class SelfRefineAgent(BaseAgent):
             self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", report)
 
         return report
+
+    @staticmethod
+    def calculate_token_cost():
+        pass

@@ -41,7 +41,7 @@ class BaseAgent(ABC):
         """
         pass
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def calculate_token_cost():
         pass

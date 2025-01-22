@@ -65,3 +65,7 @@ class SummaryAgent(BaseAgent):
         ]
         response = self.client.invoke(messages)
         return response.content
+
+    @staticmethod
+    def calculate_token_cost():
+        pass
