@@ -4,6 +4,7 @@ from typing import List, Optional
 class Mail:
     def __init__(
         self,
+        id: str,
         sender: str,
         recipients: List[str],
         subject: str,
@@ -11,16 +12,22 @@ class Mail:
         cc: Optional[List[str]] = None,
         attachments: Optional[List[str]] = None,
         date: Optional[str] = None,
+        summary: Optional[str] = None,
+        label: Optional[str] = None,
     ):
         """
+        :param id: 메일 ID
         :param sender: 이메일을 보낸 사람의 주소
         :param recipients: 이메일을 받는 사람(들)의 주소 목록
         :param subject: 이메일 제목
         :param body: 이메일 본문(텍스트 형태)
         :param cc: 참조할 사람(들)의 주소 목록
-        # 일단 제외:param attachments: 첨부 파일 경로나 파일 이름 등의 목록
+        :param attachments: 첨부 파일 경로나 파일 이름 등의 목록
         :param date: 이메일 수신 시간
+        :param summary: 이메일 요약문
+        :param label: 분류된 메일 종류
         """
+        self._id = id
         self.sender = sender
         self.recipients = recipients
         self.subject = subject
@@ -28,6 +35,8 @@ class Mail:
         self.cc = cc if cc is not None else []
         self.attachments = attachments if attachments is not None else []
         self.date = date
+        self._summary = summary
+        self._label = label
 
     def __str__(self) -> str:
         """
@@ -46,3 +55,27 @@ class Mail:
             f"Body:\n{self.body}\n"
             f"{attachments_text}"
         )
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    @property
+    def summary(self) -> Optional[str]:
+        return self._summary
+
+    @summary.setter
+    def summary(self, value: str) -> None:
+        if not value:
+            raise ValueError("Summary cannot be empty.")
+        self._summary = value
+
+    @property
+    def label(self) -> Optional[str]:
+        return self._label
+
+    @label.setter
+    def label(self, value: str) -> None:
+        if not value:
+            raise ValueError("Label cannot be empty.")
+        self._label = value
