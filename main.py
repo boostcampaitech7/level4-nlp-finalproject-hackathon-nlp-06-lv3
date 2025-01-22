@@ -1,4 +1,4 @@
-# from datetime import datetime
+# from datetime import datetime, timedelta
 
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
@@ -8,23 +8,31 @@ from gmail_api import GmailService, Mail, MessageHandler
 
 
 def main():
+    load_dotenv()
     try:
         load_dotenv()
         gmail_service = GmailService()
 
         # Fetch last N messages
-        today_date = "2025/01/14"  # datetime.today().strftime("%Y/%m/%d")
-        n = 100
-        messages = gmail_service.get_today_n_messages(today_date, n)
+        yesterday = "2025/01/20"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
+        n = 1
+
+        messages = gmail_service.get_today_n_messages(yesterday, n)
         mail_list = []
         for message_metadata in messages:
             message_id = message_metadata["id"]
             message = gmail_service.get_message_details(message_id)
-            body = MessageHandler.process_message(gmail_service.service, message)
+            body, attachments = MessageHandler.process_message(gmail_service.service, message)
             headers = MessageHandler.process_headers(message)
 
             mail = Mail(
-                headers["sender"], [headers["recipients"]], headers["subject"], body, [headers["cc"]], headers["date"]
+                headers["sender"],
+                [headers["recipients"]],
+                headers["subject"],
+                body,
+                [headers["cc"]],
+                attachments,
+                headers["date"],
             )
             # 룰베이스 분류
             if "(광고)" not in mail.subject:
