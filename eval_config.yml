@@ -1,0 +1,11 @@
+# CSV 파일 경로
+csv_file: "example_data.csv"
+
+# 계산할 메트릭 목록
+metrics:
+  - rouge
+  - bert
+  # - g-eval
+
+# BERTScore에서 사용할 모델
+bert_model: "distilbert-base-uncased"
