@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "@react-oauth/google": "^0.12.1",
+    "@tanstack/react-query": "^5.64.2",
     "@vitejs/plugin-react": "^4.2.1",
     "axios": "^1.7.9",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.4.0",
+    "recoil": "^0.7.7",
     "vite": "^5.0.12"
   },
   "devDependencies": {
