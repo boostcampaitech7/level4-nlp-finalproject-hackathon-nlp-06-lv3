@@ -11,7 +11,10 @@ REPORT_FEEDBACK_FORMAT = {
             "properties": {
                 "evaluation": {
                     "type": "string",
-                    "description": "Evaluation of the final report. Use 'STOP' if no issues are found, otherwise provide detailed feedback.",
+                    "description": (
+                        "Evaluation of the final report."
+                        "Use 'STOP' if no issues are found, otherwise provide detailed feedback."
+                    ),
                 },
                 "issues": {
                     "type": "array",
