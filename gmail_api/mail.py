@@ -16,16 +16,17 @@ class Mail:
         label: Optional[str] = None,
     ):
         """
-        :param id: 메일 ID
-        :param sender: 이메일을 보낸 사람의 주소
-        :param recipients: 이메일을 받는 사람(들)의 주소 목록
-        :param subject: 이메일 제목
-        :param body: 이메일 본문(텍스트 형태)
-        :param cc: 참조할 사람(들)의 주소 목록
-        :param attachments: 첨부 파일 경로나 파일 이름 등의 목록
-        :param date: 이메일 수신 시간
-        :param summary: 이메일 요약문
-        :param label: 분류된 메일 종류
+        Args:
+            id (str): 메일 ID
+            sender (str): 이메일을 보낸 사람의 주소
+            recipients (List[str]): 이메일을 받는 사람(들)의 주소 목록
+            subject (str): 이메일 제목
+            body (str): 이메일 본문(텍스트 형태)
+            cc (Optional[List[str]], optional): 참조할 사람(들)의 주소 목록. 기본 값은 None
+            attachments (Optional[List[str]], optional): 첨부 파일 경로나 파일 이름 등의 목록. 기본 값은 None.
+            date (Optional[str], optional): 이메일 수신 시간. 기본 값은 None.
+            summary (Optional[str], optional): 이메일 요약문. 기본 값은 None.
+            label (Optional[str], optional): 분류된 메일 종류. 기본 값은 None.
         """
         self._id = id
         self.sender = sender

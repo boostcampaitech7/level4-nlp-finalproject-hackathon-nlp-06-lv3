@@ -52,20 +52,20 @@ class SelfRefineAgent(BaseAgent):
             file.write(content)
         print(f"{path} 로그 파일이 생성되었습니다.")
 
-    def process(self, data: Mail | list[dict], model: BaseAgent, max_iteration: int = 3):
+    def process(self, data: Mail | dict[str, Mail], model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 
         Args:
-            data (Mail | list[dict]): 입력 데이터.
+            data (Mail | dict[str, Mail]): 입력 데이터.
             model (BaseAgent): 데이터를 처리하는 모델(ex. SummaryAgent).
             max_iteration (int): 최대 Self-refine 반복 횟수.
 
         Return:
             str: Self-refine을 거친 최종 결과물.
         """
-        if isinstance(data, list):
-            concated_mails = "\n".join([f'분류: {item["category"]} 요약: {item["summary"]}' for item in data])
+        if isinstance(data, dict):
+            concated_mails = "\n".join([f"분류: {item.label} 요약: {item.summary}" for _, item in data.items()])
         else:
             concated_mails = str(data)
         # 초기 요약
