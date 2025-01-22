@@ -20,8 +20,8 @@ def load_config(config_path):
 def calculate_rouge(gold_texts, generated_texts):
     """
     gold_texts, generated_texts: 길이 N 리스트
-    각 쌍에 대해 ROUGE-1, ROUGE-2, ROUGE-L 계산 →
-    [{"rouge1":(p,r,f), "rouge2":(p,r,f), "rougeL":(p,r,f)}, ...] 형태 반환
+    각 쌍에 대해 ROUGE-1, ROUGE-2, ROUGE-L 계산
+    return 형태 : [{"rouge1":(p,r,f), "rouge2":(p,r,f), "rougeL":(p,r,f)}, ...]
     """
     scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
     results = []
@@ -50,8 +50,9 @@ def calculate_bert(gold_texts, generated_texts, model_type="distilbert-base-unca
 
 def calculate_g_eval(source_texts, generated_texts):
     """
-    G-EVAL(참조 없이 source + summarized) 평가
-    실제론 GPT/LLM API 호출을 해야 하지만, 예시에선 랜덤 점수만 반환
+    G-EVAL(gold 없이 source, summarized) 평가
+    TODO: G-EVAL 방식으로 평가하여 점수 출력하는 코드 구현
+    지금은 임시로 랜덤 점수가 출력
     """
     scores = []
     for src, gen in zip(source_texts, generated_texts):
@@ -73,9 +74,6 @@ def main():
 
     if not csv_file:
         raise ValueError("config.yml에 csv_file 경로가 지정되지 않았습니다.")
-
-    if "all" in metrics:
-        metrics = ["rouge", "bert", "g-eval"]
 
     # 2) CSV 로드
     source_texts = []
@@ -130,6 +128,7 @@ def main():
             bp, br, bf = results["bert"][i]  # (p, r, f)
             print(f"[BERT] P:{bp:.4f}, R:{br:.4f}, F:{bf:.4f}")
         # G-EVAL
+        # 임시로 랜덤 점수를 출력하게 설정해뒀습니다.
         if "g-eval" in results:
             gscore = results["g-eval"][i]  # float
             print(f"[G-EVAL] score={gscore:.4f}")
@@ -173,7 +172,7 @@ def main():
         print(f"  ROUGE-2  P: {sums['r2_p']/N:.4f}, R: {sums['r2_r']/N:.4f}, F1: {sums['r2_f']/N:.4f}")
         print(f"  ROUGE-L  P: {sums['rl_p']/N:.4f}, R: {sums['rl_r']/N:.4f}, F1: {sums['rl_f']/N:.4f}")
 
-    # BERT 평균
+    # BERTScore 평균
     if "bert" in results:
         bert_list = results["bert"]
         p_sum = r_sum = f_sum = 0.0
