@@ -17,6 +17,24 @@ def load_config(config_path):
     return config
 
 
+def load_data(csv_file):
+    """
+    CSV 파일에서 source, summarized, gold 열을 읽어 리스트로 반환
+    """
+    source_texts = []
+    summarized_texts = []
+    gold_texts = []
+
+    with open(csv_file, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            source_texts.append(row["source"])
+            summarized_texts.append(row["summarized"])
+            gold_texts.append(row["gold"])
+
+    return source_texts, summarized_texts, gold_texts
+
+
 def calculate_rouge(gold_texts, generated_texts):
     """
     gold_texts, generated_texts: 길이 N 리스트
@@ -28,9 +46,21 @@ def calculate_rouge(gold_texts, generated_texts):
     for gold, gen in zip(gold_texts, generated_texts):
         scores = scorer.score(gold, gen)
         item = {
-            "rouge1": (scores["rouge1"].precision, scores["rouge1"].recall, scores["rouge1"].fmeasure),
-            "rouge2": (scores["rouge2"].precision, scores["rouge2"].recall, scores["rouge2"].fmeasure),
-            "rougeL": (scores["rougeL"].precision, scores["rougeL"].recall, scores["rougeL"].fmeasure),
+            "rouge1": (
+                scores["rouge1"].precision,
+                scores["rouge1"].recall,
+                scores["rouge1"].fmeasure,
+            ),
+            "rouge2": (
+                scores["rouge2"].precision,
+                scores["rouge2"].recall,
+                scores["rouge2"].fmeasure,
+            ),
+            "rougeL": (
+                scores["rougeL"].precision,
+                scores["rougeL"].recall,
+                scores["rougeL"].fmeasure,
+            ),
         }
         results.append(item)
     return results
@@ -60,42 +90,28 @@ def calculate_g_eval(source_texts, generated_texts):
     return scores  # 길이 N
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
-    args = parser.parse_args()
+def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
+    """
+    메트릭 종류에 따라 데이터 길이(source, gold 등)를 간단히 체크
+    """
+    n_summaries = len(summarized_texts)
 
-    # 1) YAML 설정 로드
-    config = load_config(args.config)
-
-    csv_file = config.get("csv_file", None)
-    metrics = config.get("metrics", [])
-    bert_model_type = config.get("bert_model", "distilbert-base-uncased")
-
-    if not csv_file:
-        raise ValueError("config.yml에 csv_file 경로가 지정되지 않았습니다.")
-
-    # 2) CSV 로드
-    source_texts = []
-    summarized_texts = []
-    gold_texts = []
-    with open(csv_file, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            source_texts.append(row["source"])
-            summarized_texts.append(row["summarized"])
-            gold_texts.append(row["gold"])
-
-    N = len(summarized_texts)
     if "rouge" in metrics or "bert" in metrics:
-        if len(gold_texts) != N:
+        if len(gold_texts) != n_summaries:
             raise ValueError("CSV 내 gold 열과 summarized 열의 줄 수가 다릅니다.")
     if "g-eval" in metrics:
-        if len(source_texts) != N:
+        if len(source_texts) != n_summaries:
             raise ValueError("CSV 내 source 열과 summarized 열의 줄 수가 다릅니다.")
 
-    # 3) 메트릭 계산
+
+def compute_metrics(config, source_texts, summarized_texts, gold_texts):
+    """
+    설정(config)에 따라 ROUGE / BERT / G-EVAL 계산
+    """
+    metrics = config.get("metrics", [])
+    bert_model_type = config.get("bert_model", "distilbert-base-uncased")
     results = {}
+
     if "rouge" in metrics:
         rouge_res = calculate_rouge(gold_texts, summarized_texts)
         results["rouge"] = rouge_res
@@ -108,33 +124,44 @@ def main():
         geval_res = calculate_g_eval(source_texts, summarized_texts)
         results["g-eval"] = geval_res
 
-    # 4) 결과 출력
-    print("===== Evaluation Results =====")
+    return results
 
-    # --- (A) 샘플별 Per-Item Score 출력 ---
-    for i in range(N):
+
+def print_per_item_scores(results, source_texts, summarized_texts, gold_texts):
+    """
+    각 샘플별(아이템별) 스코어를 출력
+    """
+    n_items = len(summarized_texts)
+    for i in range(n_items):
         print(f"\n--- Sample {i+1} ---")
+
         # ROUGE
         if "rouge" in results:
-            ritem = results["rouge"][i]  # 예: {"rouge1":(p,r,f), "rouge2":..., "rougeL":...}
+            ritem = results["rouge"][i]
             r1p, r1r, r1f = ritem["rouge1"]
             r2p, r2r, r2f = ritem["rouge2"]
             rlp, rlr, rlf = ritem["rougeL"]
             print(
-                f"[ROUGE] R1=(P:{r1p:.4f},R:{r1r:.4f},F:{r1f:.4f}),  R2=(P:{r2p:.4f},R:{r2r:.4f},F:{r2f:.4f}),  RL=(P:{rlp:.4f},R:{rlr:.4f},F:{rlf:.4f})"
+                f"[ROUGE] R1=(P:{r1p:.4f},R:{r1r:.4f},F:{r1f:.4f}), "
+                f"R2=(P:{r2p:.4f},R:{r2r:.4f},F:{r2f:.4f}), "
+                f"RL=(P:{rlp:.4f},R:{rlr:.4f},F:{rlf:.4f})"
             )
+
         # BERT
         if "bert" in results:
-            bp, br, bf = results["bert"][i]  # (p, r, f)
+            bp, br, bf = results["bert"][i]
             print(f"[BERT] P:{bp:.4f}, R:{br:.4f}, F:{bf:.4f}")
+
         # G-EVAL
-        # 임시로 랜덤 점수를 출력하게 설정해뒀습니다.
         if "g-eval" in results:
-            gscore = results["g-eval"][i]  # float
+            gscore = results["g-eval"][i]
             print(f"[G-EVAL] score={gscore:.4f}")
 
-    # --- (B) 전체 평균 ---
-    # 원한다면, 기존처럼 전체 평균도 계산/출력할 수 있음
+
+def print_averages(results, n_items):
+    """
+    전체 평균 스코어(ROUGE/BERT/G-EVAL)를 출력
+    """
     print("\n===== Averages =====")
 
     # ROUGE 평균
@@ -168,9 +195,21 @@ def main():
             sums["rl_f"] += f
 
         print("\n[ROUGE Avg]")
-        print(f"  ROUGE-1  P: {sums['r1_p']/N:.4f}, R: {sums['r1_r']/N:.4f}, F1: {sums['r1_f']/N:.4f}")
-        print(f"  ROUGE-2  P: {sums['r2_p']/N:.4f}, R: {sums['r2_r']/N:.4f}, F1: {sums['r2_f']/N:.4f}")
-        print(f"  ROUGE-L  P: {sums['rl_p']/N:.4f}, R: {sums['rl_r']/N:.4f}, F1: {sums['rl_f']/N:.4f}")
+        print(
+            f"  ROUGE-1  P: {sums['r1_p']/n_items:.4f}, "
+            f"R: {sums['r1_r']/n_items:.4f}, "
+            f"F1: {sums['r1_f']/n_items:.4f}"
+        )
+        print(
+            f"  ROUGE-2  P: {sums['r2_p']/n_items:.4f}, "
+            f"R: {sums['r2_r']/n_items:.4f}, "
+            f"F1: {sums['r2_f']/n_items:.4f}"
+        )
+        print(
+            f"  ROUGE-L  P: {sums['rl_p']/n_items:.4f}, "
+            f"R: {sums['rl_r']/n_items:.4f}, "
+            f"F1: {sums['rl_f']/n_items:.4f}"
+        )
 
     # BERTScore 평균
     if "bert" in results:
@@ -181,14 +220,42 @@ def main():
             r_sum += r
             f_sum += f
         print("\n[BERT Avg]")
-        print(f"  Precision: {p_sum/N:.4f}, Recall: {r_sum/N:.4f}, F1: {f_sum/N:.4f}")
+        print(f"  Precision: {p_sum/n_items:.4f}, " f"Recall: {r_sum/n_items:.4f}, " f"F1: {f_sum/n_items:.4f}")
 
     # G-EVAL 평균
     if "g-eval" in results:
         geval_list = results["g-eval"]
-        avg_score = sum(geval_list) / N
+        avg_score = sum(geval_list) / n_items
         print("\n[G-EVAL Avg]")
         print(f"  Score: {avg_score:.4f}")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
+    args = parser.parse_args()
+
+    # 1) YAML 설정 로드
+    config = load_config(args.config)
+    csv_file = config.get("csv_file", None)
+    metrics = config.get("metrics", [])
+
+    if not csv_file:
+        raise ValueError("config.yml에 csv_file 경로가 지정되지 않았습니다.")
+
+    # 2) CSV 로드
+    source_texts, summarized_texts, gold_texts = load_data(csv_file)
+
+    # 3) 길이 검사
+    validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts)
+
+    # 4) 메트릭 계산
+    results = compute_metrics(config, source_texts, summarized_texts, gold_texts)
+
+    # 5) 결과 출력
+    print("===== Evaluation Results =====")
+    print_per_item_scores(results, source_texts, summarized_texts, gold_texts)
+    print_averages(results, len(summarized_texts))
 
 
 if __name__ == "__main__":
