@@ -1,8 +1,6 @@
-"use client"
-
-import { ToastData } from "@/types/toast"
 import React, { useEffect, useState } from "react"
 import { useSetRecoilState } from "recoil"
+import { ToastData } from "@/types/toast"
 import toastState from "@/states/toastState"
 
 interface Props {

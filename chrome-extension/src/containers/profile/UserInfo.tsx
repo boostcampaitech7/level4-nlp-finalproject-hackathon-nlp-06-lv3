@@ -1,9 +1,9 @@
 import { useSetRecoilState } from "recoil"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import axiosInstance from "@/utils/axiosInstance.ts"
-import { userIdState } from "@/states/auth.ts"
-import useToast from "@/hooks/useToast.ts"
-import useUserInfoQuery from "@/hooks/useUserInfoQuery.ts"
+import axiosInstance from "@/utils/axiosInstance"
+import { userIdState } from "@/states/auth"
+import useToast from "@/hooks/useToast"
+import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 
 function UserInfo() {
   const setUserId = useSetRecoilState(userIdState)

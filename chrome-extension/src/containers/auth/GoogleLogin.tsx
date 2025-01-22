@@ -1,8 +1,8 @@
 import { useSetRecoilState } from "recoil"
 import { useMutation } from "@tanstack/react-query"
-import axiosInstance from "@/utils/axiosInstance.ts"
-import { userIdState } from "@/states/auth.ts"
-import useToast from "@/hooks/useToast.ts"
+import axiosInstance from "@/utils/axiosInstance"
+import { userIdState } from "@/states/auth"
+import useToast from "@/hooks/useToast"
 
 export default function GoogleLoginBtn() {
   const setUserId = useSetRecoilState(userIdState)

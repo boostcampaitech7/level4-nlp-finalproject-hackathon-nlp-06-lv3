@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 import { RecoilRoot } from "recoil"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import Content from "@/app/Content.tsx"
-import Toast from "@/components/toast/Toast.tsx"
+import Content from "@/app/Content"
+import Toast from "@/components/toast/Toast"
 
 function App() {
   const queryClient = new QueryClient()
