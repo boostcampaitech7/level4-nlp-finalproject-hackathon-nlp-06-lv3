@@ -1,12 +1,15 @@
-from rouge_score import rouge_scorer
 import argparse
+
 import torch
 from bert_score import score
+from rouge_score import rouge_scorer
+
 
 # Metrics Calculator Base Class
 class MetricsCalculator:
     def calculate(self, gold, generated):
         raise NotImplementedError("Subclasses should implement this method")
+
 
 # ROUGE Calculator Class
 class RougeCalculator(MetricsCalculator):
@@ -19,28 +22,29 @@ class RougeCalculator(MetricsCalculator):
             "ROUGE-1": {
                 "precision": scores["rouge1"].precision,
                 "recall": scores["rouge1"].recall,
-                "f1": scores["rouge1"].fmeasure
+                "f1": scores["rouge1"].fmeasure,
             },
             "ROUGE-2": {
                 "precision": scores["rouge2"].precision,
                 "recall": scores["rouge2"].recall,
-                "f1": scores["rouge2"].fmeasure
+                "f1": scores["rouge2"].fmeasure,
             },
             "ROUGE-L": {
                 "precision": scores["rougeL"].precision,
                 "recall": scores["rougeL"].recall,
-                "f1": scores["rougeL"].fmeasure
-            }
+                "f1": scores["rougeL"].fmeasure,
+            },
         }
 
+
 class BERTScoreCalculator(MetricsCalculator):
-    def __init__(self, model_type='distilbert-base-uncased', device=None):
+    def __init__(self, model_type="distilbert-base-uncased", device=None):
         self.model_type = model_type
         if device is None:
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
         else:
             self.device = device
-    
+
     def calculate(self, gold, generated):
         """
         gold: 정답 요약 텍스트 (문자열)
@@ -50,18 +54,9 @@ class BERTScoreCalculator(MetricsCalculator):
         여기서는 단일 pair(gold, generated)에 대해서만 호출한다고 가정하고 작성합니다.
         """
         # bert_score.score 함수는 리스트를 인자로 받으므로, 단일 문장도 리스트로 감싸줍니다.
-        P, R, F1 = score(
-            cands=[generated], 
-            refs=[gold], 
-            model_type=self.model_type, 
-            device=self.device
-        )
+        P, R, F1 = score(cands=[generated], refs=[gold], model_type=self.model_type, device=self.device)
         # 반환된 P, R, F1은 텐서이므로, item()으로 값을 뽑고 float로 변환합니다.
-        return {
-            "precision": float(P[0]),
-            "recall": float(R[0]),
-            "f1": float(F1[0])
-        }
+        return {"precision": float(P[0]), "recall": float(R[0]), "f1": float(F1[0])}
 
 
 # Metrics Manager Class
@@ -79,6 +74,7 @@ class MetricsManager:
         for name, calculator in self.calculators.items():
             results[name] = calculator.calculate(gold, generated)
         return results
+
 
 # Main function to parse inputs and calculate metrics
 def main():
@@ -135,11 +131,7 @@ def main():
             precision = sum(s["precision"] for s in score_list) / len(score_list)
             recall = sum(s["recall"] for s in score_list) / len(score_list)
             f1 = sum(s["f1"] for s in score_list) / len(score_list)
-            avg_scores[metric] = {
-                "precision": precision,
-                "recall": recall,
-                "f1": f1
-            }
+            avg_scores[metric] = {"precision": precision, "recall": recall, "f1": f1}
         else:
             # 혹은 다른 메트릭이 추가되었을 경우에 대비
             pass
@@ -150,9 +142,12 @@ def main():
         print(f"\n{metric}:")
         if metric == "ROUGE":
             for key, values in scores.items():
-                print(f"  {key} - Precision: {values['precision']:.4f}, Recall: {values['recall']:.4f}, F1: {values['f1']:.4f}")
+                print(
+                    f"  {key} - Precision: {values['precision']:.4f}, Recall: {values['recall']:.4f}, F1: {values['f1']:.4f}"
+                )
         elif metric == "BERTScore":
             print(f"  Precision: {scores['precision']:.4f}, Recall: {scores['recall']:.4f}, F1: {scores['f1']:.4f}")
-            
+
+
 if __name__ == "__main__":
     main()
