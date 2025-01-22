@@ -63,5 +63,5 @@ class SummaryAgent(BaseAgent):
             SystemMessage(content=template),
             HumanMessage(content=concated_mails),
         ]
-        response = self.chat.invoke(messages)
+        response = self.client.invoke(messages)
         return response.content

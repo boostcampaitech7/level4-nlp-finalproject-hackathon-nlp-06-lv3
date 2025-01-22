@@ -12,7 +12,7 @@ class BaseAgent(ABC):
     """
 
     def __init__(self, model: str, temperature=None, seed=None):
-        self.chat = self.initialize_chat(model, temperature, seed)
+        self.client = self.initialize_chat(model, temperature, seed)
 
     @abstractmethod
     def initialize_chat(self, model: str, temperature=None, seed=None):
