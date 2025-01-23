@@ -70,7 +70,13 @@ def calculate_bert(gold_texts, generated_texts, model_type="distilbert-base-unca
     """
     BERTScore를 한 번에 계산 → 각 샘플별 (p, r, f) 튜플 리스트로 반환
     """
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if torch.backends.mps.is_available():
+        device = "mps"
+    elif torch.cuda.is_available():
+        device = "cuda"
+    else:
+        device = "cpu"
+
     P, R, F1 = bert_score(cands=generated_texts, refs=gold_texts, model_type=model_type, device=device)
     results = []
     for i in range(len(gold_texts)):
