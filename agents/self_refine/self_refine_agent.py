@@ -64,10 +64,8 @@ class SelfRefineAgent(BaseAgent):
         """
         # 초기 요약 및 로그 생성
         summarization = model.process(data)
-        refine_target = (
-            summarization["summary"] if self.target_range == "single" else generate_plain_text_report(summarization)
-        )
-        self.logging("./agents/self_refine/log/init_report.txt", refine_target)
+        refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
+        self.logging("./agents/self_refine/log/init_report.txt", generate_plain_text_report(refine_target))
 
         # 데이터 문자열로 전처리
         if self.target_range == "single":

@@ -3,8 +3,14 @@
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, generate_plain_text_report
+from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent
 from gmail_api import GmailService, Mail, MessageHandler
+
+CATEGORY_MAPPING = {
+    "job_related": "업무 관련",
+    "admin_related": "행정 관련",
+    "announcement": "사내 소식",
+}
 
 
 def main():
@@ -49,17 +55,23 @@ def main():
             mail_dict[mail_id].summary = summary["summary"]
             mail_dict[mail_id].label = category
 
-            print(mail)
-            print(summary)
             print(category)
+            print(summary)
             print("=" * 40)
 
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-        report = self_refine_agent.process(mail_dict, report_agent)
+        report: dict = self_refine_agent.process(mail_dict, report_agent)
+
         print("=============FINAL_REPORT================")
-        print(generate_plain_text_report(report))
+        for label, mail_reports in report.items():
+            print(CATEGORY_MAPPING[label])
+            for mail_report in mail_reports:
+                mail_subject = mail_dict[mail_report["mail_id"]].subject
+                print(f"메일 subject: {mail_subject}")
+                print(f"리포트: {mail_report['report']}")
+            print()
 
     except HttpError as error:
         print(f"An error occurred: {error}")
