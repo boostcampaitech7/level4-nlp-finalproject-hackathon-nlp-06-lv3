@@ -9,16 +9,16 @@ from gmail_api import GmailService, Mail, MessageHandler
 
 def main():
     load_dotenv()
+
     try:
-        load_dotenv()
         gmail_service = GmailService()
 
         # Fetch last N messages
-        yesterday = "2025/01/20"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
-        n = 1
+        yesterday = "2025/01/10"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
+        n = 10
 
         messages = gmail_service.get_today_n_messages(yesterday, n)
-        mail_list = []
+        mail_dict: dict[str, Mail] = {}
         for message_metadata in messages:
             message_id = message_metadata["id"]
             message = gmail_service.get_message_details(message_id)
@@ -26,6 +26,7 @@ def main():
             headers = MessageHandler.process_headers(message)
 
             mail = Mail(
+                message_id,
                 headers["sender"],
                 [headers["recipients"]],
                 headers["subject"],
@@ -36,18 +37,17 @@ def main():
             )
             # 룰베이스 분류
             if "(광고)" not in mail.subject:
-                mail_list.append(mail)
+                mail_dict[message_id] = mail
 
         # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("solar-pro", "single")
         classification_agent = SummaryAgent("solar-pro", "classification")
 
-        result_list = []
-
-        for mail in mail_list:
+        for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
             category = classification_agent.process(mail)
-            result_list.append({"mail": mail, "summary": summary, "category": category})
+            mail_dict[mail_id].summary = summary
+            mail_dict[mail_id].label = category
 
             # print(mail)
             # print(summary)
@@ -57,7 +57,7 @@ def main():
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-        report = self_refine_agent.process(result_list, report_agent)
+        report = self_refine_agent.process(mail_dict, report_agent)
         print("=============FINAL_REPORT================")
         print(report)
 

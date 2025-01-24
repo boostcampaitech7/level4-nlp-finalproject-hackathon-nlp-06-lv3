@@ -12,7 +12,8 @@ class BaseAgent(ABC):
     """
 
     def __init__(self, model: str, temperature=None, seed=None):
-        self.chat = self.initialize_chat(model, temperature, seed)
+        self.client = self.initialize_chat(model, temperature, seed)
+        self.token_monitor = None
 
     @abstractmethod
     def initialize_chat(self, model: str, temperature=None, seed=None):
@@ -38,4 +39,9 @@ class BaseAgent(ABC):
         Returns:
             처리 결과.
         """
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def calculate_token_cost():
         pass

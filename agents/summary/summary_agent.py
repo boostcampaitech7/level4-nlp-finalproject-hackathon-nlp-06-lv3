@@ -3,7 +3,7 @@ import os
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_upstage import ChatUpstage
 
-from agents import BaseAgent
+from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 from prompt import load_template
 
@@ -42,7 +42,7 @@ class SummaryAgent(BaseAgent):
         """
         return ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model=model, temperature=temperature, seed=seed)
 
-    def process(self, mail: list | Mail, category=None) -> str:
+    def process(self, mail: list | Mail, category=None, max_iteration: int = 3) -> str:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 문자열 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 ChatUpstage 모델에 요약 요청을 보냅니다.
@@ -63,5 +63,16 @@ class SummaryAgent(BaseAgent):
             SystemMessage(content=template),
             HumanMessage(content=concated_mails),
         ]
-        response = self.chat.invoke(messages)
+
+        groundness = "grounded"
+        for i in range(max_iteration):
+            response = self.client.invoke(messages)
+            groundness = check_groundness(context=concated_mails, answer=response.content)
+            print(f"{i}번째 사실 확인: {groundness}")
+            if groundness == "grounded":
+                break
         return response.content
+
+    @staticmethod
+    def calculate_token_cost():
+        pass
