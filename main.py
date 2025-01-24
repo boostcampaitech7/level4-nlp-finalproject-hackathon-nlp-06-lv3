@@ -41,18 +41,18 @@ def main():
 
         # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("solar-pro", "single")
-        classification_agent = SummaryAgent("solar-pro", "classification")
+        # classification_agent = SummaryAgent("solar-pro", "classification")
 
         for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
-            category = classification_agent.process(mail)
+            # category = classification_agent.process(mail)
             mail_dict[mail_id].summary = summary
-            mail_dict[mail_id].label = category
+            # mail_dict[mail_id].label = category
 
-            # print(mail)
-            # print(summary)
+            print(mail)
+            print(summary)
             # print(category)
-            # print("=" * 40)
+            print("=" * 40)
 
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")

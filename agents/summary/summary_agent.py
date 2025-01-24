@@ -1,11 +1,12 @@
+import json
 import os
 
-from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_upstage import ChatUpstage
+from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
 from gmail_api import Mail
-from prompt import load_template
+
+from ..utils import REPORT_FORMAT, SUMMARY_FORMAT, build_messages, generate_plain_text_report
 
 
 class SummaryAgent(BaseAgent):
@@ -26,11 +27,19 @@ class SummaryAgent(BaseAgent):
 
     def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
         super().__init__(model=model_name, temperature=temperature, seed=seed)
+
+        # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
+        if summary_type != "single" and summary_type != "final":
+            raise ValueError(
+                f'summary_type: {summary_type}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
+            )
+
+        # 추후 프롬프트 템플릿 로드 동작을 위해 string으로 받아 attribute로 저장합니다.
         self.summary_type = summary_type
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
-        ChatUpstage 모델을 초기화합니다.
+        요약을 위해 OpenAI 모델 객체를 초기화합니다.
 
         Args:
             model (str): 사용할 모델 이름.
@@ -38,40 +47,66 @@ class SummaryAgent(BaseAgent):
             seed (int, optional): 결과 재현성을 위한 시드 값.
 
         Returns:
-            ChatUpstage: 초기화된 ChatUpstage 객체.
+            OpenAI: 초기화된 Solar 모델 객체.
         """
-        return ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model=model, temperature=temperature, seed=seed)
+        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 
-    def process(self, mail: list | Mail, category=None, max_iteration: int = 3) -> str:
+    def process(self, mail: dict[Mail] | Mail, max_iteration: int = 3) -> dict:
         """
-        주어진 메일(또는 메일 리스트)을 요약하여 문자열 형태로 반환합니다.
-        내부적으로는 미리 정의된 템플릿과 결합하여 ChatUpstage 모델에 요약 요청을 보냅니다.
+        주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
+        내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
 
         Args:
-            mail (list | Mail): 요약할 메일 객체(Mail) 또는 문자열 리스트입니다.
+            mail (dict[Mail] | Mail): 요약할 메일 객체(Mail) 또는 문자열 리스트입니다.
+            max_iteration (int): 최대 Groundness Check 횟수입니다.
 
         Returns:
-            str: 요약된 결과 문자열입니다.
+            dict: 요약된 결과 JSON입니다.
         """
-        template = load_template("summary", f"{self.summary_type}.txt")
-        if isinstance(mail, list):
-            concated_mails = "\n".join(f"mail: {mail}, category: {category}")
+        # self.summary_type에 따라 데이터 유효 검증 로직
+        if (self.summary_type == "single" and not isinstance(mail, Mail)) or (
+            self.summary_type == "final" and not isinstance(mail, dict)
+        ):
+            raise ValueError(f"{self.summary_type}.process의 mail로 잘못된 타입의 데이터가 들어왔습니다.")
+
+        # 출력 포맷 지정
+        response_format = SUMMARY_FORMAT if self.summary_type == "single" else REPORT_FORMAT
+
+        # LLM 입력을 위한 문자열 처리
+        input_mail_data = ""
+        if self.summary_type == "single":
+            input_mail_data = str(mail)
         else:
-            concated_mails = str(mail)
+            input_mail_data = "\n".join(
+                [f"분류: {single.label} 요약문: {single.summary}" for _, single in mail.items()]
+            )
 
-        messages = [
-            SystemMessage(content=template),
-            HumanMessage(content=concated_mails),
-        ]
-
+        # Groundness Check를 위한 state flag 변수 선언 (grounded, notGrounded, notSure로 state 3개)
         groundness = "grounded"
+
+        # max_iteration 번 Groundness Check 수행
         for i in range(max_iteration):
-            response = self.client.invoke(messages)
-            groundness = check_groundness(context=concated_mails, answer=response.content)
-            print(f"{i}번째 사실 확인: {groundness}")
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=build_messages(  # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
+                    template_type="summary", target_range=self.summary_type, action="summary", mail=input_mail_data
+                ),
+                response_format=response_format,
+            )
+            summarized_content = json.loads(response.choices[0].message.content)
+
+            # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
+            if self.summary_type == "single":
+                result = summarized_content["summary"]
+            else:
+                result = generate_plain_text_report(summarized_content["revision"])
+
+            # Groundness Check
+            groundness = check_groundness(context=input_mail_data, answer=result)
+            print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
-        return response.content
+        return summarized_content
 
     @staticmethod
     def calculate_token_cost():

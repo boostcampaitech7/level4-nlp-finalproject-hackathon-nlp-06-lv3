@@ -6,7 +6,7 @@ from openai import OpenAI
 from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 
-from ..utils import REPORT_FEEDBACK_FORMAT, REPORT_REFINE_FORMAT, create_message_arg
+from ..utils import FEEDBACK_FORMAT, REFINE_FORMAT, build_messages
 
 
 class SelfRefineAgent(BaseAgent):
@@ -24,12 +24,10 @@ class SelfRefineAgent(BaseAgent):
     def __init__(self, model_name: str, target_range: str, temperature=None, seed=None):
         super().__init__(model=model_name, temperature=temperature, seed=seed)
         if target_range != "single" and target_range != "final":
-            raise KeyError(
+            raise ValueError(
                 f'target_range: {target_range}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
             )
-        self.model_name = model_name
         self.target_range = target_range
-        self.temperature = temperature
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
@@ -69,24 +67,24 @@ class SelfRefineAgent(BaseAgent):
         else:
             concated_mails = str(data)
         # 초기 요약
-        report = model.process(data)
-        self.logging("./agents/self_refine/log/init_report.txt", report)
+        summarization = model.process(data)
+        self.logging("./agents/self_refine/log/init_report.txt", summarization)
 
         for i in range(max_iteration):
-            groundness = check_groundness(context=concated_mails, answer=report)
+            groundness = check_groundness(context=concated_mails, answer=summarization)
 
-            feedback_reponse = self.client.chat.completions.create(
+            feedback_response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=create_message_arg(
+                messages=build_messages(
                     template_type="self_refine",
-                    target_range="final",
+                    target_range=self.target_range,
                     action="feedback",
                     mails=concated_mails,
-                    report=report,
+                    report=summarization,
                 ),
-                response_format=REPORT_FEEDBACK_FORMAT,
+                response_format=FEEDBACK_FORMAT,
             )
-            feedback = feedback_reponse.choices[0].message.content
+            feedback = feedback_response.choices[0].message.content
             self.logging(
                 f"./agents/self_refine/log/self_refine_{i}_feedback.txt",
                 f"feedback: {feedback}\n groundness: {groundness}",
@@ -96,24 +94,24 @@ class SelfRefineAgent(BaseAgent):
             if feedback_dict["evaluation"] == "STOP" and groundness == "grounded":
                 break
 
-            report_response = self.client.chat.completions.create(
+            revision_response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=create_message_arg(
+                messages=build_messages(
                     template_type="self_refine",
                     target_range="final",
                     action="refine",
                     mails=concated_mails,
-                    report=report,
+                    report=summarization,
                     reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
                 ),
-                response_format=REPORT_REFINE_FORMAT,
+                response_format=REFINE_FORMAT,
             )
-            report_content = report_response.choices[0].message.content
-            report_dict = json.loads(report_content)
-            report = report_dict["final_report"]
-            self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", report)
+            revision_content = revision_response.choices[0].message.content
+            revision_dict = json.loads(revision_content)
+            summarization = revision_dict["revision"]
+            self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", summarization)
 
-        return report
+        return summarization
 
     @staticmethod
     def calculate_token_cost():
