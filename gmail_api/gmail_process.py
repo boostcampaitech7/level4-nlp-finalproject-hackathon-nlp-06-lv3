@@ -7,7 +7,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 from .document_parse import parse_document
-from .utils import decode_base64, delete_file, replace_image_patten_with, save_file
+from .utils import decode_base64, delete_file, replace_image_pattern_with, replace_url_pattern_from, save_file
 
 # 이 스코프를 수정하면 token.json 파일을 삭제해야 합니다.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -133,8 +133,8 @@ class MessageHandler:
         """
         payload = message.get("payload", {})
         body, filenames = MessageHandler.process_message_part(service, message["id"], payload)
-        replaced_body, attachments = replace_image_patten_with(body, filenames)
-
+        replaced_body, attachments = replace_image_pattern_with(body, filenames)
+        replaced_body = replace_url_pattern_from(replaced_body)
         return replaced_body, attachments
 
     @staticmethod
