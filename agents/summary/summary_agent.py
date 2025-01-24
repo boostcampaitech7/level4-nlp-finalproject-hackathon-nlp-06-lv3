@@ -15,8 +15,8 @@ class SummaryAgent(BaseAgent):
     내부적으로 Upstage 플랫폼의 ChatUpstage 모델을 사용하여 요약 작업을 수행합니다.
 
     Args:
-        summary_type (str): 요약 유형을 지정하는 문자열입니다(예: 'final', 'single' 등).
         model_name (str): 사용할 Upstage AI 모델명입니다(예: 'solar-pro', 'solar-mini').
+        summary_type (str): 요약 유형을 지정하는 문자열입니다(예: 'final', 'single' 등).
         temperature (float, optional): 모델 생성에 사용되는 파라미터로, 0에 가까울수록
             결정론적(deterministic) 결과가, 1에 가까울수록 다양성이 높은 결과가 나옵니다.
         seed (int, optional): 모델 결과의 재현성을 높이기 위해 사용하는 난수 시드 값입니다.
@@ -78,11 +78,8 @@ class SummaryAgent(BaseAgent):
             input_mail_data = str(mail)
         else:
             input_mail_data = "\n".join(
-                [f"분류: {single.label} 요약문: {single.summary}" for _, single in mail.items()]
+                [f"메일 id: {item.id} 분류: {item.label} 요약문: {item.summary}" for _, item in mail.items()]
             )
-
-        # Groundness Check를 위한 state flag 변수 선언 (grounded, notGrounded, notSure로 state 3개)
-        groundness = "grounded"
 
         # max_iteration 번 Groundness Check 수행
         for i in range(max_iteration):
@@ -93,13 +90,13 @@ class SummaryAgent(BaseAgent):
                 ),
                 response_format=response_format,
             )
-            summarized_content = json.loads(response.choices[0].message.content)
+            summarized_content: dict = json.loads(response.choices[0].message.content)
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
             if self.summary_type == "single":
                 result = summarized_content["summary"]
             else:
-                result = generate_plain_text_report(summarized_content["revision"])
+                result = generate_plain_text_report(summarized_content)
 
             # Groundness Check
             groundness = check_groundness(context=input_mail_data, answer=result)

@@ -6,7 +6,7 @@ from openai import OpenAI
 from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 
-from ..utils import FEEDBACK_FORMAT, REFINE_FORMAT, build_messages
+from ..utils import FEEDBACK_FORMAT, REFINE_FORMAT, build_messages, generate_plain_text_report
 
 
 class SelfRefineAgent(BaseAgent):
@@ -62,25 +62,35 @@ class SelfRefineAgent(BaseAgent):
         Return:
             str: Self-refine을 거친 최종 결과물.
         """
-        if isinstance(data, dict):
-            concated_mails = "\n".join([f"분류: {item.label} 요약: {item.summary}" for _, item in data.items()])
-        else:
-            concated_mails = str(data)
-        # 초기 요약
+        # 초기 요약 및 로그 생성
         summarization = model.process(data)
-        self.logging("./agents/self_refine/log/init_report.txt", summarization)
+        refine_target = (
+            summarization["summary"] if self.target_range == "single" else generate_plain_text_report(summarization)
+        )
+        self.logging("./agents/self_refine/log/init_report.txt", refine_target)
 
+        # 데이터 문자열로 전처리
+        if self.target_range == "single":
+            input_mail_data = str(data)
+        else:
+            input_mail_data = "\n".join(
+                [f"메일 id: {item.id} 분류: {item.label} 요약: {item.summary}" for _, item in data.items()]
+            )
+
+        # Self Refine 반복
         for i in range(max_iteration):
-            groundness = check_groundness(context=concated_mails, answer=summarization)
+            # Groundness Check
+            groundness = check_groundness(context=input_mail_data, answer=generate_plain_text_report(refine_target))
 
+            # Feedback
             feedback_response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=build_messages(
                     template_type="self_refine",
                     target_range=self.target_range,
                     action="feedback",
-                    mails=concated_mails,
-                    report=summarization,
+                    mails=input_mail_data,
+                    report=refine_target,
                 ),
                 response_format=FEEDBACK_FORMAT,
             )
@@ -91,27 +101,30 @@ class SelfRefineAgent(BaseAgent):
             )
             feedback_dict = json.loads(feedback)
 
+            # 조기 종료 조건
             if feedback_dict["evaluation"] == "STOP" and groundness == "grounded":
                 break
 
+            # Refine
             revision_response = self.client.chat.completions.create(
                 model=self.model_name,
                 messages=build_messages(
                     template_type="self_refine",
-                    target_range="final",
+                    target_range=self.target_range,
                     action="refine",
-                    mails=concated_mails,
-                    report=summarization,
+                    mails=input_mail_data,
+                    report=refine_target,
                     reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
                 ),
                 response_format=REFINE_FORMAT,
             )
             revision_content = revision_response.choices[0].message.content
-            revision_dict = json.loads(revision_content)
-            summarization = revision_dict["revision"]
-            self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", summarization)
 
-        return summarization
+            # 요약문 혹은 리포트 업데이트 및 로깅
+            refine_target = json.loads(revision_content)
+            self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", revision_content)
+
+        return refine_target
 
     @staticmethod
     def calculate_token_cost():

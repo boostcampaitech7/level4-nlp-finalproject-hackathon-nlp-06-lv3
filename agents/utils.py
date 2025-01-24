@@ -31,15 +31,37 @@ REPORT_FORMAT = {
             "properties": {
                 "job_related": {  # 업무 관련
                     "type": "array",
-                    "description": "업무 관련 설명",
-                    "items": {},
+                    "description": "업무 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "업무 관련 메일 요약문입니다."},
+                        },
+                    },
                 },
                 "admin_related": {  # 행정 처리
                     "type": "array",
-                    "description": "행정 처리 관련 설명",
-                    "items": {},
+                    "description": "행정 처리 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "행정 처리 관련 메일 요약문입니다."},
+                        },
+                    },
                 },
-                "announcement": {"type": "array", "description": "사내 소식 관련 설명", "items": {}},  # 사내 소식
+                "announcement": {  # 사내 소식
+                    "type": "array",
+                    "description": "사내 소식 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "사내 소식 관련 메일 요약문입니다."},
+                        },
+                    },
+                },
             },
             "required": ["job_related", "admin_related", "announcement"],
         },
@@ -68,6 +90,10 @@ FEEDBACK_FORMAT = {
                     "items": {
                         "type": "object",
                         "properties": {
+                            "mail_id": {
+                                "type": "string",
+                                "description": "메일의 ID입니다.",
+                            },
                             "issue": {
                                 "type": "string",
                                 "description": "요약문의 문제점입니다.",
@@ -95,12 +121,41 @@ REFINE_FORMAT = {
         "schema": {
             "type": "object",
             "properties": {
-                "revision": {
-                    "type": "string",
-                    "description": "개선 사항을 반영한 최종 요약문입니다.",
-                }
+                "job_related": {  # 업무 관련
+                    "type": "array",
+                    "description": "업무 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "업무 관련 메일 요약문입니다."},
+                        },
+                    },
+                },
+                "admin_related": {  # 행정 처리
+                    "type": "array",
+                    "description": "행정 처리 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "행정 처리 관련 메일 요약문입니다."},
+                        },
+                    },
+                },
+                "announcement": {  # 사내 소식
+                    "type": "array",
+                    "description": "사내 소식 관련 메일 요약문 리스트입니다.",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
+                            "report": {"type": "string", "description": "사내 소식 관련 메일 요약문입니다."},
+                        },
+                    },
+                },
             },
-            "required": ["revision"],
+            "required": ["job_related", "admin_related", "announcement"],
         },
     },
 }
@@ -144,7 +199,7 @@ def build_messages(template_type: str, target_range: str, action: str, **kwargs)
 
 
 # Groundness Check 및 최종 리포트 생성에서 JSON 형식의 리포트를 단순 문자열로 반환하기 위한 함수입니다.
-def generate_plain_text_report(formatted_report: dict) -> str:
+def generate_plain_text_report(formatted_report: dict | str) -> str:
     """
     JSON으로 구조화된 리포트를 문자열로 반환합니다.
 
@@ -154,17 +209,19 @@ def generate_plain_text_report(formatted_report: dict) -> str:
     Returns:
         str: plain text로 전환한 리포트
     """
+    if isinstance(formatted_report, str):
+        return formatted_report
 
     plain_text = ""
     for label, mails in formatted_report.items():
         if label == "job_related":
-            plain_text += "업무 관련\n"
+            plain_text += "\n업무 관련\n"
         elif label == "admin_related":
-            plain_text += "행정 처리\n"
+            plain_text += "\n행정 처리\n"
         else:
-            plain_text += "사내 공지"
+            plain_text += "\n사내 공지\n"
 
         for mail in mails:
-            plain_text += mail.summary + "\n"
+            plain_text += f'메일 ID: {mail["mail_id"]}\n{mail["report"]}\n'
 
     return plain_text

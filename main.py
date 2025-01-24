@@ -3,7 +3,7 @@
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import SelfRefineAgent, SummaryAgent
+from agents import SelfRefineAgent, SummaryAgent, generate_plain_text_report
 from gmail_api import GmailService, Mail, MessageHandler
 
 
@@ -46,7 +46,7 @@ def main():
         for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
             # category = classification_agent.process(mail)
-            mail_dict[mail_id].summary = summary
+            mail_dict[mail_id].summary = summary["summary"]
             # mail_dict[mail_id].label = category
 
             print(mail)
@@ -59,7 +59,7 @@ def main():
 
         report = self_refine_agent.process(mail_dict, report_agent)
         print("=============FINAL_REPORT================")
-        print(report)
+        print(generate_plain_text_report(report))
 
     except HttpError as error:
         print(f"An error occurred: {error}")
