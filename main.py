@@ -3,7 +3,7 @@
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import SelfRefineAgent, SummaryAgent, generate_plain_text_report
+from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, generate_plain_text_report
 from gmail_api import GmailService, Mail, MessageHandler
 
 
@@ -41,17 +41,17 @@ def main():
 
         # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("solar-pro", "single")
-        # classification_agent = SummaryAgent("solar-pro", "classification")
+        classification_agent = ClassificationAgent("solar-pro")
 
         for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
-            # category = classification_agent.process(mail)
+            category = classification_agent.process(mail)
             mail_dict[mail_id].summary = summary["summary"]
-            # mail_dict[mail_id].label = category
+            mail_dict[mail_id].label = category
 
             print(mail)
             print(summary)
-            # print(category)
+            print(category)
             print("=" * 40)
 
         report_agent = SummaryAgent("solar-pro", "final")
