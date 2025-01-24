@@ -85,7 +85,8 @@ class SummaryAgent(BaseAgent):
         for i in range(max_iteration):
             response = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=build_messages(  # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
+                # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
+                messages=build_messages(
                     template_type="summary", target_range=self.summary_type, action="summary", mail=input_mail_data
                 ),
                 response_format=response_format,
