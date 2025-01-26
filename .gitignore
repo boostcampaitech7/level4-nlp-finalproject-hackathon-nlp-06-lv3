@@ -200,6 +200,7 @@ agents/self_refine/log/*.txt
 
 
 credentials.json
+credentials*.json
 token.json
 
 

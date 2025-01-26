@@ -1,4 +1,11 @@
+# Note
+# BaseAgent 클래스는 파이프라인 내 모델을 객체 지향적으로 관리하고자 생성된 클래스입니다.
+# 향후 **모델이 공통으로 처리하는 동작(e.g. Groundness Check)**이 있는 경우,
+# 추가 @abstractmethod를 선언해서 Agent 클래스를 전체 관리해주세요.
+
 from abc import ABC, abstractmethod
+
+from openai import OpenAI
 
 
 class BaseAgent(ABC):
@@ -12,11 +19,17 @@ class BaseAgent(ABC):
     """
 
     def __init__(self, model: str, temperature=None, seed=None):
-        self.client = self.initialize_chat(model, temperature, seed)
+        # response_format을 사용하기 위해 OpenAI 객체로 선언합니다.
+        # response_format과 JsonOutputParser의 차이는 다음 링크에서 간단하게 설명합니다.
+        # https://www.notion.so/gamchan/OpenAI-182815b39d398070b7fbc783bd7205ca?pvs=4
+        self.client: OpenAI = self.initialize_chat(model, temperature, seed)
+        self.model_name = model
+        self.temperature = temperature
+        self.seed = seed
         self.token_monitor = None
 
     @abstractmethod
-    def initialize_chat(self, model: str, temperature=None, seed=None):
+    def initialize_chat(self, model: str, temperature=None, seed=None) -> OpenAI:
         """
         특정 모델을 초기화합니다.
 
