@@ -85,7 +85,7 @@ async def get_google_profile(user_id: int):
         raise HTTPException(status_code=404, detail="User not found")
 
     if is_expired(user["expiry"]):
-        new_tokens = refresh_access_token(user_id, user["refresh_token"])
+        new_tokens = await refresh_access_token(user_id, user["refresh_token"])
         access_token = new_tokens
     else:
         access_token = user["access_token"]
@@ -104,7 +104,7 @@ def is_expired(expiry_time: datetime):
     return utc_current_time >= expiry_time  # 만료 시간과 현재 시간을 비교
 
 
-def refresh_access_token(user_id: int, refresh_token: str) -> str:
+async def refresh_access_token(user_id: int, refresh_token: str) -> str:
     try:
         credentials = Credentials(
             None,
@@ -115,7 +115,7 @@ def refresh_access_token(user_id: int, refresh_token: str) -> str:
         )
         credentials.refresh(Request())
 
-        database.execute(
+        await database.execute(
             ("UPDATE user_tb SET access_token = :access_token, expiry = :expiry WHERE id = :user_id"),
             {
                 "user_id": user_id,
