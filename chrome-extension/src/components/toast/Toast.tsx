@@ -1,9 +1,7 @@
-"use client"
-
 import { MdCheckCircleOutline, MdErrorOutline, MdWarningAmber } from "react-icons/md"
 import { useRecoilValue } from "recoil"
-import { ToastData } from "@/types/toast"
 import toastState from "@/states/toastState"
+import { ToastData } from "@/types/toast"
 import ToastItem from "@/components/toast/ToastItem"
 
 function Toast(): JSX.Element {
