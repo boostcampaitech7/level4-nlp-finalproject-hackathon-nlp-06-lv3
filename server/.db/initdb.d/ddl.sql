@@ -8,12 +8,12 @@ CREATE TABLE user_tb
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE report_tb
+CREATE TABLE report_temp_tb
 (
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id    BIGINT    NOT NULL,
-    body       TEXT,
-    start      TIMESTAMP NOT NULL,
-    end        TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id      BIGINT    NOT NULL,
+    content      TEXT,
+    date         DATE      NOT NULL,
+    refresh_time TIMESTAMP NOT NULL,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
