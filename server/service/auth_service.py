@@ -21,10 +21,6 @@ def is_login(user_id):
     return auth_response.IsLoginDto(user_id)
 
 
-def logout():
-    return auth_response.LogoutDto(message="Logged out")
-
-
 async def google_authenticatie(request_dto: auth_request.GoogleAuthDto):
     try:
         # Initialize the Google OAuth2 Flow

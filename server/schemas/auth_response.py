@@ -13,10 +13,6 @@ class GoogleAuthDto(BaseModel):
     user_id: int
 
 
-class LogoutDto(BaseModel):
-    message: str
-
-
 class GoogleProfileDto(BaseModel):
     google_id: str
     email: str

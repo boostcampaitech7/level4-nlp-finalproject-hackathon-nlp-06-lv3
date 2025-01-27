@@ -16,9 +16,9 @@ async def is_login(request: Request) -> ApiResponse[auth_response.IsLoginDto]:
 
 
 @auth_router.post("/logout")
-async def logout(request: Request) -> ApiResponse[auth_response.LogoutDto]:
+async def logout(request: Request) -> ApiResponse:
     request.session.clear()
-    return ApiResponse.success(auth_service.logout())
+    return ApiResponse.success()
 
 
 @auth_router.post("/google")
