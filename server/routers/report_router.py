@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 
+from server._core.dependencies.session import get_user_id_from_session
 from server._core.utils.api_response import ApiResponse
-from server.dependencies.session import get_user_id_from_session
 from server.schemas import report_response
 from server.service import report_service
 
