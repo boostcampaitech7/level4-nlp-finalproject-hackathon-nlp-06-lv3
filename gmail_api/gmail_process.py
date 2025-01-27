@@ -49,7 +49,12 @@ class GmailService:
         반환값:
             messages (list): 메시지 메타데이터 목록.
         """
-        message_list = self.service.users().messages().list(userId="me", maxResults=n, q=f"after:{date}").execute()
+        message_list = (
+            self.service.users()
+            .messages()
+            .list(userId="me", maxResults=n, q=f"after:{date}", labelIds=["INBOX"])
+            .execute()
+        )
         return message_list.get("messages", [])
 
     def get_message_details(self, message_id):
