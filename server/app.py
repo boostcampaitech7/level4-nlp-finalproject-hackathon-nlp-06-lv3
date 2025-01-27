@@ -8,6 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from server.database.connection import database
 from server.routers.auth_router import auth_router
+from server.routers.report_router import report_router
 
 load_dotenv()
 
@@ -42,6 +43,7 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(report_router)
 
 
 @app.get("/")
