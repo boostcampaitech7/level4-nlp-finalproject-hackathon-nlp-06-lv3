@@ -1,41 +1,33 @@
-from typing import List, Optional
+from typing import Optional
+
+from gmail_api import GmailService, MessageHandler
 
 
 class Mail:
     def __init__(
         self,
-        id: str,
-        sender: str,
-        recipients: List[str],
-        subject: str,
-        body: str,
-        cc: Optional[List[str]] = None,
-        attachments: Optional[List[str]] = None,
-        date: Optional[str] = None,
+        message_id: str,
+        gmail_service: GmailService,
         summary: Optional[str] = None,
         label: Optional[str] = None,
     ):
         """
         Args:
             id (str): 메일 ID
-            sender (str): 이메일을 보낸 사람의 주소
-            recipients (List[str]): 이메일을 받는 사람(들)의 주소 목록
-            subject (str): 이메일 제목
-            body (str): 이메일 본문(텍스트 형태)
-            cc (Optional[List[str]], optional): 참조할 사람(들)의 주소 목록. 기본 값은 None
-            attachments (Optional[List[str]], optional): 첨부 파일 경로나 파일 이름 등의 목록. 기본 값은 None.
-            date (Optional[str], optional): 이메일 수신 시간. 기본 값은 None.
-            summary (Optional[str], optional): 이메일 요약문. 기본 값은 None.
-            label (Optional[str], optional): 분류된 메일 종류. 기본 값은 None.
+            gmail_service: GmailService 객체
         """
-        self._id = id
-        self.sender = sender
-        self.recipients = recipients
-        self.subject = subject
+        message = gmail_service.get_message_details(message_id)
+        body, attachments = MessageHandler.process_message(gmail_service.service, message)
+        headers = MessageHandler.process_headers(message)
+
+        self._id = message_id
+        self.sender = headers["sender"]
+        self.recipients = [headers["recipients"]]
+        self.subject = headers["subject"]
         self.body = body
-        self.cc = cc if cc is not None else []
+        self.cc = [headers["cc"]] if headers["cc"] is not None else []
         self.attachments = attachments if attachments is not None else []
-        self.date = date
+        self.date = headers["date"]
         self._summary = summary
         self._label = label
 

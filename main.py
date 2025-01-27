@@ -2,9 +2,10 @@
 
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
+from tqdm import tqdm
 
 from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
-from gmail_api import GmailService, Mail, MessageHandler
+from gmail_api import GmailService, Mail
 
 
 def main():
@@ -19,22 +20,10 @@ def main():
 
         messages = gmail_service.get_today_n_messages(yesterday, n)
         mail_dict: dict[str, Mail] = {}
-        for message_metadata in messages:
+        for message_metadata in tqdm(messages, desc="Processing Emails"):
             message_id = message_metadata["id"]
-            message = gmail_service.get_message_details(message_id)
-            body, attachments = MessageHandler.process_message(gmail_service.service, message)
-            headers = MessageHandler.process_headers(message)
+            mail = Mail(message_id, gmail_service)
 
-            mail = Mail(
-                message_id,
-                headers["sender"],
-                [headers["recipients"]],
-                headers["subject"],
-                body,
-                [headers["cc"]],
-                attachments,
-                headers["date"],
-            )
             # 룰베이스 분류
             if "(광고)" not in mail.subject:
                 mail_dict[message_id] = mail
