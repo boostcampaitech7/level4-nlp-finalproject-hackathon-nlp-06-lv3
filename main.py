@@ -1,4 +1,4 @@
-# from datetime import datetime, timedelta
+from datetime import datetime  # , timedelta
 
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
@@ -15,18 +15,19 @@ def main():
         gmail_service = GmailService()
 
         # Fetch last N messages
+        today = datetime.now().strftime("%Y/%m/%d")
         yesterday = "2025/01/10"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
         n = 10
 
         messages = gmail_service.get_today_n_messages(yesterday, n)
         mail_dict: dict[str, Mail] = {}
-        for message_metadata in tqdm(messages, desc="Processing Emails"):
-            message_id = message_metadata["id"]
-            mail = Mail(message_id, gmail_service)
-
+        for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
+            # 신규 mail_id 정의: 받은 시간 순 오름차순
+            mail_id = f"{today}/{len(messages)-idx:04d}"
+            mail = Mail(message_metadata["id"], mail_id, gmail_service)
             # 룰베이스 분류
             if "(광고)" not in mail.subject:
-                mail_dict[message_id] = mail
+                mail_dict[mail_id] = mail
 
         # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("solar-pro", "single")
@@ -38,6 +39,7 @@ def main():
             mail_dict[mail_id].summary = summary["summary"]
             mail_dict[mail_id].label = category
 
+            print(mail_id)
             print(category)
             print(summary)
             print("=" * 40)

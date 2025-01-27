@@ -7,6 +7,7 @@ class Mail:
     def __init__(
         self,
         message_id: str,
+        mail_id: str,
         gmail_service: GmailService,
         summary: Optional[str] = None,
         label: Optional[str] = None,
@@ -20,7 +21,7 @@ class Mail:
         body, attachments = MessageHandler.process_message(gmail_service.service, message)
         headers = MessageHandler.process_headers(message)
 
-        self._id = message_id
+        self._id = mail_id
         self.sender = headers["sender"]
         self.recipients = [headers["recipients"]]
         self.subject = headers["subject"]
