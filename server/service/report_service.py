@@ -1,4 +1,5 @@
 from server.database.connection import database
+from server.schemas import report_response
 
 
 async def get_reports(user_id: int, page: int, limit: int):
@@ -12,14 +13,4 @@ async def get_reports(user_id: int, page: int, limit: int):
             "offset": offset,
         },
     )
-    return {
-        "reports": [
-            {
-                "id": report["id"],
-                "content": report["content"],
-                "date": report["date"],
-                "refresh_time": report["refresh_time"],
-            }
-            for report in reports
-        ]
-    }
+    return report_response.TempReportsDto(reports)
