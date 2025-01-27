@@ -7,6 +7,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 
+from server._core.errors.exceptions.custom_exception import CustomException
+from server._core.errors.exceptions.error_code import ErrorCode
 from server.database.connection import database
 from server.schemas import auth_request, auth_response
 
@@ -20,7 +22,7 @@ def is_login(user_id):
 
 
 def logout():
-    return auth_response.LogoutDto("Logged out")
+    return auth_response.LogoutDto(message="Logged out")
 
 
 async def google_authenticatie(request_dto: auth_request.GoogleAuthDto):
@@ -72,8 +74,8 @@ async def google_authenticatie(request_dto: auth_request.GoogleAuthDto):
             )
         return auth_response.GoogleAuthDto(user_id=user_id), user_id
 
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Authentication failed: {str(e)}")
+    except Exception:
+        raise CustomException(ErrorCode.LOGIN_FAILED)
 
 
 def get_token_info(access_token: str):
@@ -135,7 +137,7 @@ async def refresh_access_token(user_id: int, refresh_token: str) -> str:
 
         return credentials.token
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Token refresh failed: {str(e)}")
+        raise CustomException(ErrorCode.SERVER_ERROR, f"Token refresh failed: {str(e)}")
 
 
 def google_callback(code: str):
