@@ -4,7 +4,9 @@ from prompt import load_template, load_template_with_variables
 
 
 # YAML 파일에서 카테고리 정보 로드
-def load_categories_from_yaml(file_path: str, is_prompt: bool = False) -> list:
+def load_categories_from_yaml(
+    file_path: str = "agents/classification/categories.yaml", is_prompt: bool = False
+) -> list:
     """
     YAML 파일에서 카테고리 정보를 로드합니다.
 
@@ -34,7 +36,7 @@ def load_categories_from_yaml(file_path: str, is_prompt: bool = False) -> list:
 
 
 # 카테고리 정보 로드
-CATEGORIES_FOR_OUTPUT = load_categories_from_yaml("agents/classification/categories.yaml")
+CATEGORIES_FOR_OUTPUT = load_categories_from_yaml()
 
 # 공통 JSON Schema 속성
 MAIL_PROPERTIES = {
