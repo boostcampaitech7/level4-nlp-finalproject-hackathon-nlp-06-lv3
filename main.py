@@ -3,14 +3,8 @@
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent
+from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
 from gmail_api import GmailService, Mail, MessageHandler
-
-CATEGORY_MAPPING = {
-    "job_related": "업무 관련",
-    "admin_related": "행정 관련",
-    "announcement": "사내 소식",
-}
 
 
 def main():
@@ -66,7 +60,7 @@ def main():
 
         print("=============FINAL_REPORT================")
         for label, mail_reports in report.items():
-            print(CATEGORY_MAPPING[label])
+            print(map_category(label))
             for mail_report in mail_reports:
                 mail_subject = mail_dict[mail_report["mail_id"]].subject
                 print(f"메일 subject: {mail_subject}")
