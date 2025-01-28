@@ -1,7 +1,70 @@
-# TODO: 분류 기준이 명확할 경우에 포맷 구조 변경할 것
+import yaml
+
 from prompt import load_template, load_template_with_variables
 
-# 개별 메일 요약본의 출력 포맷팅입니다.
+
+# YAML 파일에서 카테고리 정보 로드
+def load_categories_from_yaml(file_path: str) -> list:
+    """
+    YAML 파일에서 카테고리 정보를 로드합니다.
+
+    Args:
+        file_path (str): YAML 파일 경로
+
+    Returns:
+        list: 카테고리 정보 리스트
+    """
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"카테고리 파일 {file_path}이(가) 존재하지 않습니다.")
+    except yaml.YAMLError as e:
+        raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
+
+
+# 카테고리 정보 로드
+CATEGORIES = load_categories_from_yaml("agents/classification/categories.yaml")
+
+# 공통 JSON Schema 속성
+MAIL_PROPERTIES = {
+    "mail_id": {"type": "string", "description": "메일 ID입니다."},
+    "report": {"type": "string", "description": "메일 요약문입니다."},
+}
+
+
+# 공통 JSON Schema 템플릿 생성 함수
+def create_category_schema(categories):
+    """
+    카테고리 리스트를 기반으로 JSON Schema를 생성합니다.
+
+    Args:
+        categories (list): 카테고리 정보 리스트 (name, description 포함)
+
+    Returns:
+        dict: 생성된 JSON Schema
+    """
+    schema = {
+        "type": "object",
+        "properties": {},
+        "required": [],
+    }
+
+    for category in categories:
+        schema["properties"][category["name"]] = {
+            "type": "array",
+            "description": category["description"],
+            "items": {
+                "type": "object",
+                "properties": MAIL_PROPERTIES,
+            },
+        }
+        schema["required"].append(category["name"])
+
+    return schema
+
+
+# 상수 정의
 SUMMARY_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -20,55 +83,15 @@ SUMMARY_FORMAT = {
     },
 }
 
-# 최종 리포트 생성에 사용되는 포맷팅입니다.
 REPORT_FORMAT = {
     "type": "json_schema",
     "json_schema": {
         "name": "email_report",
         "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "job_related": {  # 업무 관련
-                    "type": "array",
-                    "description": "업무 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "업무 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-                "admin_related": {  # 행정 처리
-                    "type": "array",
-                    "description": "행정 처리 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "행정 처리 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-                "announcement": {  # 사내 소식
-                    "type": "array",
-                    "description": "사내 소식 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "사내 소식 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-            },
-            "required": ["job_related", "admin_related", "announcement"],
-        },
+        "schema": create_category_schema(CATEGORIES),
     },
 }
 
-# Self Refine의 피드백에서 사용하는 포맷팅입니다.
 FEEDBACK_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -80,8 +103,8 @@ FEEDBACK_FORMAT = {
                 "evaluation": {
                     "type": "string",
                     "description": (
-                        "요약문에 대한 평가입니다."
-                        "요약문에 문제가 없는 경우 'STOP'만 출력하고, 문제가 있는 경우 문제점(issus)을 지적하세요."
+                        "요약문에 대한 평가입니다. "
+                        "요약문에 문제가 없는 경우 'STOP'만 출력하고, 문제가 있는 경우 문제점(issues)을 지적하세요."
                     ),
                 },
                 "issues": {
@@ -90,10 +113,7 @@ FEEDBACK_FORMAT = {
                     "items": {
                         "type": "object",
                         "properties": {
-                            "mail_id": {
-                                "type": "string",
-                                "description": "메일의 ID입니다.",
-                            },
+                            **MAIL_PROPERTIES,
                             "issue": {
                                 "type": "string",
                                 "description": "요약문의 문제점입니다.",
@@ -112,72 +132,31 @@ FEEDBACK_FORMAT = {
     },
 }
 
-# Self Refine 내부에서 피드백을 반영할 때 사용되는 포맷팅입니다.
 REFINE_FORMAT = {
     "type": "json_schema",
     "json_schema": {
         "name": "revised_summarization",
         "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "job_related": {  # 업무 관련
-                    "type": "array",
-                    "description": "업무 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "업무 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-                "admin_related": {  # 행정 처리
-                    "type": "array",
-                    "description": "행정 처리 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "행정 처리 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-                "announcement": {  # 사내 소식
-                    "type": "array",
-                    "description": "사내 소식 관련 메일 요약문 리스트입니다.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "mail_id": {"type": "string", "description": "메일 ID입니다."},
-                            "report": {"type": "string", "description": "사내 소식 관련 메일 요약문입니다."},
-                        },
-                    },
-                },
-            },
-            "required": ["job_related", "admin_related", "announcement"],
-        },
+        "schema": create_category_schema(CATEGORIES),
     },
 }
 
 
-# 시스템 및 사용자 프롬프트 생성을 모듈화하는 함수입니다.
-# Agent 클래스의 process 메소드 함수에서 추론 코드를 간소화합니다.
+# 시스템 및 사용자 프롬프트 생성 함수
 def build_messages(template_type: str, target_range: str, action: str, **kwargs) -> list:
     """
     OpenAI.chat.completion.create 함수에 넘겨줄 messages 인자를 생성합니다.
 
     Args:
-        template_type (str): 템플릿이 위치한 디렉토리 유형을 나타내는 문자열 (예: "self_refine")
+        template_type (str): 템플릿이 위치한 디렉토리 유형 (예: "self_refine")
         target_range (str): 템플릿 txt 파일의 접두사 (예: "final")
         action (str): 템플릿의 용도 (예: "feedback")
 
     Returns:
-        list: 생성된 메세지 인자
+        list: 생성된 메시지 리스트
 
-    Notice:
-        `prompt/template/{template_type}/{target_range}_{action}_system.txt`와
-        `prompt/template/{template_type}/{target_range}_{action}_user.txt` 파일이 존재해야 동작합니다.
+    Raises:
+        FileNotFoundError: 템플릿 파일이 존재하지 않을 경우 예외 발생
     """
     try:
         system_prompt = load_template(template_type=template_type, file_name=f"{target_range}_{action}_system.txt")
@@ -185,43 +164,35 @@ def build_messages(template_type: str, target_range: str, action: str, **kwargs)
             template_type=template_type, file_name=f"{target_range}_{action}_user.txt", **kwargs
         )
         return [
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": user_prompt,
-            },
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
         ]
     except FileNotFoundError as e:
         print(e)
+        raise
 
 
-# Groundness Check 및 최종 리포트 생성에서 JSON 형식의 리포트를 단순 문자열로 반환하기 위한 함수입니다.
+# JSON 형식 리포트를 plain text로 변환하는 함수
 def generate_plain_text_report(formatted_report: dict | str) -> str:
     """
-    JSON으로 구조화된 리포트를 문자열로 반환합니다.
+    JSON으로 구조화된 리포트를 plain text로 변환합니다.
 
     Args:
-        formatted_report (dict): JSON으로 구조화된 리포트
+        formatted_report (dict | str): JSON으로 구조화된 리포트
 
     Returns:
-        str: plain text로 전환한 리포트
+        str: plain text로 변환된 리포트
     """
     if isinstance(formatted_report, str):
         return formatted_report
 
     plain_text = ""
-    for label, mails in formatted_report.items():
-        if label == "job_related":
-            plain_text += "\n업무 관련\n"
-        elif label == "admin_related":
-            plain_text += "\n행정 처리\n"
-        else:
-            plain_text += "\n사내 공지\n"
+    for category in CATEGORIES:
+        label = category["name"]
+        description = category["description"]
+        plain_text += f"\n{description}\n"
 
-        for mail in mails:
+        for mail in formatted_report.get(label, []):
             plain_text += f'메일 ID: {mail["mail_id"]}\n{mail["report"]}\n'
 
     return plain_text

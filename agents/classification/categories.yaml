@@ -1,0 +1,6 @@
+- name: "job_related"
+  description: "업무 관련 메일 요약문 리스트입니다."
+- name: "admin_related"
+  description: "행정 처리 관련 메일 요약문 리스트입니다."
+- name: "announcement"
+  description: "사내 소식 관련 메일 요약문 리스트입니다."
