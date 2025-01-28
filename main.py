@@ -62,7 +62,7 @@ def main():
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-        report: dict = self_refine_agent.process(mail_dict, report_agent)
+        report: dict = self_refine_agent.process(mail_dict, report_agent, 10)
 
         print("=============FINAL_REPORT================")
         for label, mail_reports in report.items():
