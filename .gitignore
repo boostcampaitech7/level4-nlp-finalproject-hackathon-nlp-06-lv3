@@ -208,3 +208,4 @@ token.json
 # 평가 테스트용 pair texts
 gold.txt
 generated.txt
+*.pkl
