@@ -5,7 +5,7 @@ from openai import OpenAI
 from agents import BaseAgent
 from gmail_api import Mail
 
-from ..utils import build_messages
+from ..utils import build_messages, load_categories_from_yaml
 
 
 class ClassificationAgent(BaseAgent):
@@ -54,10 +54,19 @@ class ClassificationAgent(BaseAgent):
         if not isinstance(mail, Mail):
             raise ValueError(f"분류 작업에서 {type(mail)} 형식의 데이터가 들어왔습니다.")
 
+        categories = load_categories_from_yaml(is_prompt=True)
+        categories_text = ""
+        for category in categories:
+            categories_text += f"카테고리 명: {category['name']}\n분류 기준: {category['rubric']}\n"
+
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=build_messages(
-                template_type="classification", target_range="single", action="classification", mail=str(mail)
+                template_type="classification",
+                target_range="single",
+                action="classification",
+                mail=str(mail),
+                categories=categories_text,
             ),
         )
         summarized_content: str = response.choices[0].message.content

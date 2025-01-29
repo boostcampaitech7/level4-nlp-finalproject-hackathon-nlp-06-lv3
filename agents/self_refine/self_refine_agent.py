@@ -100,7 +100,7 @@ class SelfRefineAgent(BaseAgent):
             feedback_dict = json.loads(feedback)
 
             # 조기 종료 조건
-            if feedback_dict["evaluation"] == "STOP" and groundness == "grounded":
+            if feedback_dict["evaluation"] == "STOP" and len(feedback_dict["issues"]) == 0 and groundness == "grounded":
                 break
 
             # Refine
