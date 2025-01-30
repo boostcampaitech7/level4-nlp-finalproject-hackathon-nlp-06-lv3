@@ -12,7 +12,7 @@ bert_model: "distilbert-base-uncased"
 
 # G-EVAL setting
 g_eval:
-  openai_model: "gpt-4"
+  openai_model: "gpt-4o"
   prompts:
     consistency: "prompt/template/g_eval/con_report.txt"
     coherence: "prompt/template/g_eval/coh_report.txt"
