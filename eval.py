@@ -1,10 +1,11 @@
 import argparse
 import csv
-import random
 
+import openai
 import torch
 import yaml
 from bert_score import score as bert_score
+from dotenv import load_dotenv  # <- 추가
 from rouge_score import rouge_scorer
 
 
@@ -84,16 +85,35 @@ def calculate_bert(gold_texts, generated_texts, model_type="distilbert-base-unca
     return results
 
 
-def calculate_g_eval(source_texts, generated_texts):
+def calculate_g_eval(source_texts, generated_texts, config):
     """
     G-EVAL(gold 없이 source, summarized) 평가
-    TODO: G-EVAL 방식으로 평가하여 점수 출력하는 코드 구현
-    지금은 임시로 랜덤 점수가 출력
     """
+    # g_eval 관련 설정
+    g_eval_config = config.get("g_eval", {})
+    prompt_file = g_eval_config.get("prompt_file", "prompt/template/g_eval/con_detailed.txt")
+    model_name = g_eval_config.get("openai_model", "gpt-3.5-turbo")
+
+    # 프롬프트 템플릿 로드
+    with open(prompt_file, "r", encoding="utf-8") as f:
+        base_prompt = f.read()
+
     scores = []
     for src, gen in zip(source_texts, generated_texts):
-        scores.append(random.uniform(0, 1))
-    return scores  # 길이 N
+        cur_prompt = base_prompt.replace("{{Document}}", src).replace("{{Summary}}", gen)
+        try:
+            response = openai.ChatCompletion.create(
+                model=model_name, messages=[{"role": "system", "content": cur_prompt}], temperature=0.7, max_tokens=50
+            )
+            gpt_text = response["choices"][0]["message"]["content"]
+            # 예: GPT 응답을 단순 float로 파싱 (실제 응답 형식에 맞게 조정 필요)
+            score_value = float(gpt_text.strip())
+            scores.append(score_value)
+        except Exception as e:
+            print("G-EVAL 호출 실패:", e)
+            scores.append(0.0)
+
+    return scores
 
 
 def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
@@ -127,7 +147,7 @@ def compute_metrics(config, source_texts, summarized_texts, gold_texts):
         results["bert"] = bert_res
 
     if "g-eval" in metrics:
-        geval_res = calculate_g_eval(source_texts, summarized_texts)
+        geval_res = calculate_g_eval(source_texts, summarized_texts, config)
         results["g-eval"] = geval_res
 
     return results
@@ -237,6 +257,8 @@ def print_averages(results, n_items):
 
 
 def main():
+    load_dotenv()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
     args = parser.parse_args()

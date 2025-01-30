@@ -5,7 +5,12 @@ csv_file: "example_data.csv"
 metrics:
   - rouge
   - bert
-  # - g-eval
+  - g-eval
 
 # BERTScore에서 사용할 모델
 bert_model: "distilbert-base-uncased"
+
+# G-EVAL setting
+g_eval:
+  prompt_file: "prompt/template/g_eval/con_detailed.txt"
+  openai_model: "gpt-4"
