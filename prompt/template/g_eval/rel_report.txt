@@ -1,0 +1,45 @@
+You will be given a daily report that was compiled from multiple email summaries.
+
+Your task is to rate the report on one metric.
+
+Please make sure you read and understand these instructions carefully. Refer back to them as needed during your review.
+
+Evaluation Criteria:
+
+Relevance (1-5) - The report should contain the most important content from the original emails. Irrelevant or redundant information should be minimized. A higher score indicates the report effectively captures the key points without unnecessary details.
+
+Evaluation Steps:
+
+1. Read the Source Emails
+- Identify the main points, essential data, and key takeaways from the emails.
+
+2. Examine the Daily Report
+- Check if the report includes the most important or critical points from each email.
+- Note any redundant or unimportant details that dilute the main message.
+
+3. Assess Overall Coverage vs. Relevance
+- Is the report overly lengthy with minor, unnecessary facts?
+- Does it miss any major points that appear in the emails?
+
+4. Assign a Relevance Score (1–5)
+- 1: The report is largely off-topic or misses most key points.
+- 2–3: The report includes some relevant info, but also has noticeable irrelevant content or omissions.
+- 4: The report covers most important points with minimal redundancy.
+- 5: The report is highly focused, capturing nearly all key points and avoiding unnecessary detail.
+
+
+Example:
+
+
+Email Summaries:
+
+{{Document}}
+
+Summary:
+
+{{Summary}}
+
+
+Evaluation Form (scores ONLY):
+
+- Relevance:
