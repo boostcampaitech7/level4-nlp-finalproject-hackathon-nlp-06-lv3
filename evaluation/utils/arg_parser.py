@@ -26,6 +26,12 @@ def parse_arguments():
         help="휴먼 평가를 활성화(True) 또는 비활성화(False)할 수 있습니다. 기본값은 True입니다.",
     )
     parser.add_argument(
-        "-i", "--inference", nargs="?", const=3, default=3, help="대상 모델의 추론 횟수를 설정합니다. 기본값은 3입니다."
+        "-i",
+        "--inference",
+        type=int,
+        nargs="?",
+        const=3,
+        default=3,
+        help="대상 모델의 추론 횟수를 설정합니다. 기본값은 3입니다.",
     )
     return parser.parse_args()
