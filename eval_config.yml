@@ -1,5 +1,5 @@
 # CSV 파일 경로
-csv_file: "example_data.csv"
+json_file: "example_data.json"
 
 # 계산할 메트릭 목록
 metrics:

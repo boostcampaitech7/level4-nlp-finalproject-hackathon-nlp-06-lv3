@@ -1,12 +1,15 @@
 import argparse
-import csv
+import json
 
-import openai
 import torch
 import yaml
 from bert_score import score as bert_score
-from dotenv import load_dotenv  # <- 추가
+from dotenv import load_dotenv
+from openai import OpenAI
 from rouge_score import rouge_scorer
+
+load_dotenv()
+client = OpenAI()
 
 
 def load_config(config_path):
@@ -18,20 +21,21 @@ def load_config(config_path):
     return config
 
 
-def load_data(csv_file):
+def load_data_json(json_file):
     """
-    CSV 파일에서 source, summarized, gold 열을 읽어 리스트로 반환
+    JSON을 로드하여 source, summarized, gold 리스트를 반환
     """
+    with open(json_file, "r", encoding="utf-8") as f:
+        data_list = json.load(f)  # [{...}, {...}, ...] 형태
+
     source_texts = []
     summarized_texts = []
     gold_texts = []
 
-    with open(csv_file, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            source_texts.append(row["source"])
-            summarized_texts.append(row["summarized"])
-            gold_texts.append(row["gold"])
+    for item in data_list:
+        source_texts.append(item["source"])
+        summarized_texts.append(item["system_output"])
+        gold_texts.append(item["reference"])
 
     return source_texts, summarized_texts, gold_texts
 
@@ -92,9 +96,9 @@ def calculate_g_eval(source_texts, generated_texts, config):
     # g_eval 관련 설정
     g_eval_config = config.get("g_eval", {})
     prompt_file = g_eval_config.get("prompt_file", "prompt/template/g_eval/con_detailed.txt")
-    model_name = g_eval_config.get("openai_model", "gpt-3.5-turbo")
+    model_name = g_eval_config.get("openai_model", "gpt-4")
 
-    # 프롬프트 템플릿 로드
+    # 프롬프트 템플릿 불러오기
     with open(prompt_file, "r", encoding="utf-8") as f:
         base_prompt = f.read()
 
@@ -102,15 +106,19 @@ def calculate_g_eval(source_texts, generated_texts, config):
     for src, gen in zip(source_texts, generated_texts):
         cur_prompt = base_prompt.replace("{{Document}}", src).replace("{{Summary}}", gen)
         try:
-            response = openai.ChatCompletion.create(
-                model=model_name, messages=[{"role": "system", "content": cur_prompt}], temperature=0.7, max_tokens=50
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "system", "content": cur_prompt}],
+                temperature=0.7,
+                max_tokens=50,
+                n=1,
             )
-            gpt_text = response["choices"][0]["message"]["content"]
-            # 예: GPT 응답을 단순 float로 파싱 (실제 응답 형식에 맞게 조정 필요)
-            score_value = float(gpt_text.strip())
+            gpt_text = response.choices[0].message.content.strip()
+            score_value = float(gpt_text)
             scores.append(score_value)
         except Exception as e:
             print("G-EVAL 호출 실패:", e)
+            # 호출 실패 시 0점 처리
             scores.append(0.0)
 
     return scores
@@ -124,10 +132,10 @@ def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
 
     if "rouge" in metrics or "bert" in metrics:
         if len(gold_texts) != n_summaries:
-            raise ValueError("CSV 내 gold 열과 summarized 열의 줄 수가 다릅니다.")
+            raise ValueError("JSON 내 gold 열과 summarized 열의 줄 수가 다릅니다.")
     if "g-eval" in metrics:
         if len(source_texts) != n_summaries:
-            raise ValueError("CSV 내 source 열과 summarized 열의 줄 수가 다릅니다.")
+            raise ValueError("JSON 내 source 열과 summarized 열의 줄 수가 다릅니다.")
 
 
 def compute_metrics(config, source_texts, summarized_texts, gold_texts):
@@ -257,7 +265,6 @@ def print_averages(results, n_items):
 
 
 def main():
-    load_dotenv()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
@@ -265,14 +272,15 @@ def main():
 
     # 1) YAML 설정 로드
     config = load_config(args.config)
-    csv_file = config.get("csv_file", None)
+
+    json_file = config.get("json_file", None)
     metrics = config.get("metrics", [])
 
-    if not csv_file:
-        raise ValueError("config.yml에 csv_file 경로가 지정되지 않았습니다.")
+    if not json_file:
+        raise ValueError("config.yml에 json_file 경로가 지정되지 않았습니다.")
 
-    # 2) CSV 로드
-    source_texts, summarized_texts, gold_texts = load_data(csv_file)
+    # 2) JSON 로드
+    source_texts, summarized_texts, gold_texts = load_data_json(json_file)
 
     # 3) 길이 검사
     validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts)
