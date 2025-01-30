@@ -1,96 +1,52 @@
 import os
 
-import numpy as np
-import pandas as pd
 from openai import OpenAI
-from scipy.stats import chi2_contingency, entropy
-from sklearn.metrics import confusion_matrix
 
 from agents import BaseAgent, ClassificationAgent, build_messages, load_categories_from_yaml
 from gmail_api import Mail
 
-
-class MetricCalculator:
-    """Consistency 및 Correctness 평가를 수행하는 클래스."""
-
-    @staticmethod
-    def compute_metrics(results: list, ground_truth: list):
-        """
-        주어진 결과에 대해 Consistency 및 Correctness 평가 수행.
-
-        Args:
-            results (list): 분류 모델의 예측 결과 리스트.
-            ground_truth (list): 실제 정답 데이터 리스트.
-
-        Returns:
-            tuple: (entropy_value, diversity_index, p_value, accuracy)
-        """
-        value_counts = pd.Series(results).value_counts(normalize=True)
-        entropy_value = entropy(value_counts)
-        diversity_index = len(value_counts) / len(results)
-        chi2, p_value, _, _ = chi2_contingency(pd.crosstab(pd.Series(results), pd.Series(results)))
-        conf_matrix = confusion_matrix(ground_truth, results, labels=np.unique(ground_truth + results))
-        accuracy = np.trace(conf_matrix) / np.sum(conf_matrix)
-
-        return entropy_value, diversity_index, p_value, accuracy
-
-
-class EvaluationDataFrameManager:
-    """
-    평가 데이터 프레임을 관리하는 클래스.
-    """
-
-    def __init__(self, inference_count: int):
-        self.output_dir = "evaluation/classification/label_data"
-        os.makedirs(self.output_dir, exist_ok=True)
-        self.csv_file_path = os.path.join(self.output_dir, "labeled.csv")
-
-        self.columns = (
-            ["mail_id"]
-            + [f"inference_{i+1}" for i in range(inference_count)]
-            + ["entropy", "diversity_index", "chi_square_p_value", "accuracy"]
-        )
-
-        if os.path.exists(self.csv_file_path):
-            self.eval_df = pd.read_csv(self.csv_file_path)
-            print(f"📄 기존 평가 데이터 로드 완료: {self.eval_df.shape[0]}개의 데이터")
-        else:
-            self.eval_df = pd.DataFrame(columns=self.columns)
-
-    def update_eval_df(self, mail_id: str, results: list, ground_truth: list):
-        if mail_id in self.eval_df["mail_id"].values:
-            print(f"⚠️ 이미 처리된 메일 (ID: {mail_id}), 건너뜁니다.")
-            return
-
-        entropy_value, diversity_index, p_value, accuracy = MetricCalculator.compute_metrics(results, ground_truth)
-        new_entry = pd.DataFrame(
-            [[mail_id] + results + [entropy_value, diversity_index, p_value, accuracy]], columns=self.columns
-        )
-        self.eval_df = pd.concat([self.eval_df, new_entry], ignore_index=True)
-        self.eval_df.to_csv(self.csv_file_path, index=False)
-
-    def print_df(self):
-        print(self.eval_df)
+from .dataframe_manager import DataFrameManager
 
 
 class ClassificationEvaluationAgent(BaseAgent):
     """
     GPT 기반 분류 평가를 수행하며 Consistency 및 Correctness를 정량적으로 평가하는 클래스.
+
+    이 클래스는 OpenAI의 GPT 모델을 활용하여 메일의 분류 결과를 평가하며,
+    Consistency(일관성) 및 Correctness(정확도) 등의 지표를 정량적으로 계산합니다.
+
+    Args:
+        model (str): 사용할 GPT 계열 모델의 이름.
+        human_evaluation (bool): 사람이 직접 평가할 수 있도록 할지 여부.
+        inference (int): 동일한 데이터에 대해 추론을 반복하여 일관성을 평가하는 횟수.
+        temperature (int, optional): 모델의 응답 다양성을 조절하는 온도 값. 기본값은 None.
+        seed (int, optional): 랜덤 시드를 설정하여 결과를 재현 가능하게 함. 기본값은 None.
     """
 
     def __init__(self, model: str, human_evaluation: bool, inference: int, temperature: int = None, seed: int = None):
         super().__init__(model, temperature, seed)
         self.inference_iteration = inference
         self.human_evaluation = human_evaluation
-        self.df_manager = EvaluationDataFrameManager(inference)
+        self.df_manager = DataFrameManager(inference)
 
     def initialize_chat(self, model, temperature=None, seed=None):
         return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     def generate_ground_truth(self, mail: Mail) -> str:
+        """
+        주어진 메일 데이터를 기반으로 GPT 모델을 사용하여 Ground Truth(정답 데이터)를 생성합니다.
+
+        Args:
+            mail (Mail): 분류할 메일 객체.
+
+        Returns:
+            str: GPT 모델이 생성한 Ground Truth(정답).
+        """
+        # YAML 파일에서 카테고리 정보를 로드
         categories = load_categories_from_yaml(is_prompt=True)
         categories_text = "\n".join([f"카테고리 명: {c['name']}\n분류 기준: {c['rubric']}" for c in categories])
 
+        # GPT 모델을 사용하여 분류 수행
         response = self.client.chat.completions.create(
             model=self.model_name,
             messages=build_messages(
@@ -104,18 +60,33 @@ class ClassificationEvaluationAgent(BaseAgent):
         return response.choices[0].message.content.strip()
 
     def process(self, mail: Mail, classifier: ClassificationAgent) -> Mail:
+        """
+        메일을 GPT 모델을 사용하여 분류하고, 그 결과를 평가하여 DataFrame에 저장합니다.
+
+        Args:
+            mail (Mail): 분류할 메일 객체.
+            classifier (ClassificationAgent): 메일을 분류할 ClassificationAgent 객체.
+
+        Returns:
+            Mail: 평가가 완료된 메일 객체.
+        """
+        # Ground Truth(정답) 생성
         ground_truth = self.generate_ground_truth(mail)
 
+        # 사람이 직접 평가하는 옵션이 활성화된 경우, 사용자 입력을 받아 정답 수정 가능
         if self.human_evaluation:
             user_input = input(
+                "===================\n"
                 f"Subject: {mail.subject}\n보낸 사람: {mail.sender}\n본문: {mail.body}\n"
-                f"===================\n예측된 정답: {ground_truth}. 수정하려면 입력, 그대로 유지하려면 Enter: "
+                f"예측된 정답: {ground_truth}. 수정하려면 입력, 그대로 유지하려면 Enter: "
             )
             ground_truth = user_input.strip() if user_input else ground_truth
 
+        # 동일한 메일에 대해 여러 번 분류하여 일관성 평가
         results = [classifier.process(mail) for _ in range(self.inference_iteration)]
-        ground_truth_list = [ground_truth] * len(results)
-        self.df_manager.update_eval_df(mail.id, results, ground_truth_list)
+
+        # 결과 저장
+        self.df_manager.update_eval_df(mail.id, results, ground_truth)
         return mail
 
     def print_evaluation(self):

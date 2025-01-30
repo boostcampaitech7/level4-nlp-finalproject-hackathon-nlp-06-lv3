@@ -209,3 +209,4 @@ token.json
 gold.txt
 generated.txt
 *.pkl
+*.png

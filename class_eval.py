@@ -1,3 +1,5 @@
+import warnings
+
 from dotenv import load_dotenv
 from tqdm import tqdm
 
@@ -26,6 +28,8 @@ def evaluate_emails(
 def main():
     """메일 데이터를 가져와 AI 모델을 사용하여 분류하고 평가하는 메인 실행 함수."""
     load_dotenv()
+    warnings.filterwarnings(action="ignore")
+
     args = parse_arguments()
 
     gmail_service = GmailService()
@@ -35,7 +39,7 @@ def main():
 
     classification_agent = ClassificationAgent(model_name="solar-pro")
     evaluation_agent = ClassificationEvaluationAgent(
-        model="gpt-4o", human_evaluation=args.human_evaluation, inference=7  # args.inference
+        model="gpt-4o", human_evaluation=args.human_evaluation, inference=5  # args.inference
     )
 
     evaluate_emails(mail_dict, classification_agent, evaluation_agent)
