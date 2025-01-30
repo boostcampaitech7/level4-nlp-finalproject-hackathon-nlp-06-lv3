@@ -39,7 +39,7 @@ def main():
 
     classification_agent = ClassificationAgent(model_name="solar-pro")
     evaluation_agent = ClassificationEvaluationAgent(
-        model="gpt-4o", human_evaluation=args.human_evaluation, inference=5  # args.inference
+        model="gpt-4o", human_evaluation=args.human_evaluation, inference=args.inference
     )
 
     evaluate_emails(mail_dict, classification_agent, evaluation_agent)
