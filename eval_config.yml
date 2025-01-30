@@ -12,5 +12,9 @@ bert_model: "distilbert-base-uncased"
 
 # G-EVAL setting
 g_eval:
-  prompt_file: "prompt/template/g_eval/con_detailed.txt"
   openai_model: "gpt-4"
+  prompts:
+    consistency: "prompt/template/g_eval/con_summary.txt"
+    coherence: "prompt/template/g_eval/coh_summary.txt"
+    fluency: "prompt/template/g_eval/flu_summary.txt"
+    relevance: "prompt/template/g_eval/rel_summary.txt"

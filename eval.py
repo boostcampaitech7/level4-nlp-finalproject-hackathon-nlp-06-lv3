@@ -91,37 +91,60 @@ def calculate_bert(gold_texts, generated_texts, model_type="distilbert-base-unca
 
 def calculate_g_eval(source_texts, generated_texts, config):
     """
-    G-EVAL(gold 없이 source, summarized) 평가
+    4가지 관점(consistency, coherence, fluency, relevance)에 대해
+    각 source+summary 쌍마다 OpenAI API를 4번 호출하고, 결과 점수를 반환.
+    반환 형태:
+      [
+        {"consistency": float, "coherence": float, "fluency": float, "relevance": float},
+        {"consistency": float, "coherence": float, "fluency": float, "relevance": float},
+        ...
+      ]
     """
-    # g_eval 관련 설정
+    # g_eval 세팅
     g_eval_config = config.get("g_eval", {})
-    prompt_file = g_eval_config.get("prompt_file", "prompt/template/g_eval/con_detailed.txt")
+    prompt_files = g_eval_config.get("prompts", {})
     model_name = g_eval_config.get("openai_model", "gpt-4")
 
-    # 프롬프트 템플릿 불러오기
-    with open(prompt_file, "r", encoding="utf-8") as f:
-        base_prompt = f.read()
+    # 평가할 네 가지 aspects
+    aspects = ["consistency", "coherence", "fluency", "relevance"]
 
-    scores = []
+    results_list = []
     for src, gen in zip(source_texts, generated_texts):
-        cur_prompt = base_prompt.replace("{{Document}}", src).replace("{{Summary}}", gen)
-        try:
-            response = client.chat.completions.create(
-                model=model_name,
-                messages=[{"role": "system", "content": cur_prompt}],
-                temperature=0.7,
-                max_tokens=50,
-                n=1,
-            )
-            gpt_text = response.choices[0].message.content.strip()
-            score_value = float(gpt_text)
-            scores.append(score_value)
-        except Exception as e:
-            print("G-EVAL 호출 실패:", e)
-            # 호출 실패 시 0점 처리
-            scores.append(0.0)
+        aspect_scores = {}
+        for aspect in aspects:
+            prompt_path = prompt_files.get(aspect, None)
+            if not prompt_path:
+                # 프롬프트 파일이 없다면 0으로 처리
+                aspect_scores[aspect] = 0.0
+                continue
 
-    return scores
+            # 프롬프트 읽어오기
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                base_prompt = f.read()
+
+            # {{Document}}, {{Summary}} 치환
+            cur_prompt = base_prompt.replace("{{Document}}", src).replace("{{Summary}}", gen)
+
+            # OpenAI API 호출
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "system", "content": cur_prompt}],
+                    temperature=0.7,
+                    max_tokens=50,
+                    n=1,
+                )
+                # GPT가 준 output을 float로 파싱
+                gpt_text = response.choices[0].message.content.strip()
+                score_value = float(gpt_text)
+                aspect_scores[aspect] = score_value
+            except Exception as e:
+                print(f"[Error in G-EVAL] aspect={aspect}, error={e}")
+                aspect_scores[aspect] = 0.0
+
+        results_list.append(aspect_scores)
+
+    return results_list
 
 
 def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
@@ -163,7 +186,7 @@ def compute_metrics(config, source_texts, summarized_texts, gold_texts):
 
 def print_per_item_scores(results, source_texts, summarized_texts, gold_texts):
     """
-    각 샘플별(아이템별) 스코어를 출력
+    각 샘플별 스코어를 출력
     """
     n_items = len(summarized_texts)
     for i in range(n_items):
@@ -188,8 +211,12 @@ def print_per_item_scores(results, source_texts, summarized_texts, gold_texts):
 
         # G-EVAL
         if "g-eval" in results:
-            gscore = results["g-eval"][i]
-            print(f"[G-EVAL] score={gscore:.4f}")
+            gitem = results["g-eval"][i]
+            con = gitem["consistency"]
+            coh = gitem["coherence"]
+            flu = gitem["fluency"]
+            rel = gitem["relevance"]
+            print("[G-EVAL] " f"consistency={con:.4f}, coherence={coh:.4f}, " f"fluency={flu:.4f}, relevance={rel:.4f}")
 
 
 def print_averages(results, n_items):
@@ -256,12 +283,25 @@ def print_averages(results, n_items):
         print("\n[BERT Avg]")
         print(f"  Precision: {p_sum/n_items:.4f}, " f"Recall: {r_sum/n_items:.4f}, " f"F1: {f_sum/n_items:.4f}")
 
-    # G-EVAL 평균
+    # G-EVAL 평균 (4가지 관점별 평균)
     if "g-eval" in results:
         geval_list = results["g-eval"]
-        avg_score = sum(geval_list) / n_items
+        # consistency, coherence, fluency, relevance 각각의 합
+        con_sum = coh_sum = flu_sum = rel_sum = 0.0
+
+        for item in geval_list:
+            con_sum += item["consistency"]
+            coh_sum += item["coherence"]
+            flu_sum += item["fluency"]
+            rel_sum += item["relevance"]
+
         print("\n[G-EVAL Avg]")
-        print(f"  Score: {avg_score:.4f}")
+        print(
+            f"  consistency={con_sum/n_items:.4f}, "
+            f"coherence={coh_sum/n_items:.4f}, "
+            f"fluency={flu_sum/n_items:.4f}, "
+            f"relevance={rel_sum/n_items:.4f}"
+        )
 
 
 def main():
