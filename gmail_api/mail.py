@@ -39,14 +39,14 @@ class Mail:
         attachments_text = ""
         if self.attachments:
             for i, item in enumerate(self.attachments):
-                attachments_text += "Attachments " + str(i + 1) + ":\n" + item + "\n\n"
+                attachments_text += "첨부파일 " + str(i + 1) + ":\n" + item + "\n\n"
         return (
-            f"From: {self.sender}\n"
-            f"To: {', '.join(self.recipients)}\n"
-            f"CC: {', '.join(self.cc)}\n"
-            f"Subject: {self.subject}\n"
-            f"Date: {self.date}\n"
-            f"Body:\n{self.body}\n"
+            f"보낸 사람: {self.sender}\n"
+            f"받는 사람: {', '.join(self.recipients)}\n"
+            f"참조: {', '.join(self.cc)}\n"
+            f"제목: {self.subject}\n"
+            f"날짜: {self.date}\n"
+            f"본문:\n{self.body}\n"
             f"{attachments_text}"
         )
 
