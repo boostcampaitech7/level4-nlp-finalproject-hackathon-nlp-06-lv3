@@ -1,4 +1,4 @@
-You will be given a summary of a single email.
+You will be given a summary of an email.
 
 Your task is to rate the summary on one metric.
 
@@ -7,24 +7,13 @@ Please make sure you read and understand these instructions carefully. Keep this
 
 Evaluation Criteria:
 
-Consistency (1-5) - The summary should be factually aligned with the original email. A factually consistent summary contains only statements that are supported by the source email and does not introduce new, misleading, or incorrect information. Summaries that contain hallucinated facts (i.e., information not found in the original email) should be penalized.
+Consistency (1-5) - the factual alignment between the summary and the summarized source. A factually consistent summary contains only statements that are entailed by the source document. Annotators were also asked to penalize summaries that contained hallucinated facts. 
 
 Evaluation Steps:
 
-1. Read the Email Carefully
-- Identify the main facts, key details, and overall message of the email.
-
-2. Compare the Summary to the Email
-- Does the summary accurately reflect the key points of the email?
-- Does it introduce any information that is not supported by the email?
-- Are there any factual distortions, exaggerations, or omissions?
-
-3. Assign a Consistency Score (1–5):
-- 1: The summary is highly inconsistent with the email. It contains multiple incorrect or hallucinated facts, misrepresents the key points, or significantly alters the intended message.
-- 2: The summary has notable factual inconsistencies. Some information is misrepresented or missing, making it unreliable.
-- 3: The summary is mostly consistent but contains at least one minor factual error or omission that slightly distorts the original meaning.
-- 4: The summary is largely accurate and aligns well with the email. There may be very minor rewording or omission, but they do not significantly affect the meaning.
-- 5: The summary is fully consistent with the email. It accurately reflects all key points without adding, removing, or distorting any factual information.
+1. Read the email carefully and identify the main facts and details it presents.
+2. Read the summary and compare it to the article. Check if the summary contains any factual errors that are not supported by the article.
+3. Assign a score for consistency based on the Evaluation Criteria.
 
 
 Example:
