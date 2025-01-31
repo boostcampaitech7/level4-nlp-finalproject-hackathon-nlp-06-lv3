@@ -5,7 +5,7 @@ export default function Main() {
   return (
     <div className="flex flex-col justify-center w-full">
       <Header />
-      <div>
+      <div className="p-7">
         <ReportsContainers />
       </div>
     </div>

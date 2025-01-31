@@ -1,5 +1,6 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 import axiosInstance from "@/utils/axiosInstance"
+import ReportBox from "@/containers/main/reports/ReportBox"
 
 export default function ReportsContainers() {
   const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
@@ -23,13 +24,13 @@ export default function ReportsContainers() {
   })
 
   return (
-    <>
-      {data?.pages.map((page) => page?.reports.map((report: any) => <div key={report.id}>{report.content}</div>))}
+    <div className="flex flex-col gap-5">
+      {data?.pages.map((page) => page?.reports.map((report: any) => <ReportBox key={report.id} report={report} />))}
       {hasNextPage && (
         <button type="button" onClick={() => fetchNextPage()}>
           더보기
         </button>
       )}
-    </>
+    </div>
   )
 }
