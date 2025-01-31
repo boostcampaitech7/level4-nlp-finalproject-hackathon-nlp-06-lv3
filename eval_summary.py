@@ -5,6 +5,7 @@ import torch
 import yaml
 from bert_score import score as bert_score
 from dotenv import load_dotenv
+from langchain.prompts import PromptTemplate
 from openai import OpenAI
 from rouge_score import rouge_scorer
 
@@ -304,8 +305,84 @@ def print_averages(results, n_items):
         )
 
 
-def main():
+def get_geval_scores(source_text, generated_text, config):
+    """
+    이메일과 이메일 요약문을 입력으로 받고
+    4가지 관점("consistency", "coherence", "fluency", "relevance")에 대해 점수를 매긴다.
 
+    source_text (str): 원본 이메일
+    generated_text (str): 이메일 요약문
+
+    Return:
+        ({"consistency": float, "coherence": float, "fluency": float, "relevance": float},
+        "점수: consistency=float, coherence=float, fluency=float, relevance=float")
+        즉, 0번째는 dict, 1번째는 str
+
+    """
+    # g_eval 세팅
+    g_eval_config = config.get("g_eval", {})
+    prompt_files = g_eval_config.get("prompts_summary", {})
+    model_name = g_eval_config.get("openai_model", "gpt-4")
+    aspects = ["consistency", "coherence", "fluency", "relevance"]
+
+    aspect_scores = {}
+    for aspect in aspects:
+        prompt_path = prompt_files.get(aspect, None)
+        if not prompt_path:
+            # 프롬프트 파일이 없다면 0으로 처리
+            aspect_scores[aspect] = 0.0
+            continue
+
+        with open(prompt_path, "r", encoding="utf-8") as file:
+            prompt_template = file.read()
+
+        # 최종 프롬프트 선언
+        if aspect == "fluency":
+            prompt = PromptTemplate(
+                input_variables=["Summary"],
+                template=prompt_template,
+            )
+
+            formatted_prompt = prompt.format(
+                Summary=generated_text,
+            )
+        else:
+            prompt = PromptTemplate(
+                input_variables=["Document", "Summary"],
+                template=prompt_template,
+            )
+
+            formatted_prompt = prompt.format(Document=source_text, Summary=generated_text)
+
+        # print("FORMATTED_PROMPT: ", formatted_prompt)
+        # OpenAI API 호출
+        try:
+            response = client.chat.completions.create(
+                model=model_name,
+                messages=[{"role": "system", "content": formatted_prompt}],
+                temperature=0.7,
+                max_tokens=50,
+                n=1,
+            )
+            # GPT가 준 output을 float로 파싱
+            gpt_text = response.choices[0].message.content.strip()
+            score_value = float(gpt_text)
+            aspect_scores[aspect] = score_value
+        except Exception as e:
+            print(f"[Error in G-EVAL] aspect={aspect}, error={e}")
+            aspect_scores[aspect] = 0.0
+
+    scores = []
+    for key, value in aspect_scores.items():
+        score_str = f"{key}={value}"
+        scores.append(score_str)
+
+    final_str = "점수: " + ", ".join(scores)
+
+    return aspect_scores, final_str
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
     args = parser.parse_args()
