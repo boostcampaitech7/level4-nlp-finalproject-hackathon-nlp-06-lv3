@@ -1,11 +1,23 @@
 # CSV 파일 경로
-csv_file: "example_data.csv"
+json_file: "example_data_2.json"
 
 # 계산할 메트릭 목록
 metrics:
   - rouge
   - bert
-  # - g-eval
+  - g-eval
 
 # BERTScore에서 사용할 모델
 bert_model: "distilbert-base-uncased"
+
+# G-EVAL setting
+g_eval:
+  openai_model: "gpt-4"
+  prompts:
+    consistency: "prompt/template/g_eval/con_report.txt"
+    coherence: "prompt/template/g_eval/coh_report.txt"
+    fluency: "prompt/template/g_eval/flu_report.txt"
+    relevance: "prompt/template/g_eval/rel_report.txt"
+    readability: "prompt/template/g_eval/rdb_report.txt"
+    clearance: "prompt/template/g_eval/clr_report.txt"
+    practicality: "prompt/template/g_eval/prc_report.txt"

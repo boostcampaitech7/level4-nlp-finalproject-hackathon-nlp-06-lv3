@@ -1,11 +1,15 @@
 import argparse
-import csv
-import random
+import json
 
 import torch
 import yaml
 from bert_score import score as bert_score
+from dotenv import load_dotenv
+from openai import OpenAI
 from rouge_score import rouge_scorer
+
+load_dotenv()
+client = OpenAI()
 
 
 def load_config(config_path):
@@ -17,20 +21,21 @@ def load_config(config_path):
     return config
 
 
-def load_data(csv_file):
+def load_data_json(json_file):
     """
-    CSV 파일에서 source, summarized, gold 열을 읽어 리스트로 반환
+    JSON을 로드하여 source, summarized, gold 리스트를 반환
     """
+    with open(json_file, "r", encoding="utf-8") as f:
+        data_list = json.load(f)  # [{...}, {...}, ...] 형태
+
     source_texts = []
     summarized_texts = []
     gold_texts = []
 
-    with open(csv_file, "r", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            source_texts.append(row["source"])
-            summarized_texts.append(row["summarized"])
-            gold_texts.append(row["gold"])
+    for item in data_list:
+        source_texts.append(item["source"])
+        summarized_texts.append(item["system_output"])
+        gold_texts.append(item["reference"])
 
     return source_texts, summarized_texts, gold_texts
 
@@ -84,16 +89,62 @@ def calculate_bert(gold_texts, generated_texts, model_type="distilbert-base-unca
     return results
 
 
-def calculate_g_eval(source_texts, generated_texts):
+def calculate_g_eval(source_texts, generated_texts, config):
     """
-    G-EVAL(gold 없이 source, summarized) 평가
-    TODO: G-EVAL 방식으로 평가하여 점수 출력하는 코드 구현
-    지금은 임시로 랜덤 점수가 출력
+    4가지 관점(consistency, coherence, fluency, relevance)에 대해
+    각 source+summary 쌍마다 OpenAI API를 4번 호출하고, 결과 점수를 반환.
+    반환 형태:
+      [
+        {"consistency": float, "coherence": float, "fluency": float, "relevance": float},
+        {"consistency": float, "coherence": float, "fluency": float, "relevance": float},
+        ...
+      ]
     """
-    scores = []
+    # g_eval 세팅
+    g_eval_config = config.get("g_eval", {})
+    prompt_files = g_eval_config.get("prompts", {})
+    model_name = g_eval_config.get("openai_model", "gpt-4")
+
+    # 평가할 네 가지 aspects
+    aspects = ["consistency", "coherence", "fluency", "relevance"]
+
+    results_list = []
     for src, gen in zip(source_texts, generated_texts):
-        scores.append(random.uniform(0, 1))
-    return scores  # 길이 N
+        aspect_scores = {}
+        for aspect in aspects:
+            prompt_path = prompt_files.get(aspect, None)
+            if not prompt_path:
+                # 프롬프트 파일이 없다면 0으로 처리
+                aspect_scores[aspect] = 0.0
+                continue
+
+            # 프롬프트 읽어오기
+            with open(prompt_path, "r", encoding="utf-8") as f:
+                base_prompt = f.read()
+
+            # {{Document}}, {{Summary}} 치환
+            cur_prompt = base_prompt.format(Document=src, Summary=gen)
+
+            # OpenAI API 호출
+            try:
+                response = client.chat.completions.create(
+                    model=model_name,
+                    messages=[{"role": "system", "content": cur_prompt}],
+                    temperature=0.7,
+                    max_tokens=50,
+                    n=1,
+                )
+                # GPT가 준 output을 float로 파싱
+                gpt_text = response.choices[0].message.content.strip()
+                score_value = float(gpt_text)
+                aspect_scores[aspect] = score_value
+            except Exception as e:
+                print(f"[Error in G-EVAL] aspect={aspect}, error={e}")
+                aspect_scores[aspect] = 0.0
+
+        results_list.append(aspect_scores)
+
+    return results_list
 
 
 def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
@@ -104,10 +155,10 @@ def validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts):
 
     if "rouge" in metrics or "bert" in metrics:
         if len(gold_texts) != n_summaries:
-            raise ValueError("CSV 내 gold 열과 summarized 열의 줄 수가 다릅니다.")
+            raise ValueError("JSON 내 gold 열과 summarized 열의 줄 수가 다릅니다.")
     if "g-eval" in metrics:
         if len(source_texts) != n_summaries:
-            raise ValueError("CSV 내 source 열과 summarized 열의 줄 수가 다릅니다.")
+            raise ValueError("JSON 내 source 열과 summarized 열의 줄 수가 다릅니다.")
 
 
 def compute_metrics(config, source_texts, summarized_texts, gold_texts):
@@ -127,7 +178,7 @@ def compute_metrics(config, source_texts, summarized_texts, gold_texts):
         results["bert"] = bert_res
 
     if "g-eval" in metrics:
-        geval_res = calculate_g_eval(source_texts, summarized_texts)
+        geval_res = calculate_g_eval(source_texts, summarized_texts, config)
         results["g-eval"] = geval_res
 
     return results
@@ -135,7 +186,7 @@ def compute_metrics(config, source_texts, summarized_texts, gold_texts):
 
 def print_per_item_scores(results, source_texts, summarized_texts, gold_texts):
     """
-    각 샘플별(아이템별) 스코어를 출력
+    각 샘플별 스코어를 출력
     """
     n_items = len(summarized_texts)
     for i in range(n_items):
@@ -160,8 +211,12 @@ def print_per_item_scores(results, source_texts, summarized_texts, gold_texts):
 
         # G-EVAL
         if "g-eval" in results:
-            gscore = results["g-eval"][i]
-            print(f"[G-EVAL] score={gscore:.4f}")
+            gitem = results["g-eval"][i]
+            con = gitem["consistency"]
+            coh = gitem["coherence"]
+            flu = gitem["fluency"]
+            rel = gitem["relevance"]
+            print("[G-EVAL] " f"consistency={con:.4f}, coherence={coh:.4f}, " f"fluency={flu:.4f}, relevance={rel:.4f}")
 
 
 def print_averages(results, n_items):
@@ -228,29 +283,44 @@ def print_averages(results, n_items):
         print("\n[BERT Avg]")
         print(f"  Precision: {p_sum/n_items:.4f}, " f"Recall: {r_sum/n_items:.4f}, " f"F1: {f_sum/n_items:.4f}")
 
-    # G-EVAL 평균
+    # G-EVAL 평균 (4가지 관점별 평균)
     if "g-eval" in results:
         geval_list = results["g-eval"]
-        avg_score = sum(geval_list) / n_items
+        # consistency, coherence, fluency, relevance 각각의 합
+        con_sum = coh_sum = flu_sum = rel_sum = 0.0
+
+        for item in geval_list:
+            con_sum += item["consistency"]
+            coh_sum += item["coherence"]
+            flu_sum += item["fluency"]
+            rel_sum += item["relevance"]
+
         print("\n[G-EVAL Avg]")
-        print(f"  Score: {avg_score:.4f}")
+        print(
+            f"  consistency={con_sum/n_items:.4f}, "
+            f"coherence={coh_sum/n_items:.4f}, "
+            f"fluency={flu_sum/n_items:.4f}, "
+            f"relevance={rel_sum/n_items:.4f}"
+        )
 
 
 def main():
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="eval_config.yml", help="Path to YAML config file")
     args = parser.parse_args()
 
     # 1) YAML 설정 로드
     config = load_config(args.config)
-    csv_file = config.get("csv_file", None)
+
+    json_file = config.get("json_file", None)
     metrics = config.get("metrics", [])
 
-    if not csv_file:
-        raise ValueError("config.yml에 csv_file 경로가 지정되지 않았습니다.")
+    if not json_file:
+        raise ValueError("config.yml에 json_file 경로가 지정되지 않았습니다.")
 
-    # 2) CSV 로드
-    source_texts, summarized_texts, gold_texts = load_data(csv_file)
+    # 2) JSON 로드
+    source_texts, summarized_texts, gold_texts = load_data_json(json_file)
 
     # 3) 길이 검사
     validate_data_lengths(metrics, source_texts, summarized_texts, gold_texts)
