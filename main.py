@@ -5,7 +5,8 @@ from googleapiclient.errors import HttpError
 from tqdm import tqdm
 
 from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
-from gmail_api import GmailService, Mail
+from gmail_api import GmailService, Mail, MessageHandler
+from reflexion import ReflexionActorSummaryAgent, ReflexionEvaluator, ReflexionFramework, ReflexionSelfReflection
 
 
 def main():
@@ -57,6 +58,41 @@ def main():
                 print(f"메일 subject: {mail_subject}")
                 print(f"리포트: {mail_report['report']}")
             print()
+
+        # 아래는 Reflexion 실행 코드로, 57~69 라인 주석 처리 한 뒤 아래 주석 해제하고 실행
+        # report_agent = SummaryAgent("solar-pro", "final")
+        # report = report_agent.process(mail_dict)
+
+        # task = "final_report"
+
+        # # SummaryAgent에서 나온 출력물을 Evaluator, SelfReflection에 전달해주기 위해 전처리하는 과정
+        # initial_output_text = ""
+        # if task == "final_report":
+        #     for label, mail_reports in report.items():
+        #         initial_output_text += f"{map_category(label)}\n"
+        #         count = 1
+        #         for mail_report in mail_reports:
+        #             initial_output_text += f"{count}. {mail_report['report']}\n"
+        #             count += 1
+        #         initial_output_text += "\n\n"
+        # elif task == "single":
+        #     initial_output_text = report.get("summary")
+
+        # report_agent = SummaryAgent("solar-pro", "final")
+        # task = "final_report"
+        # summary_type = task.split("_")[0]
+        # actor = ReflexionActorSummaryAgent(model_name="solar-pro", summary_type=summary_type)
+        # evaluator = ReflexionEvaluator(task)
+        # self_reflection = ReflexionSelfReflection(task)
+
+        # reflexion = ReflexionFramework(task=task, actor=actor, evaluator=evaluator, self_reflection=self_reflection)
+        # reflexion.run(
+        #     source_text=mail_dict,
+        #     initial_output_text=initial_output_text,
+        #     max_iteration=10,
+        #     threshold="average",
+        #     score_threshold=4.5,
+        # )
 
     except HttpError as error:
         print(f"An error occurred: {error}")
