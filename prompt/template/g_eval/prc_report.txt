@@ -28,17 +28,13 @@ Evaluation Steps:
 - 4: The report is generally helpful, containing most action items and relevant context.
 - 5: The report is highly practical, offering clear and comprehensive guidance for any needed actions or decisions.
 
-
-Example:
-
-
 Email Summaries:
 
-{{Document}}
+{Document}
 
 Summary:
 
-{{Summary}}
+{Summary}
 
 
 Evaluation Form (scores ONLY):

@@ -13,12 +13,9 @@ Fluency (1-3): The quality of the report in terms of grammar, spelling, punctuat
 - 2: Fair – The report has some minor errors that affect clarity or smoothness, but the main points remain comprehensible.
 - 3: Good – The report has few or no errors and is easy to read and follow.
 
-
-Example:
-
 Summary:
 
-{{Summary}}
+{Summary}
 
 
 Evaluation Form (scores ONLY):

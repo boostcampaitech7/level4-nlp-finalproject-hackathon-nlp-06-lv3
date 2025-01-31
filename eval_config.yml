@@ -12,7 +12,7 @@ bert_model: "distilbert-base-uncased"
 
 # G-EVAL setting
 g_eval:
-  openai_model: "gpt-4"
+  openai_model: "gpt-4o"
   prompts:
     consistency: "prompt/template/g_eval/con_report.txt"
     coherence: "prompt/template/g_eval/coh_report.txt"
@@ -21,3 +21,8 @@ g_eval:
     readability: "prompt/template/g_eval/rdb_report.txt"
     clearance: "prompt/template/g_eval/clr_report.txt"
     practicality: "prompt/template/g_eval/prc_report.txt"
+  prompts_summary:
+    coherence: "prompt/template/g_eval/coh_summary.txt"
+    consistency: "prompt/template/g_eval/con_summary.txt"
+    relevance: "prompt/template/g_eval/rel_summary.txt"
+    fluency: "prompt/template/g_eval/flu_summary.txt"

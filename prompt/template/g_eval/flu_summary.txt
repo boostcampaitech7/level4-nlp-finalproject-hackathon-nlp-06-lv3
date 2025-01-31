@@ -1,9 +1,8 @@
-You will be given one summary written for a news article.
+You will be given a summary of a single email.
 
 Your task is to rate the summary on one metric.
 
-Please make sure you read and understand these instructions carefully. Please keep this document open while reviewing, and refer to it as needed.
-
+Please make sure you read and understand these instructions carefully. Keep this document open while reviewing, and refer to it as needed.
 
 Evaluation Criteria:
 

@@ -1,0 +1,5 @@
+사용자 메일:
+{mail}
+
+이전 요약문들에 대한 피드백 내역:
+{previous_reflections}
