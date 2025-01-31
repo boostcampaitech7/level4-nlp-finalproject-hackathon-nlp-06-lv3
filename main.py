@@ -6,7 +6,12 @@ from tqdm import tqdm
 
 from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
 from gmail_api import GmailService, Mail, MessageHandler
-from reflexion import ReflexionActorSummaryAgent, ReflexionEvaluator, ReflexionFramework, ReflexionSelfReflection
+
+# from reflexion import
+#     ReflexionActorSummaryAgent,
+#     ReflexionEvaluator,
+#     ReflexionFramework,
+#     ReflexionSelfReflection
 
 
 def main():
@@ -45,6 +50,7 @@ def main():
             print(summary)
             print("=" * 40)
 
+        # 주석 책갈피1 시작
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
@@ -58,16 +64,19 @@ def main():
                 print(f"메일 subject: {mail_subject}")
                 print(f"리포트: {mail_report['report']}")
             print()
+        # 주석 책갈피1 끝
 
-        # 아래는 Reflexion 실행 코드로, 57~69 라인 주석 처리 한 뒤 아래 주석 해제하고 실행
+        # 주석 책갈피1 부분 주석 처리 하고 주석 책갈피 2 해제 (맨위 reflexion import 부분도 주석 해제할것)
+        # 주석 책갈피2 시작
         # report_agent = SummaryAgent("solar-pro", "final")
         # report = report_agent.process(mail_dict)
 
         # task = "final_report"
 
         # # SummaryAgent에서 나온 출력물을 Evaluator, SelfReflection에 전달해주기 위해 전처리하는 과정
-        # initial_output_text = ""
+
         # if task == "final_report":
+        #     initial_output_text = ""
         #     for label, mail_reports in report.items():
         #         initial_output_text += f"{map_category(label)}\n"
         #         count = 1
@@ -93,6 +102,7 @@ def main():
         #     threshold="average",
         #     score_threshold=4.5,
         # )
+    # 주석 책갈피2 끝
 
     except HttpError as error:
         print(f"An error occurred: {error}")
