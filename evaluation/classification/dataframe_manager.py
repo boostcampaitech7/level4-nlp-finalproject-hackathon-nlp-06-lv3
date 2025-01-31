@@ -62,9 +62,6 @@ class DataFrameManager:
         if self.eval_df.empty:
             print("⚠️ 저장된 평가 데이터가 없습니다.")
             return
-
-        MetricCalculator.plot_confusion_matrix()
-
         self._print_correctness()
 
         self._print_consistency()
