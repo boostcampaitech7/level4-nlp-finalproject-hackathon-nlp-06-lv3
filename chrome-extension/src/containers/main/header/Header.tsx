@@ -3,7 +3,7 @@ import Profile from "@/containers/main/header/profile/Profile"
 
 export default function Header() {
   return (
-    <header className="h-[100px] flex w-full items-center justify-between px-8 bg-white border border-b-gray-300">
+    <header className="h-[100px] flex w-full items-center justify-between px-8 bg-white border border-b-border-gray">
       <span className="text-4xl w-16">
         <TbBrandGmail />
       </span>

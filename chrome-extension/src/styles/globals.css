@@ -27,7 +27,7 @@
   }
 
   hr {
-    @apply border-gray-300;
+    @apply border-border-gray;
   }
 
   input:focus {

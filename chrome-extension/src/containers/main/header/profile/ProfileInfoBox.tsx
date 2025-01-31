@@ -26,7 +26,7 @@ export default function ProfileInfoBox() {
   })
 
   return (
-    <div className="absolute top-20 right-0 bg-white drop-shadow-lg border border-gray-300 rounded-lg px-6 py-4 min-w-[170px]">
+    <div className="absolute top-20 right-0 bg-white drop-shadow-lg border border-border-gray rounded-lg px-6 py-4 min-w-[170px]">
       <div className="w-full flex flex-col justify-center text-text-gray">
         <p>{userInfo.name}</p>
         <p className="text-xs">{userInfo.email}</p>

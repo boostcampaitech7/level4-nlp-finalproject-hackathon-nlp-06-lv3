@@ -9,7 +9,7 @@ export default function Profile() {
   return (
     <div className="relative">
       <button type="button" onClick={() => setIsOpenInfoBox(!isOpenInfoBox)}>
-        <img src={userInfo.picture} alt="profile" className="rounded-full border border-gray-200 w-10 h-10" />
+        <img src={userInfo.picture} alt="profile" className="rounded-full border border-border-gray w-10 h-10" />
       </button>
       {isOpenInfoBox && <ProfileInfoBox />}
     </div>

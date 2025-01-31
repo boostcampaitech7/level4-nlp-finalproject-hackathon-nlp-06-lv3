@@ -16,7 +16,7 @@ function ReportTitle({ dateString }: { dateString: string }) {
 
 export default function ReportBox({ report }: { report: any }) {
   return (
-    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-2 min-h-[170px]">
+    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-2 min-h-[170px] border border-border-gray">
       <ReportTitle dateString={report.date} />
       <p className="text-text-gray">{report.content}</p>
     </div>

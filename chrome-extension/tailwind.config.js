@@ -7,6 +7,7 @@ export default {
         background: "#F6F8FC",
         "main-theme": "#4064F6",
         "text-gray": "#757575",
+        "border-gray": "#D9D9D9",
       },
     },
     fontFamily: {
