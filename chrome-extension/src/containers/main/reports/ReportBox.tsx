@@ -1,20 +1,6 @@
-import moment from "moment"
 import { useSetRecoilState } from "recoil"
 import viewState from "@/states/viewState"
-
-function ReportTitle({ dateString }: { dateString: string }) {
-  const date = moment(dateString)
-  const today = moment().startOf("day")
-  const yesterday = moment().subtract(1, "days").startOf("day")
-
-  if (date.isSame(today)) {
-    return <h2 className="text-2xl font-bold">오늘</h2>
-  }
-  if (date.isSame(yesterday)) {
-    return <h2 className="text-2xl font-bold">어제</h2>
-  }
-  return <h2 className="text-2xl font-bold">{date.format("MM/DD")}</h2>
-}
+import ReportTitle from "@/containers/main/reports/ReportTitle"
 
 export default function ReportBox({ report }: { report: any }) {
   const setView = useSetRecoilState(viewState)
