@@ -57,11 +57,12 @@ class SummaryAgent(BaseAgent):
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
 
         Args:
-            mail (dict[Mail] | Mail): 요약할 메일 객체(Mail) 또는 문자열 리스트입니다.
-            max_iteration (int): 최대 Groundness Check 횟수입니다.
+            mail (dict[Mail] | Mail): 요약할 메일 객체(Mail) 또는 문자열 리스트.
+            max_iteration (int): 최대 Groundness Check 횟수.
 
         Returns:
-            dict: 요약된 결과 JSON입니다.
+            dict: 요약된 결과 JSON.
+            token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
         # self.summary_type에 따라 데이터 유효 검증 로직
         if (self.summary_type == "single" and not isinstance(mail, Mail)) or (
@@ -81,6 +82,7 @@ class SummaryAgent(BaseAgent):
                 [f"메일 id: {item.id} 분류: {item.label} 요약문: {item.summary}" for _, item in mail.items()]
             )
 
+        token_usage = 0
         # max_iteration 번 Groundness Check 수행
         for i in range(max_iteration):
             response = self.client.chat.completions.create(
@@ -92,6 +94,7 @@ class SummaryAgent(BaseAgent):
                 response_format=response_format,
             )
             summarized_content: dict = json.loads(response.choices[0].message.content)
+            token_usage += response.usage.total_tokens
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
             if self.summary_type == "single":
@@ -100,13 +103,14 @@ class SummaryAgent(BaseAgent):
                 result = generate_plain_text_report(summarized_content)
 
             # Groundness Check
-            groundness = check_groundness(context=input_mail_data, answer=result)
+            groundness, groundness_token_usage = check_groundness(context=input_mail_data, answer=result)
+            token_usage += groundness_token_usage
+
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
-            else:
-                print(f"context: {input_mail_data}\nanswer: {result}")
-        return summarized_content
+
+        return summarized_content, token_usage
 
     @staticmethod
     def calculate_token_cost():
