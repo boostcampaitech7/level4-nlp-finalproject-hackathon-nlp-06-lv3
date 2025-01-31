@@ -3,7 +3,7 @@ import time
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent
+from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent
 from evaluation import (
     ClassificationEvaluationAgent,
     format_source_texts_for_report,

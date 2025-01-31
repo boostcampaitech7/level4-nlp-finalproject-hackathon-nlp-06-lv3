@@ -198,11 +198,11 @@ gmail_api/credentials.json
 test.ipynb
 agents/self_refine/log/*.txt
 
-
 credentials.json
 credentials*.json
 token.json
 
+*.png
 
 # 평가 테스트용 pair texts
 gold.txt

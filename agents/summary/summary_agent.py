@@ -94,6 +94,8 @@ class SummaryAgent(BaseAgent):
                 response_format=response_format,
             )
             summarized_content: dict = json.loads(response.choices[0].message.content)
+
+            super().add_usage(self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens)
             token_usage += response.usage.total_tokens
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
@@ -104,6 +106,7 @@ class SummaryAgent(BaseAgent):
 
             # Groundness Check
             groundness, groundness_token_usage = check_groundness(context=input_mail_data, answer=result)
+            super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
@@ -111,7 +114,3 @@ class SummaryAgent(BaseAgent):
                 break
 
         return summarized_content, token_usage
-
-    @staticmethod
-    def calculate_token_cost():
-        pass

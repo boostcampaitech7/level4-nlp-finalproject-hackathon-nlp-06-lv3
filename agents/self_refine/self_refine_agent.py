@@ -88,6 +88,7 @@ class SelfRefineAgent(BaseAgent):
             groundness, groundness_token_usage = check_groundness(
                 context=input_mail_data, answer=generate_plain_text_report(refine_target)
             )
+            super().add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 
             # Feedback
@@ -103,6 +104,7 @@ class SelfRefineAgent(BaseAgent):
                 response_format=FEEDBACK_FORMAT,
             )
             feedback = feedback_response.choices[0].message.content
+            super().add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
             token_usage += feedback_response.usage.total_tokens
 
             self.logging(
@@ -129,6 +131,7 @@ class SelfRefineAgent(BaseAgent):
                 response_format=REFINE_FORMAT if self.target_range == "final" else None,
             )
             revision_content = revision_response.choices[0].message.content
+            super().add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
             token_usage += revision_response.usage.total_tokens
 
             # 요약문 혹은 리포트 업데이트 및 로깅
@@ -136,7 +139,3 @@ class SelfRefineAgent(BaseAgent):
             self.logging(f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_refine.txt", revision_content)
 
         return refine_target, token_usage
-
-    @staticmethod
-    def calculate_token_cost():
-        pass
