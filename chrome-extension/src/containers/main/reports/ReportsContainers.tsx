@@ -1,6 +1,8 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
+import { useCallback } from "react"
 import axiosInstance from "@/utils/axiosInstance"
 import ReportBox from "@/containers/main/reports/ReportBox"
+import useIntersectionObserver from "@/hooks/useIntersectionObserver"
 
 export default function ReportsContainers() {
   const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
@@ -8,7 +10,7 @@ export default function ReportsContainers() {
     initialPageParam: 1,
     queryKey: ["/reports/temp"],
     queryFn: async ({ pageParam = 1 }) => {
-      const params = { page: pageParam, limit: 1 }
+      const params = { page: pageParam, limit: 20 }
 
       try {
         const res = await axiosInstance.get("/reports/temp", { params })
@@ -23,14 +25,24 @@ export default function ReportsContainers() {
     },
   })
 
+  const handleIntersect = useCallback(
+    async ([entry]: IntersectionObserverEntry[], observer: IntersectionObserver) => {
+      if (entry.isIntersecting) {
+        observer.unobserve(entry.target)
+        if (hasNextPage) {
+          await fetchNextPage()
+          observer.observe(entry.target)
+        }
+      }
+    },
+    [hasNextPage, fetchNextPage],
+  )
+
+  const { targetRef } = useIntersectionObserver(handleIntersect)
   return (
     <div className="flex flex-col gap-5">
       {data?.pages.map((page) => page?.reports.map((report: any) => <ReportBox key={report.id} report={report} />))}
-      {hasNextPage && (
-        <button type="button" onClick={() => fetchNextPage()}>
-          더보기
-        </button>
-      )}
+      {hasNextPage && <div ref={targetRef} />}
     </div>
   )
 }
