@@ -27,12 +27,12 @@ export default function Profile() {
   }, [isOpenInfoBox])
 
   return (
-    <div className="relative">
-      <button type="button" ref={buttonRef} onClick={() => setIsOpenInfoBox(!isOpenInfoBox)}>
+    <div className="flex flex-col h-full">
+      <button type="button" ref={buttonRef} className="flex-1" onClick={() => setIsOpenInfoBox(!isOpenInfoBox)}>
         <img src={userInfo.picture} alt="profile" className="rounded-full border border-border-gray w-10 h-10" />
       </button>
       {isOpenInfoBox && (
-        <div ref={openedRef}>
+        <div ref={openedRef} className="relative">
           <ProfileInfoBox />
         </div>
       )}
