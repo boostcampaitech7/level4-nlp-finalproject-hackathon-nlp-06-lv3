@@ -15,7 +15,6 @@ class ClassificationAgent(BaseAgent):
 
     Args:
         model_name (str): 사용할 Upstage AI 모델명입니다(예: 'solar-pro', 'solar-mini').
-        summary_type (str): 요약 유형을 지정하는 문자열입니다(예: 'final', 'single' 등).
         temperature (float, optional): 모델 생성에 사용되는 파라미터로, 0에 가까울수록
             결정론적(deterministic) 결과가, 1에 가까울수록 다양성이 높은 결과가 나옵니다.
         seed (int, optional): 모델 결과의 재현성을 높이기 위해 사용하는 난수 시드 값입니다.
