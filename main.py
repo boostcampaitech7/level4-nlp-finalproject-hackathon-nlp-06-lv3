@@ -1,5 +1,7 @@
 import time
 
+import openai
+import yaml
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
@@ -99,6 +101,11 @@ def main():
 
     except HttpError as error:
         print(f"An error occurred: {error}")
+    except openai.RateLimitError as rate_err:
+        print("[RateLimitError] API 한도가 초과되었습니다. 현재까지의 토큰 사용량만 보고합니다.")
+        print(f"에러 메세지: {rate_err}")
+    finally:
+        BaseAgent.plot_token_cost()
 
 
 if __name__ == "__main__":
