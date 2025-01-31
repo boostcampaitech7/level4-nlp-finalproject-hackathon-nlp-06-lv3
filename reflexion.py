@@ -355,7 +355,7 @@ class ReflexionFramework:
             eval_result_dict, eval_result_str = self.evaluator.get_geval_scores(source_text_str, output_text)
 
             # 성찰하기
-            new_reflection = self.self_reflection.generate_reflection(
+            self.self_reflection.generate_reflection(
                 source_text=source_text_str, output_text=output_text, eval_result=eval_result_str
             )
 
