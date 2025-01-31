@@ -79,17 +79,10 @@ class DataFrameManager:
         # (2) 카테고리별 2×2 혼동행렬 & 정확도
         cat_accuracy_dict = MetricCalculator.compute_category_accuracy_2x2(self.eval_df, self.inference_count)
 
-        # (3) 회차별 상관계수
-        correlations = MetricCalculator.compute_correlation_with_gt(self.eval_df, self.inference_count)
-
         print("\nCorrectness")
         print(f"🎯 전체 정확도: {overall_acc:.4f}")
         for gt, acc in cat_accuracy_dict.items():
             print(f"🎯 {gt} 정확도: {acc:.4f}")
-
-        print("📝 회차 별 상관 계수")
-        for i, (pearson_c, spearman_c) in enumerate(correlations, start=1):
-            print(f"{i}회차: Pearson Correlation: {pearson_c:.4f} / Spearman Correlation: {spearman_c:.4f}")
 
         print()
 

@@ -1,4 +1,3 @@
-import math
 import os
 
 import matplotlib.pyplot as plt
@@ -175,43 +174,6 @@ class MetricCalculator:
             cat_accuracy[category] = cat_acc
 
         return cat_accuracy
-
-    @staticmethod
-    def compute_correlation_with_gt(eval_df: pd.DataFrame, inference_count: int):
-        """
-        Ground Truth vs 각 inference_{i+1} 열에 대한 상관계수 (Pearson, Spearman)
-        """
-        inf_cols = [f"inference_{i+1}" for i in range(inference_count)]
-        unique_cats = pd.unique(eval_df[["ground_truth"] + inf_cols].values.ravel()).tolist()
-        unique_cats = sorted(unique_cats)
-        cat_to_id = {cat: i for i, cat in enumerate(unique_cats)}
-
-        # numeric 변환
-        df_num = eval_df.copy()
-        df_num["ground_truth_num"] = df_num["ground_truth"].map(cat_to_id)
-        for col in inf_cols:
-            df_num[col + "_num"] = df_num[col].map(cat_to_id)
-
-        results = []  # [(pearson_1, spearman_1), ...]
-        for i in range(inference_count):
-            col_num = inf_cols[i] + "_num"
-            gt_s = df_num["ground_truth_num"]
-            inf_s = df_num[col_num]
-
-            if gt_s.nunique() < 2 or inf_s.nunique() < 2:
-                # 변동이 없는(상수) 열이면 corr 불가
-                pearson_c = 0.0
-                spearman_c = 0.0
-            else:
-                pearson_c = gt_s.corr(inf_s, method="pearson")
-                spearman_c = gt_s.corr(inf_s, method="spearman")
-                # NaN 방어
-                pearson_c = pearson_c if not math.isnan(pearson_c) else 0.0
-                spearman_c = spearman_c if not math.isnan(spearman_c) else 0.0
-
-            results.append((pearson_c, spearman_c))
-
-        return results
 
     @staticmethod
     def group_consistency_metrics(eval_df: pd.DataFrame, inference_count: int) -> pd.DataFrame:
