@@ -13,7 +13,7 @@ class DataFrameManager:
 
     def __init__(self, inference_count: int):
         self.inference_count = inference_count
-        self.output_dir = "evaluation/classification/label_data"
+        self.output_dir = "evaluation/classification"
         os.makedirs(self.output_dir, exist_ok=True)
         self.csv_file_path = os.path.join(self.output_dir, "labeled.csv")
 
