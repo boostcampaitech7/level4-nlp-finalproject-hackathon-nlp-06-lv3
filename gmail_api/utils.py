@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import re
 from collections import deque
@@ -7,6 +8,8 @@ from typing import Optional
 import requests
 
 from .document_parse import parse_document
+
+logging.basicConfig(level=logging.WARNING, filename="gmail_api/gmail_error.log")
 
 
 def decode_base64(data: str) -> bytes:
@@ -139,9 +142,8 @@ def replace_url_pattern_from(plain_text):
                     parsed_image = parse_document(file_path)
                     url_to_parsed_image[url] = parsed_image
                     delete_file(file_path)
-            else:
-                print(f"URL is not an image: {url}")
+
         except Exception as e:
-            print(f"Failed to process {url}: {e}")
+            logging.warning(f"Failed to process {url}: {e}")
 
     return replace_pattern_with(url_to_parsed_image, plain_text, url_pattern)
