@@ -62,25 +62,45 @@ class MetricCalculator:
         return float(np.sqrt(chi2 / (n * (k - 1))))
 
     @staticmethod
-    def compute_binary_confusion_matrix(results: list, ground_truth: str):
+    def compute_binary_confusion_matrix(eval_df: pd.DataFrame, category: str, inference_count: int):
         """
-        - Positive: pred == ground_truth
-        - Negative: pred != ground_truth
-        - 2×2 강제 변환
+        [수정된 버전]
+        - 전체 데이터셋을 대상으로, 'category'가 실제(Positive)인지 아닌지,
+          'category'로 예측(Positive)했는지 아닌지 기준으로 2×2 혼동 행렬 계산.
+        - inference_count가 여러 개인 경우, 각 row마다 inference_{i}를 모두 모아
+          별도의 "샘플"로 취급해서 확장.
+
+        Returns
+        -------
+        conf_matrix : np.ndarray
+            shape=(2, 2). [[TN, FP], [FN, TP]] 형태
+        labels_2class : list
+            ["Negative", "Positive"]
         """
-        binary_preds = ["Positive" if r == ground_truth else "Negative" for r in results]
-        binary_true = ["Positive"] * len(results)
+
+        all_predictions = []
+        all_ground_truths = []
+
+        # 모든 row에 대해, 각 inference_i 결과를 하나씩 추출
+        for _, row in eval_df.iterrows():
+            gt = row["ground_truth"]
+            # inference_1, inference_2, ...
+            for i in range(inference_count):
+                pred = row[f"inference_{i+1}"]
+                # ground_truth가 category이면 Positive, 아니면 Negative
+                if gt == category:
+                    all_ground_truths.append("Positive")
+                else:
+                    all_ground_truths.append("Negative")
+
+                # 예측이 category이면 Positive, 아니면 Negative
+                if pred == category:
+                    all_predictions.append("Positive")
+                else:
+                    all_predictions.append("Negative")
 
         labels_2class = ["Negative", "Positive"]
-        conf_matrix = confusion_matrix(binary_true, binary_preds, labels=labels_2class)
-
-        # 2×2 보정
-        if conf_matrix.shape == (1, 1):
-            conf_matrix = np.array([[conf_matrix[0, 0], 0], [0, 0]])
-        elif conf_matrix.shape == (1, 2):
-            conf_matrix = np.vstack([conf_matrix, [0, 0]])
-        elif conf_matrix.shape == (2, 1):
-            conf_matrix = np.hstack([conf_matrix, [[0], [0]]])
+        conf_matrix = confusion_matrix(all_ground_truths, all_predictions, labels=labels_2class)
 
         return conf_matrix, labels_2class
 
@@ -99,16 +119,16 @@ class MetricCalculator:
             fmt="d",
             cmap="Blues",
             xticklabels=labels,
-            yticklabels=["False", "True"],
+            yticklabels=labels,  # 실제 라벨 / 예측 라벨 동일
             ax=ax,
             linewidths=1,
             linecolor="black",
             cbar=True,
         )
 
-        plt.xlabel("Predicted Labels")
-        plt.ylabel("True Labels")
-        plt.title(f"Confusion Matrix for {category}")
+        plt.xlabel("Predicted")
+        plt.ylabel("Actual")
+        plt.title(f"2x2 Confusion Matrix for '{category}'")
 
         save_path = os.path.join(output_dir, f"{category}_confusion_matrix.png")
         plt.savefig(save_path, bbox_inches="tight", dpi=300)
@@ -137,19 +157,22 @@ class MetricCalculator:
     @staticmethod
     def compute_category_accuracy_2x2(eval_df: pd.DataFrame, inference_count: int):
         """
-        Ground Truth별 그룹 후, 2×2 혼동행렬로 (TP+TN)/total 계산
+        [수정된 버전]
+        - 전체 데이터셋을 대상으로, 각 카테고리에 대해 2×2 혼동행렬을 구성.
+        - (TP+TN)/total 로 Accuracy 계산.
+        - 카테고리별로 plot_confusion_matrix도 수행.
         """
         cat_accuracy = {}
+        unique_cats = sorted(eval_df["ground_truth"].unique())
 
-        grouped = eval_df.groupby("ground_truth")
-        for gt, group in grouped:
-            # 해당 GT 그룹 내 모든 inference 결과
-            cat_results = group.iloc[:, 2:-5].values.flatten().tolist()
+        for category in unique_cats:
+            # 카테고리별 2x2 혼동행렬
+            cm_2x2, label2class = MetricCalculator.compute_binary_confusion_matrix(eval_df, category, inference_count)
+            MetricCalculator.plot_confusion_matrix(cm_2x2, label2class, str(category))
 
-            cm_2x2, label2class = MetricCalculator.compute_binary_confusion_matrix(cat_results, gt)
-            MetricCalculator.plot_confusion_matrix(cm_2x2, label2class, str(gt))
-            cat_acc = cm_2x2.trace() / cm_2x2.sum() if cm_2x2.sum() else 0
-            cat_accuracy[gt] = cat_acc
+            total = cm_2x2.sum()
+            cat_acc = cm_2x2.trace() / total if total else 0
+            cat_accuracy[category] = cat_acc
 
         return cat_accuracy
 
