@@ -18,7 +18,7 @@ Example:
 
 Summary:
 
-{{Summary}}
+{Summary}
 
 
 Evaluation Form (scores ONLY):

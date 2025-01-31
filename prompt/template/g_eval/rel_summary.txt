@@ -31,11 +31,11 @@ Example:
 
 Source Text:
 
-{{Document}}
+{Document}
 
 Summary:
 
-{{Summary}}
+{Summary}
 
 
 Evaluation Form (scores ONLY):
