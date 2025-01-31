@@ -38,7 +38,7 @@ export default function Header() {
             </button>
           )}
         </span>
-        <h1 className="text-xl">{view.type === "home" && "Daily Report"}</h1>
+        <h1 className="text-lg font-GmarketSansMedium">{view.type === "home" && "Daily Report"}</h1>
         <div className="w-16 flex justify-end">
           <Profile />
         </div>
