@@ -18,7 +18,7 @@
 
 @layer base {
   body {
-    @apply bg-background font-SUITRegular;
+    @apply bg-background font-SUITRegular text-base;
     -ms-overflow-style: none;
   }
 
@@ -27,7 +27,7 @@
   }
 
   hr {
-    @apply border-text-gray;
+    @apply border-gray-300;
   }
 
   input:focus {

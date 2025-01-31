@@ -1,11 +1,12 @@
 import { useSetRecoilState } from "recoil"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { MdLogout } from "react-icons/md"
 import axiosInstance from "@/utils/axiosInstance"
 import { userIdState } from "@/states/auth"
 import useToast from "@/hooks/useToast"
 import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 
-function UserInfo() {
+function ProfileInfoBox() {
   const setUserId = useSetRecoilState(userIdState)
   const { userInfo } = useUserInfoQuery()
   const { addSuccessToast } = useToast()
@@ -25,15 +26,20 @@ function UserInfo() {
   })
 
   return (
-    <div>
-      <p>{userInfo.name}</p>
-      <p>{userInfo.email}</p>
-      <img src={userInfo.picture} alt="profile" />
-      <button type="button" onClick={() => logoutMutate()}>
-        로그아웃
+    <div className="absolute top-20 right-0 bg-white drop-shadow-lg border border-gray-300 rounded-lg px-6 py-4 min-w-[170px]">
+      <div className="w-full flex flex-col justify-center text-text-gray">
+        <p>{userInfo.name}</p>
+        <p className="text-xs">{userInfo.email}</p>
+      </div>
+      <hr className="my-2" />
+      <button className="w-full flex items-center justify-between" type="button" onClick={() => logoutMutate()}>
+        <span>로그아웃</span>
+        <span className="text-xl">
+          <MdLogout />
+        </span>
       </button>
     </div>
   )
 }
 
-export default UserInfo
+export default ProfileInfoBox

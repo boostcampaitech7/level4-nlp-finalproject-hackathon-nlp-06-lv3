@@ -1,9 +1,11 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
 class IsLoginDto(BaseModel):
     is_login: bool
-    user_id: int
+    user_id: Optional[int]
 
     def __init__(self, user_id: int):
         super().__init__(is_login=bool(user_id), user_id=user_id)
@@ -22,7 +24,6 @@ class GoogleProfileDto(BaseModel):
     picture: str
 
     def __init__(self, json_response: dict):
-        print(json_response)
         super().__init__(
             google_id=json_response["id"],
             email=json_response["email"],
