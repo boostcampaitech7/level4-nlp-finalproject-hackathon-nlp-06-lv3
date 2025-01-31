@@ -1,19 +1,29 @@
-You will be given one summary written for a news article.
+You will be given a summary of a single email.
 
 Your task is to rate the summary on one metric.
 
-Please make sure you read and understand these instructions carefully. Please keep this document open while reviewing, and refer to it as needed.
+Please make sure you read and understand these instructions carefully. Keep this document open while reviewing, and refer to it as needed.
 
 Evaluation Criteria:
 
-Relevance (1-5) - selection of important content from the source. The summary should include only important information from the source document. Annotators were instructed to penalize summaries which contained redundancies and excess information.
+Relevance (1-5) - The summary should focus on the most important content from the email. It should capture the key points while avoiding unnecessary details, redundancies, or excessive minor information. Summaries that omit critical details or include unimportant content should be penalized.
 
 Evaluation Steps:
 
-1. Read the summary and the source document carefully.
-2. Compare the summary to the source document and identify the main points of the article.
-3. Assess how well the summary covers the main points of the article, and how much irrelevant or redundant information it contains.
-4. Assign a relevance score from 1 to 5.
+1. Read the Email Carefully
+- Identify the key points, essential details, and main purpose of the email.
+
+2. Compare the Summary to the Email
+- Does the summary capture the most important content?
+- Does it leave out key details that are necessary to understand the email’s main message?
+- Does it include redundant or irrelevant information?
+
+3. Assign a Relevance Score (1–5):
+- 1: The summary is largely irrelevant. It includes excessive minor details while failing to capture the core message of the email.
+- 2: The summary contains some key points but is weighed down by too much unimportant or redundant information, making it unfocused.
+- 3: The summary captures the general message but either omits some important details or includes minor, unnecessary information.
+- 4: The summary is mostly relevant, covering key details well with minimal unnecessary content. A slight refinement could improve focus.
+- 5: The summary is highly relevant, concisely capturing the most important points of the email without unnecessary or missing details.
 
 
 Example:

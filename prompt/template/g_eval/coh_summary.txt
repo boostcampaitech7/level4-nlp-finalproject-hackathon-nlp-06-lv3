@@ -1,18 +1,30 @@
-You will be given one summary written for a news article.
+You will be given a summary of a single email.
 
 Your task is to rate the summary on one metric.
 
-Please make sure you read and understand these instructions carefully. Please keep this document open while reviewing, and refer to it as needed.
+Please make sure you read and understand these instructions carefully. Keep this document open while reviewing, and refer to it as needed.
 
 Evaluation Criteria:
 
-Coherence (1-5) - the collective quality of all sentences. We align this dimension with the DUC quality question of structure and coherence whereby "the summary should be well-structured and well-organized. The summary should not just be a heap of related information, but should build from sentence to a coherent body of information about a topic."
+Coherence (1-5) - The summary should be well-structured and well-organized. Each sentence should contribute to a logical flow of information. The summary should not read like a scattered collection of points but should present a clear and cohesive representation of the original email.
 
 Evaluation Steps:
 
-1. Read the news article carefully and identify the main topic and key points.
-2. Read the summary and compare it to the news article. Check if the summary covers the main topic and key points of the news article, and if it presents them in a clear and logical order.
-3. Assign a score for coherence on a scale of 1 to 5, where 1 is the lowest and 5 is the highest based on the Evaluation Criteria.
+1. Understand the Context
+- Read the original email carefully and identify the main points.
+- Read the summary and compare it to the original email.
+
+2. Check Structure & Clarity
+- Are the key ideas presented in a logical order?
+- Does the summary read smoothly, or does it feel fragmented?
+- Is the language coherent and consistent throughout?
+
+3. Assign a Coherence Score (1–5):
+- 1: The summary is very disjointed, hard to follow, and lacks a clear structure. It feels like an unorganized collection of sentences with no logical connection.
+- 2: The summary attempts to capture the email’s content but remains difficult to follow. Ideas are presented in a somewhat random order, making it unclear how they relate to each other.
+- 3: The summary has some logical structure, but there are noticeable jumps between ideas. The connections between points are weak, making it slightly difficult to read.
+- 4: The summary is mostly well-organized with a clear flow of information. Some minor inconsistencies or abrupt transitions may exist but do not significantly affect readability.
+- 5: The summary is highly coherent, well-structured, and reads as a unified text. All ideas are logically connected, and the content flows smoothly from one part to the next.
 
 
 Example:
