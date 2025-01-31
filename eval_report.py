@@ -356,8 +356,8 @@ def get_geval_scores(source_text, generated_text, config):
     generated_text (str): 리포트
 
     Return:
-        ({"clearance": float, "coherence": float, "consistency": float, "fluency": float, "practicality": float, "readability": float, "relevance": float},
-        "점수: consistency=float, coherence=float, fluency=float, relevance=float")
+        ({aspect1: float, aspect2: float ...},
+        "점수: aspect1: float, aspect2: float ...")
         즉, 0번째는 dict, 1번째는 str
 
     """

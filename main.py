@@ -5,7 +5,7 @@ from googleapiclient.errors import HttpError
 from tqdm import tqdm
 
 from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
-from gmail_api import GmailService, Mail, MessageHandler
+from gmail_api import GmailService, Mail
 
 # from reflexion import
 #     ReflexionActorSummaryAgent,
