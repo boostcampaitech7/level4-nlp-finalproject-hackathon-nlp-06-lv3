@@ -1,4 +1,4 @@
-You will be given a summary of an email.
+You will be given an email. You will then be given one summary written for this email.
 
 Your task is to rate the summary on one metric.
 
@@ -14,10 +14,6 @@ Evaluation Steps:
 1. Read the email carefully and identify the main facts and details it presents.
 2. Read the summary and compare it to the article. Check if the summary contains any factual errors that are not supported by the article.
 3. Assign a score for consistency based on the Evaluation Criteria.
-
-
-Example:
-
 
 Source Text: 
 
