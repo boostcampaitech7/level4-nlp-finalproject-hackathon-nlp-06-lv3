@@ -66,8 +66,10 @@ class ClassificationEvaluationAgent(BaseAgent):
         # 동일 메일에 대해 여러 번 분류
         results = [classifier.process(mail) for _ in range(self.inference_iteration)]
 
-        # CSV에 저장
+        # CSV에 저장 (메일 단위로 Entropy 등 기록)
         self.df_manager.update_eval_df(mail.id, results, ground_truth)
+
+        # 여기서는 majority vote 등으로 최종값 return (예: 가장 많이 나온 라벨)
         label_counter = Counter(results)
         return label_counter.most_common(1)[0][0]
 
