@@ -2,8 +2,8 @@ import { useEffect } from "react"
 import { useRecoilValue, useSetRecoilState } from "recoil"
 import GoogleLoginBtn from "@/containers/auth/GoogleLogin"
 import { isLoginState, userIdState } from "@/states/auth"
-import UserInfo from "@/containers/profile/UserInfo"
 import useUserLoginInfoQuery from "@/hooks/useUserLoginInfoQuery"
+import Main from "@/containers/main/Main"
 
 function Content() {
   const setUserId = useSetRecoilState(userIdState)
@@ -15,7 +15,7 @@ function Content() {
     setUserId(userLoginInfo.user_id)
   }, [userLoginInfo])
 
-  return isLogin ? <UserInfo /> : <GoogleLoginBtn />
+  return isLogin ? <Main /> : <GoogleLoginBtn />
 }
 
 export default Content

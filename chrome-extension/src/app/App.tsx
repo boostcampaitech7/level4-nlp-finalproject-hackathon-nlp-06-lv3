@@ -10,7 +10,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RecoilRoot>
-        <div className="flex flex-col w-full px-5 py-10 items-center">
+        <div className="flex flex-col w-full items-center">
           <Suspense fallback={<div>Loading...</div>}>
             <Content />
           </Suspense>
