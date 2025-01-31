@@ -1,6 +1,6 @@
 import Header from "@/containers/main/header/Header"
 
-function Main() {
+export default function Main() {
   return (
     <div className="flex flex-col justify-center w-full">
       <Header />
@@ -10,5 +10,3 @@ function Main() {
     </div>
   )
 }
-
-export default Main

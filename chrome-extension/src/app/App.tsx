@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Content from "@/app/Content"
 import Toast from "@/components/toast/Toast"
 
-function App() {
+export default function App() {
   const queryClient = new QueryClient()
 
   return (
@@ -20,5 +20,3 @@ function App() {
     </QueryClientProvider>
   )
 }
-
-export default App

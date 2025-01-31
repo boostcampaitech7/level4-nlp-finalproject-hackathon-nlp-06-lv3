@@ -2,7 +2,7 @@ import { useState } from "react"
 import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 import ProfileInfoBox from "@/containers/main/header/profile/ProfileInfoBox"
 
-function Profile() {
+export default function Profile() {
   const { userInfo } = useUserInfoQuery()
   const [isOpenInfoBox, setIsOpenInfoBox] = useState(false)
 
@@ -15,5 +15,3 @@ function Profile() {
     </div>
   )
 }
-
-export default Profile

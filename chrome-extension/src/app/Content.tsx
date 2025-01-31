@@ -5,7 +5,7 @@ import { isLoginState, userIdState } from "@/states/auth"
 import useUserLoginInfoQuery from "@/hooks/useUserLoginInfoQuery"
 import Main from "@/containers/main/Main"
 
-function Content() {
+export default function Content() {
   const setUserId = useSetRecoilState(userIdState)
   const isLogin = useRecoilValue(isLoginState)
   const { userLoginInfo } = useUserLoginInfoQuery()
@@ -17,5 +17,3 @@ function Content() {
 
   return isLogin ? <Main /> : <GoogleLoginBtn />
 }
-
-export default Content

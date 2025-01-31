@@ -6,7 +6,7 @@ import { userIdState } from "@/states/auth"
 import useToast from "@/hooks/useToast"
 import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 
-function ProfileInfoBox() {
+export default function ProfileInfoBox() {
   const setUserId = useSetRecoilState(userIdState)
   const { userInfo } = useUserInfoQuery()
   const { addSuccessToast } = useToast()
@@ -41,5 +41,3 @@ function ProfileInfoBox() {
     </div>
   )
 }
-
-export default ProfileInfoBox
