@@ -144,7 +144,7 @@ def calculate_g_eval(source_texts, generated_texts, config):
                 base_prompt = f.read()
 
             # {{Document}} / {{Summary}} 등의 placeholder 치환
-            cur_prompt = base_prompt.replace("{{Document}}", src).replace("{{Summary}}", gen)
+            cur_prompt = base_prompt.format(Document=src, Summary=gen)
 
             try:
                 response = client.chat.completions.create(

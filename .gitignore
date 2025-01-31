@@ -204,7 +204,9 @@ credentials*.json
 token.json
 
 
-
 # 평가 테스트용 pair texts
 gold.txt
 generated.txt
+
+example_data.json
+example_data_2.json
