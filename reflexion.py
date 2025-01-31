@@ -10,7 +10,7 @@ from openai import OpenAI
 
 import eval_report
 import eval_summary
-from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent, check_groundness, map_category
+from agents import BaseAgent, check_groundness, map_category
 from agents.utils import REPORT_FORMAT, SUMMARY_FORMAT, build_messages, generate_plain_text_report
 from gmail_api import Mail
 
@@ -283,30 +283,41 @@ class ReflexionFramework:
                 f'summary_type: {task}는 허용되지 않는 인자입니다. "single_summary" 혹은 "final_report"로 설정해주세요.'
             )
 
-        expected_actor_class = (ReflexionActorSummaryAgent,)
-        expected_evaluator_class = ReflexionEvaluator
-        expected_self_reflection_class = ReflexionSelfReflection
+        actor_class = (ReflexionActorSummaryAgent,)
+        evaluator_class = ReflexionEvaluator
+        self_reflection_class = ReflexionSelfReflection
 
         # 타입 체크
-        if not isinstance(actor, expected_actor_class):
-            raise TypeError(
-                f"actor must be an instance of {expected_actor_class.__name__}, got {type(actor).__name__} instead."
-            )
+        if not isinstance(actor, actor_class):
+            raise TypeError(f"Actor class must be {actor_class.__name__}, input:{type(actor).__name__}")
 
-        if not isinstance(evaluator, expected_evaluator_class):
-            raise TypeError(
-                f"evaluator must be an instance of {expected_evaluator_class.__name__}, got {type(evaluator).__name__} instead."
-            )
+        if not isinstance(evaluator, evaluator_class):
+            raise TypeError(f"Evaluator class must be {evaluator_class.__name__}, input:{type(evaluator).__name__}")
 
-        if not isinstance(self_reflection, expected_self_reflection_class):
+        if not isinstance(self_reflection, self_reflection_class):
             raise TypeError(
-                f"self_reflection must be an instance of {expected_self_reflection_class.__name__}, got {type(self_reflection).__name__} instead."
+                f"SelfReflection class must be {self_reflection_class.__name__}, input:{type(self_reflection).__name__}"
             )
 
         self.task = task
         self.actor = actor
         self.evaluator = evaluator
         self.self_reflection = self_reflection
+
+    def preprocess_actor_output(self, task, actor_output):
+        if task == "final_report":
+            output_text = ""
+            for label, mail_reports in actor_output.items():
+                output_text += f"{map_category(label)}\n"
+                count_emails = 1
+                for mail_report in mail_reports:
+                    output_text += f"{count_emails}. {mail_report['report']}\n"
+                    count_emails += 1
+                output_text += "\n\n"
+        elif task == "single_summary":
+            output_text = actor_output.get("summary")
+
+        return output_text
 
     def run(self, source_text, initial_output_text, max_iteration, threshold, score_threshold):
         """
@@ -363,18 +374,8 @@ class ReflexionFramework:
             previous_reflections = self.self_reflection.reflection_memory
             actor_output = self.actor.process(mail=source_text, max_iteration=3, reflections=previous_reflections)
 
-            # SummaryAgent에서 나온 출력물을 Evaluator, SelfReflection에 전달해주기 위해 전처리하는 과정
-            output_text = ""
-            if self.task == "final_report":
-                for label, mail_reports in actor_output.items():
-                    output_text += f"{map_category(label)}\n"
-                    count_emails = 1
-                    for mail_report in mail_reports:
-                        output_text += f"{count_emails}. {mail_report['report']}\n"
-                        count_emails += 1
-                    output_text += "\n\n"
-            elif self.task == "single_summary":
-                output_text = actor_output.get("summary")
+            # SummaryAgent에서 나온 출력물을 Evaluator, SelfReflection에 전달해주기 위해 전처리
+            output_text = self.preprocess_actor_output(task=self.task, actor_output=actor_output)
 
             eval_average = round(sum(eval_result_dict.values()) / len(eval_result_dict.values()), 1)
             scores.append(eval_average)
