@@ -7,25 +7,22 @@ from .metric_calculator import MetricCalculator
 
 class DataFrameManager:
     """
-    평가 데이터 프레임을 관리하고, 분류 모델 평가 결과를 저장 및 분석하는 클래스.
-
-    Args:
-        inference_count (int): 동일한 입력 데이터에 대해 수행할 추론 횟수.
+    분류 결과(메일 ID, Ground Truth, N회차 Inference 등)를 관리/저장하고,
+    MetricCalculator를 호출해 평가 지표를 계산하는 책임.
     """
 
     def __init__(self, inference_count: int):
+        self.inference_count = inference_count
         self.output_dir = "evaluation/classification/label_data"
         os.makedirs(self.output_dir, exist_ok=True)
         self.csv_file_path = os.path.join(self.output_dir, "labeled.csv")
 
-        # 평가 데이터프레임의 컬럼 정의
         self.columns = (
             ["mail_id", "ground_truth"]
             + [f"inference_{i+1}" for i in range(inference_count)]
-            + ["entropy", "diversity_index", "chi_square_p_value", "accuracy"]
+            + ["entropy", "diversity_index", "chi_square_p_value", "accuracy", "cramers_v"]
         )
 
-        # 기존 데이터가 존재하면 로드, 없으면 빈 데이터프레임 생성
         if os.path.exists(self.csv_file_path):
             self.eval_df = pd.read_csv(self.csv_file_path)
             print(f"📄 기존 평가 데이터 로드 완료: {self.eval_df.shape[0]}개의 데이터")
@@ -34,74 +31,77 @@ class DataFrameManager:
 
     def update_eval_df(self, mail_id: str, results: list, ground_truth: str):
         """
-        평가 데이터프레임을 업데이트하고, 결과를 CSV 파일로 저장합니다.
-
-        이미 처리된 메일이거나, 기존 평가 데이터가 완전할 경우(모든 inference_n 칼럼이 채워진 경우) 건너뜁니다.
-
-        Args:
-            mail_id (str): 메일의 고유 ID.
-            results (list): 분류 결과 리스트.
-            ground_truth (str): 해당 메일의 정답(ground truth).
+        1) 메일 ID 중복 체크
+        2) 메트릭(Entropy, Diversity, p-value, Accuracy, Cramer's V) 계산
+        3) CSV에 병합 저장
         """
-        # 기존 데이터에서 해당 mail_id가 있는지 확인
+        # 이미 처리된 메일인지 확인 + 모든 inference 칼럼이 채워졌는지 확인
         if mail_id in self.eval_df["mail_id"].values:
-            existing_entry = self.eval_df[self.eval_df["mail_id"] == mail_id]
-
-            # 기존 결과에서 inference 값이 전부 채워져 있는지 확인
-            if existing_entry.iloc[:, 2:-4].notna().all(axis=None):
+            existing = self.eval_df[self.eval_df["mail_id"] == mail_id]
+            if existing.iloc[:, 2:-5].notna().all(axis=None):
                 return
 
-        # Consistency 및 Correctness 지표 계산
-        entropy_value, diversity_index, p_value, accuracy = MetricCalculator.compute_metrics(results, ground_truth)
-
-        # 새로운 평가 결과 추가
-        new_entry = pd.DataFrame(
-            [[mail_id, ground_truth] + results + [entropy_value, diversity_index, p_value, accuracy]],
-            columns=self.columns,
+        # metric 계산
+        (entropy_val, diversity_val, p_val, acc_val, _, _, c_v) = MetricCalculator.compute_metrics(
+            results, ground_truth
         )
 
-        # 기존 데이터와 병합
-        self.eval_df = pd.concat([self.eval_df, new_entry], ignore_index=True)
-
-        # 평가 결과를 CSV 파일로 저장
+        new_row = pd.DataFrame(
+            [[mail_id, ground_truth] + results + [entropy_val, diversity_val, p_val, acc_val, c_v]],
+            columns=self.columns,
+        )
+        self.eval_df = pd.concat([self.eval_df, new_row], ignore_index=True)
         self.eval_df.to_csv(self.csv_file_path, index=False)
 
-    def group_and_compute_metrics(self):
+    def print_df(self):
         """
-        Ground Truth별로 그룹화하여 Consistency 및 Correctness 지표를 계산합니다.
-
-        Returns:
-            pd.DataFrame: 각 Ground Truth별 평가 결과 요약 데이터프레임.
+        최종 결과를 출력:
+          1) Correctness(카테고리별 2×2 혼동행렬, 전체/카테고리별 정확도, GT vs Inference 상관계수)
+          2) Consistency(Ground Truth 별 요약된 메트릭)
         """
         if self.eval_df.empty:
             print("⚠️ 저장된 평가 데이터가 없습니다.")
-            return None
+            return
 
-        grouped_metrics = []
+        MetricCalculator.plot_confusion_matrix()
 
-        # Ground Truth별 그룹화하여 평가 지표 계산
-        for ground_truth, group_df in self.eval_df.groupby("ground_truth"):
-            results = group_df.iloc[:, 2:-4].values.flatten().tolist()  # inference 결과만 가져오기
+        self._print_correctness()
 
-            # Confusion Matrix 포함한 지표 계산
-            entropy_value, diversity_index, p_value, accuracy, conf_matrix, labels = MetricCalculator.compute_metrics(
-                results, ground_truth
-            )
+        self._print_consistency()
 
-            grouped_metrics.append([ground_truth, entropy_value, diversity_index, p_value, accuracy])
+    def _print_correctness(self):
+        """
+        Correctness:
+         - 카테고리별(ground_truth별) 2×2 혼동행렬 시각화
+         - 전체 정확도, 카테고리별 정확도
+         - Ground Truth vs Inference_i 상관계수(회차별)
+        """
+        # (1) 전체 정확도
+        overall_acc = MetricCalculator.compute_overall_accuracy(self.eval_df, self.inference_count)
 
-            # Confusion Matrix 그리기
-            MetricCalculator.plot_confusion_matrix(conf_matrix, labels, ground_truth)
+        # (2) 카테고리별 2×2 혼동행렬 & 정확도
+        cat_accuracy_dict = MetricCalculator.compute_category_accuracy_2x2(self.eval_df, self.inference_count)
 
-        # 결과를 데이터프레임으로 변환
-        summary_df = pd.DataFrame(
-            grouped_metrics, columns=["Ground Truth", "Entropy", "Diversity Index", "Chi-Square p-value", "Accuracy"]
-        )
+        # (3) 회차별 상관계수
+        correlations = MetricCalculator.compute_correlation_with_gt(self.eval_df, self.inference_count)
 
-        return summary_df
+        print("\nCorrectness")
+        print(f"🎯 전체 정확도: {overall_acc:.4f}")
+        for gt, acc in cat_accuracy_dict.items():
+            print(f"🎯 {gt} 정확도: {acc:.4f}")
 
-    def print_df(self):
-        summary_df = self.group_and_compute_metrics()
-        if summary_df is not None:
-            print("\n📊 Ground Truth 별 요약된 평가 메트릭")
-            print(summary_df)
+        print("📝 회차 별 상관 계수")
+        for i, (pearson_c, spearman_c) in enumerate(correlations, start=1):
+            print(f"{i}회차: Pearson Correlation: {pearson_c:.4f} / Spearman Correlation: {spearman_c:.4f}")
+
+        print()
+
+    def _print_consistency(self):
+        """
+        Consistency:
+         - Ground Truth 별 Entropy, Diversity Index, Chi-Square p-value, Accuracy, Cramer's V
+        """
+        summary_df = MetricCalculator.group_consistency_metrics(self.eval_df, self.inference_count)
+        print("Consistency")
+        print("📊 Ground Truth 별 요약된 평가 메트릭")
+        print(summary_df)
