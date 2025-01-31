@@ -71,6 +71,6 @@ class ClassificationAgent(BaseAgent):
 
         super().add_usage(self.__class__.__name__, "classification", response.usage.total_tokens)
 
-        summarized_content: str = response.choices[0].message.content
+        label: str = response.choices[0].message.content
 
-        return summarized_content
+        return label
