@@ -64,7 +64,7 @@ class ClassificationAgent(BaseAgent):
                 template_type="classification",
                 target_range="single",
                 action="classification",
-                mail=str(mail),
+                mail=mail.summary,
                 categories=categories_text,
             ),
         )
