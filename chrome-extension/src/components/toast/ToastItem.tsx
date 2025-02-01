@@ -9,7 +9,7 @@ interface Props {
   icon: React.ReactNode
 }
 
-function ToastItem({ toastData, backgroundColor, icon }: Props): JSX.Element {
+export default function ToastItem({ toastData, backgroundColor, icon }: Props): JSX.Element {
   const { id, message } = toastData
   const [visible, setVisible] = useState(false)
 
@@ -40,5 +40,3 @@ function ToastItem({ toastData, backgroundColor, icon }: Props): JSX.Element {
     </div>
   )
 }
-
-export default ToastItem

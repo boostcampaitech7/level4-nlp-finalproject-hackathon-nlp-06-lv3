@@ -4,7 +4,7 @@ import toastState from "@/states/toastState"
 import { ToastData } from "@/types/toast"
 import ToastItem from "@/components/toast/ToastItem"
 
-function Toast(): JSX.Element {
+export default function Toast(): JSX.Element {
   const toastList = useRecoilValue(toastState)
 
   const getBackgroundColor = (type: string) => {
@@ -46,5 +46,3 @@ function Toast(): JSX.Element {
     </div>
   )
 }
-
-export default Toast

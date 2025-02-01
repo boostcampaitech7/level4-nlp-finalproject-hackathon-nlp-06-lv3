@@ -27,7 +27,7 @@
   }
 
   hr {
-    @apply border-gray-300;
+    @apply border-border-gray;
   }
 
   input:focus {
@@ -49,6 +49,73 @@
 }
 
 @layer components {
+  .markdown-container p {
+    @apply my-4;
+  }
+
+  .markdown-container h1 {
+    @apply text-3xl max-md:text-xl font-bold mt-5 mb-4;
+  }
+
+  .markdown-container h2 {
+    @apply text-2xl max-md:text-lg font-semibold mt-4 mb-3;
+  }
+
+  .markdown-container h3 {
+    @apply text-xl max-md:text-base font-semibold mt-3 mb-2;
+  }
+
+  .markdown-container p {
+    @apply my-3;
+  }
+
+  .markdown-container ul {
+    @apply list-disc ml-5;
+  }
+
+  .markdown-container ul:first-child {
+    @apply list-disc ml-5;
+  }
+
+  .markdown-container ol {
+    @apply list-decimal ml-5;
+  }
+
+  .markdown-container a {
+    @apply text-blue-600 hover:text-blue-800;
+  }
+
+  .markdown-container img {
+    @apply max-w-full h-auto inline-block;
+  }
+
+  .markdown-container pre {
+    @apply rounded;
+  }
+
+  .markdown-container pre > div {
+    @apply rounded-lg;
+  }
+
+  .markdown-container code {
+    @apply bg-gray-200 rounded text-blue-500 px-1 font-semibold;
+  }
+
+  .markdown-container pre code {
+    @apply bg-transparent font-normal;
+  }
+
+  .markdown-container hr {
+    @apply border border-b-gray-400 rounded-full;
+  }
+
+  .markdown-container blockquote {
+    @apply border-l-4 border-gray-400 pl-4 italic;
+  }
+
+  .markdown-container summary {
+    @apply hover:cursor-pointer;
+  }
 }
 
 @layer utilities {
