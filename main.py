@@ -1,10 +1,13 @@
 from datetime import datetime  # , timedelta
 
+import yaml
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 from tqdm import tqdm
 
 from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
+from evaluation import format_source_texts_for_report, generate_final_report_text, print_evaluation_results
+from evaluator import evaluate_report, evaluate_summary
 from gmail_api import GmailService, Mail
 
 # from reflexion import
@@ -16,6 +19,11 @@ from gmail_api import GmailService, Mail
 
 def main():
     load_dotenv()
+
+    # YAML 파일 로드
+
+    with open("config.yml", "r", encoding="utf-8") as f:
+        config = yaml.safe_load(f)
 
     try:
         gmail_service = GmailService()
@@ -39,6 +47,11 @@ def main():
         summay_agent = SummaryAgent("solar-pro", "single")
         classification_agent = ClassificationAgent("solar-pro")
 
+        # 평가용 데이터 저장
+        source_texts = []
+        summarized_texts = []
+        reference_texts = []
+
         for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
             category = classification_agent.process(mail)
@@ -49,6 +62,17 @@ def main():
             print(category)
             print(summary)
             print("=" * 40)
+
+            source_texts.append(mail.body)
+            summarized_texts.append(summary["summary"])
+            reference_texts.append(mail.subject)
+
+        # Summary Evaluation
+        if config["evaluation"]["summary_eval"]:
+            summary_results = evaluate_summary(config, source_texts, summarized_texts, reference_texts)
+            print_evaluation_results(
+                summary_results, eval_type="summary", additional=config.get("g_eval_additional", False)
+            )
 
         # 주석 책갈피1 시작
         report_agent = SummaryAgent("solar-pro", "final")
@@ -64,6 +88,7 @@ def main():
                 print(f"메일 subject: {mail_subject}")
                 print(f"리포트: {mail_report['report']}")
             print()
+
         # 주석 책갈피1 끝
 
         # 주석 책갈피1 부분 주석 처리 하고 주석 책갈피 2 해제 (맨위 reflexion import 부분도 주석 해제할것)
@@ -102,7 +127,19 @@ def main():
         #     threshold="average",
         #     score_threshold=4.5,
         # )
-    # 주석 책갈피2 끝
+        # 주석 책갈피2 끝
+
+        # Report Evaluation
+        if config["evaluation"]["report_eval"]:
+            report_texts = []
+            report_texts.append(generate_final_report_text(report, mail_dict))
+            summarized = []
+            summarized.append(format_source_texts_for_report(summarized_texts))
+            references = []
+            references.append("gold")
+
+            report_results = evaluate_report(config, summarized, report_texts, references)
+            print_evaluation_results(report_results, eval_type="report", additional=True)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
