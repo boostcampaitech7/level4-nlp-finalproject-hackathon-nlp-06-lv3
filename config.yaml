@@ -4,7 +4,7 @@ gmail:
   # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
   end_date:
   # gmail에서 불러올 메일 최대 개수
-  max_mails: 100
+  max_mails: 20
 
 evaluation:
   # TODO: 개별 요약 설정 통합 검토
