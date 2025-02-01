@@ -1,0 +1,57 @@
+# 평가 설정
+evaluation:
+  summary_eval: true # Summary 평가 수행 여부
+  classification_eval: false # Classification 평가 수행 여부
+  report_eval: true # Final Report 평가 수행 여부
+
+# Summary 평가 관련 설정
+summary:
+  metrics:
+    - rouge
+    - bert
+    - g-eval
+
+  bert_model: "distilbert-base-uncased"
+
+  g_eval:
+    openai_model: "gpt-4" # summary는 gpt-4가 아니면 정확한 답변 생성이 어려움
+    prompts:
+      consistency: "prompt/template/g_eval/con_summary.txt"
+      coherence: "prompt/template/g_eval/coh_summary.txt"
+      fluency: "prompt/template/g_eval/flu_summary.txt"
+      relevance: "prompt/template/g_eval/rel_summary.txt"
+      # readability: "prompt/template/g_eval/rdb_summary.txt"
+      # clearance: "prompt/template/g_eval/clr_summary.txt"
+      # practicality: "prompt/template/g_eval/prc_summary.txt"
+
+# Report 평가 관련 설정
+report:
+  metrics:
+    - g-eval
+
+  g_eval:
+    openai_model: "gpt-4o" # report는 gpt-4o로도 가능
+    prompts:
+      consistency: "prompt/template/g_eval/con_report.txt"
+      coherence: "prompt/template/g_eval/coh_report.txt"
+      fluency: "prompt/template/g_eval/flu_report.txt"
+      relevance: "prompt/template/g_eval/rel_report.txt"
+      readability: "prompt/template/g_eval/rdb_report.txt"
+      clearance: "prompt/template/g_eval/clr_report.txt"
+      practicality: "prompt/template/g_eval/prc_report.txt"
+
+# Classification 평가 관련 설정 (추후 추가)
+classification:
+  metrics:
+    - g-eval
+
+  g_eval:
+    openai_model: "gpt-4"
+    prompts:
+      consistency: "prompt/template/g_eval/con_classify.txt"
+      coherence: "prompt/template/g_eval/coh_classify.txt"
+      fluency: "prompt/template/g_eval/flu_classify.txt"
+      relevance: "prompt/template/g_eval/rel_classify.txt"
+      readability: "prompt/template/g_eval/rdb_classify.txt"
+      clearance: "prompt/template/g_eval/clr_classify.txt"
+      practicality: "prompt/template/g_eval/prc_classify.txt"

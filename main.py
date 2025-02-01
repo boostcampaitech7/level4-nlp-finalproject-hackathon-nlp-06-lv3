@@ -13,9 +13,13 @@ from gmail_api import GmailService, Mail
 #     ReflexionFramework,
 #     ReflexionSelfReflection
 
+from evaluation import load_config
+
 
 def main():
     load_dotenv()
+
+    config = load_config("config.yml")
 
     try:
         gmail_service = GmailService()
@@ -39,6 +43,10 @@ def main():
         summay_agent = SummaryAgent("solar-pro", "single")
         classification_agent = ClassificationAgent("solar-pro")
 
+        # 평가용 데이터 저장
+        source_texts = []
+        summarized_texts = []
+
         for mail_id, mail in mail_dict.items():
             summary = summay_agent.process(mail)
             category = classification_agent.process(mail)
@@ -49,6 +57,14 @@ def main():
             print(category)
             print(summary)
             print("=" * 40)
+
+            source_texts.append(mail.body)
+            summarized_texts.append(summary["summary"])
+
+        # Summary Evaluation
+        if config.summary_eval:
+            # TODO: 요약에 대한 G-EVAL 점수 출력
+            pass
 
         # 주석 책갈피1 시작
         report_agent = SummaryAgent("solar-pro", "final")
@@ -102,7 +118,12 @@ def main():
         #     threshold="average",
         #     score_threshold=4.5,
         # )
-    # 주석 책갈피2 끝
+        # 주석 책갈피2 끝
+
+        # Report Evaluation
+        if config.report_eval:
+            # TODO: 레포트에 대한 G-EVAL 점수 출력
+            pass
 
     except HttpError as error:
         print(f"An error occurred: {error}")
