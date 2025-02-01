@@ -68,7 +68,7 @@ class SummaryAgent(BaseAgent):
         if (self.summary_type == "single" and not isinstance(mail, Mail)) or (
             self.summary_type == "final" and not isinstance(mail, dict)
         ):
-            raise ValueError(f"{self.summary_type}.process의 mail로 잘못된 타입의 데이터가 들어왔습니다.")
+            raise ValueError(f"{self.summary_type}의 잘못된 타입의 데이터 {type(mail)}가 들어왔습니다.")
 
         # 출력 포맷 지정
         response_format = SUMMARY_FORMAT if self.summary_type == "single" else REPORT_FORMAT
