@@ -1,6 +1,4 @@
-from evaluation import calculate_rouge
-from evaluation import calculate_bert
-from evaluation import calculate_g_eval
+from evaluation import calculate_bert, calculate_g_eval, calculate_rouge
 
 
 def evaluate_summary(config, source_texts, report_texts, reference_texts):
