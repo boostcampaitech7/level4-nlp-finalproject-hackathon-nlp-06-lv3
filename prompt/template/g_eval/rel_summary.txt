@@ -1,4 +1,4 @@
-You will be given one summary written for a email.
+You will be given a summary of a single email.
 
 Your task is to rate the summary on one metric.
 
@@ -24,6 +24,10 @@ Evaluation Steps:
 - 3: The summary captures the general message but either omits some important details or includes minor, unnecessary information.
 - 4: The summary is mostly relevant, covering key details well with minimal unnecessary content. A slight refinement could improve focus.
 - 5: The summary is highly relevant, concisely capturing the most important points of the email without unnecessary or missing details.
+
+
+Example:
+
 
 Source Text:
 

@@ -28,11 +28,15 @@ Evaluation Steps:
 - 4: Good readability—clear and structured with only minor issues.
 - 5: Excellent readability—text is well-organized, visually accessible, and easy to parse at a glance.
 
+
+Example:
+
+
 Email Summaries:
 
 {Document}
 
-Summary:
+Daily Report:
 
 {Summary}
 

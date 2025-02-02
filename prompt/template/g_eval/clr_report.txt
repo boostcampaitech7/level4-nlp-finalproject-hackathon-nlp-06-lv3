@@ -28,11 +28,15 @@ Evaluation Steps:
 - 4: Mostly clear of duplicates and outdated info; only minor improvements needed.
 - 5: Very clean and concise; no noticeable redundancies or irrelevant content.
 
+
+Example:
+
+
 Email Summaries:
 
 {Document}
 
-Summary:
+Daily Report:
 
 {Summary}
 

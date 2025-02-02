@@ -27,11 +27,15 @@ Evaluation Steps:
 - 4: The report covers most important points with minimal redundancy.
 - 5: The report is highly focused, capturing nearly all key points and avoiding unnecessary detail.
 
+
+Example:
+
+
 Email Summaries:
 
 {Document}
 
-Summary:
+Daily Report:
 
 {Summary}
 
