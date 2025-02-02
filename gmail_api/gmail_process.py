@@ -14,8 +14,14 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 
 class GmailService:
-    def __init__(self):
-        self.service = self._authenticate_with_token()
+    _instance = None  # 싱글톤 인스턴스를 저장할 클래스 변수
+
+    def __new__(cls):
+        """싱글톤 패턴을 적용하여 객체가 하나만 생성되도록 보장"""
+        if cls._instance is None:
+            cls._instance = super(GmailService, cls).__new__(cls)
+            cls._instance.service = cls._instance._authenticate_with_token()
+        return cls._instance
 
     @staticmethod
     def _authenticate_with_token():
