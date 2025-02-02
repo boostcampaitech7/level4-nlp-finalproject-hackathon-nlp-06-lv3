@@ -114,12 +114,12 @@ class SelfRefineAgent(BaseAgent):
                     report=refine_target,
                     reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
                 ),
-                response_format=REFINE_FORMAT,
+                response_format=REFINE_FORMAT if self.target_range == "final" else None,
             )
             revision_content = revision_response.choices[0].message.content
 
             # 요약문 혹은 리포트 업데이트 및 로깅
-            refine_target = json.loads(revision_content)
+            refine_target = json.loads(revision_content) if self.target_range == "final" else revision_content
             self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", revision_content)
 
         return refine_target

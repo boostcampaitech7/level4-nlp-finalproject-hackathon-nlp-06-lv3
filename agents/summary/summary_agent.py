@@ -104,6 +104,8 @@ class SummaryAgent(BaseAgent):
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
+            else:
+                print(f"context: {input_mail_data}\nanswer: {result}")
         return summarized_content
 
     @staticmethod

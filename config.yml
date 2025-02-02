@@ -4,12 +4,12 @@ gmail:
   # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
   end_date:
   # gmail에서 불러올 메일 최대 개수
-  max_mails: 20
+  max_mails: 1
 
 # 평가 설정
 evaluation:
   summary_eval: true # Summary 평가 수행 여부
-  classification_eval: false # Classification 평가 수행 여부
+  classification_eval: true # Classification 평가 수행 여부
   report_eval: true # Final Report 평가 수행 여부
 
 # Summary 평가 관련 설정
@@ -53,3 +53,6 @@ classification:
   do_manual_filter: False
   # Consistency 평가 용 반복 추론 횟수 설정
   inference: 5
+
+self_refine:
+  max_iteration: 5
