@@ -11,7 +11,7 @@ def fetch_emails(gmail_service: GmailService, date: str, n: int):
     mail_dict: dict[str, Mail] = {}
     for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
         mail_id = f"{datetime.now().strftime('%Y/%m/%d')}/{len(messages)-idx:04d}"
-        mail = Mail(message_metadata["id"], mail_id, gmail_service)
+        mail = Mail(message_metadata["id"], mail_id)
         mail_dict[mail_id] = mail
 
     return mail_dict

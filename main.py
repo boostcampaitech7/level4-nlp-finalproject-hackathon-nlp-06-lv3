@@ -38,7 +38,7 @@ def main():
         for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
             # 신규 mail_id 정의: 받은 시간 순 오름차순
             mail_id = f"{today}/{len(messages)-idx:04d}"
-            mail = Mail(message_metadata["id"], mail_id, gmail_service)
+            mail = Mail(message_metadata["id"], mail_id)
             # 룰베이스 분류
             if "(광고)" not in mail.subject:
                 mail_dict[mail_id] = mail
