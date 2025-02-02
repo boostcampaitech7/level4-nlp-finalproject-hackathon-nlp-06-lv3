@@ -1,6 +1,6 @@
 from typing import Optional
 
-from gmail_api import GmailService, MessageHandler
+from .gmail_process import MessageHandler, gmail
 
 
 class Mail:
@@ -8,17 +8,15 @@ class Mail:
         self,
         message_id: str,
         mail_id: str,
-        gmail_service: GmailService,
         summary: Optional[str] = None,
         label: Optional[str] = None,
     ):
         """
         Args:
             id (str): 메일 ID
-            gmail_service: GmailService 객체
         """
-        message = gmail_service.get_message_details(message_id)
-        body, attachments = MessageHandler.process_message(gmail_service.service, message)
+        message = gmail.get_message_details(message_id)
+        body, attachments = MessageHandler.process_message(message)
         headers = MessageHandler.process_headers(message)
 
         self._id = mail_id
