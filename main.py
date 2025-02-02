@@ -1,14 +1,11 @@
-from datetime import datetime  # , timedelta
-
-import yaml
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
-from tqdm import tqdm
 
-from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent, map_category
+from agents import ClassificationAgent, SelfRefineAgent, SummaryAgent
 from evaluation import format_source_texts_for_report, generate_final_report_text, print_evaluation_results
 from evaluator import evaluate_report, evaluate_summary
-from gmail_api import GmailService, Mail
+from gmail_api import Mail
+from utils import fetch_mails, load_config, print_result, run_with_retry
 
 # from reflexion import
 #     ReflexionActorSummaryAgent,
@@ -21,27 +18,14 @@ def main():
     load_dotenv()
 
     # YAML 파일 로드
-
-    with open("config.yml", "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
+    config = load_config()
 
     try:
-        gmail_service = GmailService()
-
-        # Fetch last N messages
-        today = datetime.now().strftime("%Y/%m/%d")
-        yesterday = "2025/01/10"  # (datetime.today() - timedelta(days=1)).strftime("%Y/%m/%d")
-        n = 10
-
-        messages = gmail_service.get_today_n_messages(yesterday, n)
-        mail_dict: dict[str, Mail] = {}
-        for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
-            # 신규 mail_id 정의: 받은 시간 순 오름차순
-            mail_id = f"{today}/{len(messages)-idx:04d}"
-            mail = Mail(message_metadata["id"], mail_id)
-            # 룰베이스 분류
-            if "(광고)" not in mail.subject:
-                mail_dict[mail_id] = mail
+        mail_dict: dict[str, Mail] = fetch_mails(
+            start_date=config["gmail"]["start_date"],
+            end_date=config["gmail"]["end_date"],
+            n=config["gmail"]["max_mails"],
+        )
 
         # 개별 메일 요약, 분류
         summay_agent = SummaryAgent("solar-pro", "single")
@@ -53,8 +37,8 @@ def main():
         reference_texts = []
 
         for mail_id, mail in mail_dict.items():
-            summary = summay_agent.process(mail)
-            category = classification_agent.process(mail)
+            summary = run_with_retry(summay_agent.process, mail)
+            category = run_with_retry(classification_agent.process, mail)
             mail_dict[mail_id].summary = summary["summary"]
             mail_dict[mail_id].label = category
 
@@ -78,16 +62,9 @@ def main():
         report_agent = SummaryAgent("solar-pro", "final")
         self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-        report: dict = self_refine_agent.process(mail_dict, report_agent, 10)
+        report: dict = run_with_retry(self_refine_agent.process, mail_dict, report_agent, 10)
 
-        print("=============FINAL_REPORT================")
-        for label, mail_reports in report.items():
-            print(map_category(label))
-            for mail_report in mail_reports:
-                mail_subject = mail_dict[mail_report["mail_id"]].subject
-                print(f"메일 subject: {mail_subject}")
-                print(f"리포트: {mail_report['report']}")
-            print()
+        print_result(config["gmail"]["start_date"], report, mail_dict)
 
         # 주석 책갈피1 끝
 
