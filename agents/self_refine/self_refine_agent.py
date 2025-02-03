@@ -79,7 +79,7 @@ class SelfRefineAgent(BaseAgent):
             input_mail_data = str(data)
         else:
             input_mail_data = "\n".join(
-                [f"메일 id: {item.id} 분류: {item.label} 요약: {item.summary}" for _, item in data.items()]
+                [f"메일 id: {item.id} 분류: {item.label_category} 요약: {item.summary}" for _, item in data.items()]
             )
 
         # Self Refine 반복

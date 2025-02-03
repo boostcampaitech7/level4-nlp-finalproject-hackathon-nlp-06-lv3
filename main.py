@@ -1,20 +1,12 @@
-import time
-
 import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent
-from evaluation import (
-    ClassificationEvaluationAgent,
-    format_source_texts_for_report,
-    generate_final_report_text,
-    print_evaluation_results,
-    summary_evaluation_data,
-)
-from evaluator import evaluate_report, evaluate_summary
+from agents import BaseAgent, ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
+from evaluator import evaluate_summary
 from gmail_api import Mail
-from utils import TokenManager, fetch_mails, load_config, print_result, run_with_retry
+from utils import TokenManager, fetch_mails, load_config, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
@@ -37,7 +29,7 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
             category = run_with_retry(class_eval_agent.process, mail, classification_agent)
         else:
             category = run_with_retry(classification_agent.process, mail)
-        mail_dict[mail_id].label = category
+        mail_dict[mail_id].label_category = category
 
         print(f"{mail_id}\n{category}\n{summary}\n{'=' * 40}")
 
@@ -61,23 +53,8 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
 
 def generate_report(mail_dict: dict[str, Mail], config: dict):
     # TODO: 리포트 생성 로직 변경하기
-    report_agent = SummaryAgent("solar-pro", "final")
-
-    report, report_token_usage = run_with_retry(report_agent.process, mail_dict)
-    TokenManager.total_token_usage += report_token_usage
-
-    if config["evaluation"]["report_eval"]:
-        report_texts = []
-        report_texts.append(generate_final_report_text(report, mail_dict))
-        summarized = []
-        summarized.append(format_source_texts_for_report(summary_evaluation_data.summarized_texts))
-        references = []
-        references.append("gold")
-
-        report_results = evaluate_report(config, summarized, report_texts, references)
-        print_evaluation_results(report_results, eval_type="report", additional=True)
-
-    return report
+    embedding_manager = EmbeddingManager("upstage", "dot-product", is_save_results=True)
+    embedding_manager.run(mail_dict)
 
 
 def main():
@@ -93,13 +70,15 @@ def main():
             n=config["gmail"]["max_mails"],
         )
 
-        start_time = time.time()
+        # start_time = time.time()
 
         summary_and_classify(mail_dict, config)
 
-        report = generate_report(mail_dict, config)
+        generate_report(mail_dict, config)
 
-        print_result(start_time, report, mail_dict)
+        # report = generate_report(mail_dict, config)
+
+        # print_result(start_time, report, mail_dict)
 
     except HttpError as error:
         print(f"An error occurred: {error}")

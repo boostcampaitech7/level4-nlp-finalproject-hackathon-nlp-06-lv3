@@ -82,39 +82,29 @@ def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
     return mail_dict
 
 
-def group_mail_dict_2_classification(mail_dict: dict[str, Mail], label: str) -> dict[str, list[str]]:
+def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, dict[str, Mail]]:
     """
     key: mail id, value: Mail 객체 형식의 딕셔너리를 카테고리 별로 그룹화합니다.
 
     Args:
         mail_dict (dict[str, Mail]): 전체 메일 정보가 담긴 딕셔너리
-        label: 그룹화하여 반환할 카테고리
 
     Returns:
-        dict[str, list[str]]: 카테고리 별로 그룹화된 메일 정보들
+        pd.Dataframe: 카테고리 별로 그룹화된 메일 정보들
 
     Examples:
-        예시 코드
-        ```
-        result = group_mail_dict_2_category(mail_dict, "academic")
-        print(result)
-        ```
         실행 결과
         ```
-        {
-            "2025/02/03/0001": [    # 임베딩 이후 본 함수 호출 시, 유사도 내림차순 정렬
-                "2025/02/03/0002",
-                "2025/02/03/0003",
-                ...
-            ],
-            ...
-        }
+
         ```
     """
 
-    grouped_by_category: dict[str, list[str]] = {}
+    # TODO: 분류 기준 추가 시 데이터 파싱 변경
+    grouped_df: dict[str, dict[str, Mail]] = {}
     for mail_id, mail in mail_dict.items():
-        if mail.label == label:
-            grouped_by_category[mail_id] = mail.similar_mails
+        if mail.label_category not in grouped_df:
+            grouped_df[mail.label_category] = {mail_id: mail}
+        else:
+            grouped_df[mail.label_category][mail_id] = mail
 
-    return grouped_by_category
+    return grouped_df
