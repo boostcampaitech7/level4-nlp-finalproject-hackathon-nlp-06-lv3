@@ -6,7 +6,6 @@ import openai
 import yaml
 from tqdm import tqdm
 
-from agents import map_category
 from gmail_api import Mail
 from gmail_api.gmail_process import gmail
 
@@ -43,6 +42,30 @@ def run_with_retry(func: Callable, *args, max_retry=9, base_wait=1):
             else:
                 # 최대 재시도 횟수를 초과하면 에러를 다시 던짐
                 raise e
+
+
+# YAML 파일에서 카테고리 정보 로드 후 해당 레이블 명을 한글로 매핑
+def map_category(english_label, filename="prompt/template/classification/categories.yaml") -> str:
+    """
+    영문 카테고리 명을 한글 명으로 변경합니다.
+
+    Args:
+        english_label (_type_): 영문 카테고리 명
+
+    Returns:
+        str: 한글 카테고리 명
+    """
+    try:
+        with open(filename, "r", encoding="utf-8") as file:
+            categories: dict = yaml.safe_load(file)
+            for category in categories:
+                if category["name"] == english_label:
+                    return category["korean"]
+    except FileNotFoundError:
+        raise FileNotFoundError(f"카테고리 파일 {filename}이(가) 존재하지 않습니다.")
+    except yaml.YAMLError as e:
+        raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
+    return
 
 
 def print_result(start_time: str, report: str, mail_dict: dict[str, Mail]):

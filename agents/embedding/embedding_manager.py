@@ -3,7 +3,7 @@ from typing import Callable, TypedDict
 import numpy as np
 
 from gmail_api import Mail
-from utils import group_mail_dict_2_classification
+from utils.utils import group_mail_dict_2_classification
 
 from .bge_m3_embedding import Bgem3EmbeddingAgent
 from .upstage_embedding import UpstageEmbeddingAgent
@@ -86,15 +86,15 @@ class EmbeddingManager:
     def run(self, mail_dict: dict[str, Mail]):
         grouped_dict = group_mail_dict_2_classification(mail_dict)
 
-        for catagory, grouped_mail_dict in grouped_dict.items():
+        for category, grouped_mail_dict in grouped_dict.items():
             embedding_vectors = {
                 mail_id: self.embedding_model.process(mail.summary) for mail_id, mail in grouped_mail_dict.items()
             }
             similarities = self.compute_similarity(embedding_vectors)
 
             if self.is_save_results:
-                self._save_top_match(catagory, grouped_mail_dict, similarities)
-                self._save_similar_emails(grouped_mail_dict, similarities)
+                self._save_top_match(category, grouped_mail_dict, similarities)
+                self._save_similar_emails(category, grouped_mail_dict, similarities)
 
             # TODO: Threshold 값 적용 후 반환하기
 
