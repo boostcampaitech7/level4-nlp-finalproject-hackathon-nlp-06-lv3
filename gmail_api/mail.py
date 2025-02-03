@@ -29,6 +29,7 @@ class Mail:
         self.date = headers["date"]
         self._summary = summary
         self._label = label
+        self._similar_mails = []
 
     def __str__(self) -> str:
         """
@@ -71,3 +72,13 @@ class Mail:
         if not value:
             raise ValueError("Label cannot be empty.")
         self._label = value
+
+    @property
+    def similar_mails(self) -> Optional[list[str]]:
+        return self._similar_mails
+
+    @similar_mails.setter
+    def similar_mails(self, value: list[str]) -> None:
+        if not isinstance(value, list) and not value:
+            raise ValueError("Similar Mails cannot be empty.")
+        self._similar_mails = value
