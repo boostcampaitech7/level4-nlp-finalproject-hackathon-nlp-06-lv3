@@ -24,11 +24,15 @@ Evaluation Steps:
 - 4: The report has mostly logical flow with minor issues.
 - 5: The report is highly coherent and reads as a well-structured, unified summary.
 
+
+Example:
+
+
 Email Summaries:
 
 {Document}
 
-Summary:
+Daily Report:
 
 {Summary}
 
