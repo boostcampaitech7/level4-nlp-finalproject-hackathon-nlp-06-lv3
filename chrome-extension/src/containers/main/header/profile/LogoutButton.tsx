@@ -20,8 +20,7 @@ export default function LogoutButton() {
     onSuccess: () => {
       setUserId(0)
       addSuccessToast("로그아웃 되었습니다.")
-      queryClient.invalidateQueries({ queryKey: ["/auth/is-login"] }).then()
-      queryClient.invalidateQueries({ queryKey: ["/auth/google/profile"] }).then()
+      queryClient.clear()
       setView({ type: "home" })
     },
   })
