@@ -16,3 +16,4 @@ requests
 databases[aiomysql]
 cryptography
 itsdangerous
+python-dotenv
