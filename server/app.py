@@ -10,6 +10,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from starlette.status import HTTP_500_INTERNAL_SERVER_ERROR
 
 from server._core.errors.exceptions.custom_exception import CustomException
+from server._core.errors.exceptions.error_code import ErrorCode
 from server._core.utils.api_response import ApiResponse
 from server.database.connection import database
 from server.routers.auth_router import auth_router
@@ -52,7 +53,7 @@ app.add_middleware(
 async def custom_exception_handler(request: Request, exc: CustomException):
     return JSONResponse(
         status_code=exc.status_code,
-        content=jsonable_encoder(ApiResponse.error(exc.detail, exc.error_code.http_status)),
+        content=jsonable_encoder(ApiResponse.error(exc.error_code, exc.detail)),
     )
 
 
@@ -60,7 +61,7 @@ async def custom_exception_handler(request: Request, exc: CustomException):
 async def exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=HTTP_500_INTERNAL_SERVER_ERROR,
-        content=jsonable_encoder(ApiResponse.error("INTERNAL_SERVER_ERROR", HTTP_500_INTERNAL_SERVER_ERROR)),
+        content=jsonable_encoder(ApiResponse.error(ErrorCode.UNKNOWN_SERVER_ERROR, repr(exc))),
     )
 
 

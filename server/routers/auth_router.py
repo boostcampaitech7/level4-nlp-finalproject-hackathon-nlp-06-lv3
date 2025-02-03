@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Request
 
 from server._core.dependencies.session import get_user_id_from_session
 from server._core.utils.api_response import ApiResponse
+from server.models.user import User
 from server.schemas import auth_request, auth_response
 from server.service import auth_service
 
@@ -32,9 +33,9 @@ async def google_auth(
 
 @auth_router.get("/google/profile")
 async def google_profile(
-    user_id: int = Depends(get_user_id_from_session),
+    user: User = Depends(get_user_id_from_session),
 ) -> ApiResponse[auth_response.GoogleProfileDto]:
-    return ApiResponse.success(await auth_service.get_google_profile(user_id))
+    return ApiResponse.success(await auth_service.get_google_profile(user))
 
 
 @auth_router.get("/google/callback")

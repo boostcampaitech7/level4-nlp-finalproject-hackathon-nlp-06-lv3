@@ -5,7 +5,7 @@ export default {
     extend: {
       colors: {
         background: "#F6F8FC",
-        "main-theme": "#4064F6",
+        "main-theme": "#2C2C2C",
         "text-gray": "#757575",
         "border-gray": "#D9D9D9",
       },
@@ -13,6 +13,7 @@ export default {
     fontFamily: {
       GmarketSansMedium: ["GmarketSansMedium", "Arial", "Helvetica", "sans-serif"],
       SUITRegular: ["SUIT-Regular", "Arial", "Helvetica", "sans-serif"],
+      Inter: ["Inter", "Arial", "Helvetica", "sans-serif"],
     },
   },
   plugins: [],

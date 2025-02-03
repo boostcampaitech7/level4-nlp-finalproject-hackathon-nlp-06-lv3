@@ -14,7 +14,7 @@ export default function ReportsContainers() {
 
       try {
         const res = await axiosInstance.get("/reports/temp", { params })
-        return res.data.data
+        return res.data.response
       } catch {
         return null
       }

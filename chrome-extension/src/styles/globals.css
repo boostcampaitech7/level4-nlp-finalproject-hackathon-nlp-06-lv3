@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,7 +20,7 @@
 
 @layer base {
   body {
-    @apply bg-background font-SUITRegular text-base;
+    @apply bg-background font-Inter text-base;
     -ms-overflow-style: none;
   }
 
@@ -49,10 +51,6 @@
 }
 
 @layer components {
-  .markdown-container p {
-    @apply my-4;
-  }
-
   .markdown-container h1 {
     @apply text-3xl max-md:text-xl font-bold mt-5 mb-4;
   }
