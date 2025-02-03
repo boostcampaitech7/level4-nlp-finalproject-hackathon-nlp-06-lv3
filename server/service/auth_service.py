@@ -9,6 +9,7 @@ from google_auth_oauthlib.flow import Flow
 from server._core.errors.exceptions.custom_exception import CustomException
 from server._core.errors.exceptions.error_code import ErrorCode
 from server.database.connection import database
+from server.models.user import User
 from server.schemas import auth_request, auth_response
 
 # Google OAuth2 setup
@@ -85,13 +86,9 @@ def get_token_info(access_token: str):
         raise CustomException(ErrorCode.INVALID_TOKEN)
 
 
-async def get_google_profile(user_id: int):
-    user = await database.fetch_one("SELECT * FROM user_tb WHERE id = :user_id", {"user_id": user_id})
-    if not user:
-        raise CustomException(ErrorCode.NOT_FOUND_USER)
-
+async def get_google_profile(user: User):
     if is_expired(user["expiry"]):
-        new_tokens = await refresh_access_token(user_id, user["refresh_token"])
+        new_tokens = await refresh_access_token(user.id, user["refresh_token"])
         access_token = new_tokens
     else:
         access_token = user["access_token"]
