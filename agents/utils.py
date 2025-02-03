@@ -163,7 +163,7 @@ FEEDBACK_FORMAT = {
                     },
                 },
             },
-            "required": ["evaluation"],
+            "required": ["evaluation", "issues"],
         },
     },
 }
@@ -223,12 +223,8 @@ def generate_plain_text_report(formatted_report: dict | str) -> str:
         return formatted_report
 
     plain_text = ""
-    for category in CATEGORIES_FOR_OUTPUT:
-        label = category["name"]
-        description = category["description"]
-        plain_text += f"\n{description}\n"
-
-        for mail in formatted_report.get(label, []):
-            plain_text += f'메일 ID: {mail["mail_id"]}\n{mail["report"]}\n'
+    for category, mails in formatted_report.items():
+        for mail in mails:
+            plain_text += f'메일 ID: {mail["mail_id"]}\n분류: {category}\n{mail["report"]}\n'
 
     return plain_text

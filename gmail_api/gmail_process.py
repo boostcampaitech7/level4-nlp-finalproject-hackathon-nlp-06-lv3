@@ -14,8 +14,14 @@ SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 
 class GmailService:
-    def __init__(self):
-        self.service = self._authenticate_with_token()
+    _instance = None  # 싱글톤 인스턴스를 저장할 클래스 변수
+
+    def __new__(cls):
+        """싱글톤 패턴을 적용하여 객체가 하나만 생성되도록 보장"""
+        if cls._instance is None:
+            cls._instance = super(GmailService, cls).__new__(cls)
+            cls._instance.service = cls._instance._authenticate_with_token()
+        return cls._instance
 
     @staticmethod
     def _authenticate_with_token():
@@ -68,9 +74,12 @@ class GmailService:
         return self.service.users().messages().get(userId="me", id=message_id).execute()
 
 
+gmail = GmailService()
+
+
 class MessageHandler:
     @staticmethod
-    def process_attachment(service, message_id, part, files, save_dir="downloaded_files"):
+    def process_attachment(message_id, part, files, save_dir="downloaded_files"):
         """
         메시지 부분에서 첨부 파일을 다운로드하여 로컬 파일 시스템에 저장합니다.
         인자:
@@ -81,7 +90,7 @@ class MessageHandler:
             save_dir (str): 첨부 파일을 저장할 디렉토리.
         """
         att_id = part["body"]["attachmentId"]
-        att = service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
+        att = gmail.service.users().messages().attachments().get(userId="me", messageId=message_id, id=att_id).execute()
         saved_file_path = save_file(decode_base64(att["data"]), part["filename"])
         if saved_file_path:  # 파일이 정상적으로 저장된 경우
             files.append(parse_document(saved_file_path))
@@ -89,7 +98,7 @@ class MessageHandler:
         return files
 
     @staticmethod
-    def process_message_part(service, message_id: str, part: dict, files: deque = None) -> str:
+    def process_message_part(message_id: str, part: dict, files: deque = None) -> str:
         """
         메시지 부분을 재귀적으로 처리하여 본문을 디코딩합니다.
         MIME 타입: text/plain 만 고려합니다.
@@ -115,7 +124,7 @@ class MessageHandler:
 
         # 2) 첨부파일 처리
         if part.get("filename"):  # 파일명이 있으면 처리
-            files = MessageHandler.process_attachment(service, message_id, part, files)
+            files = MessageHandler.process_attachment(message_id, part, files)
             # 첨부파일이므로 본문에는 추가할 텍스트가 없음
             return "", files
 
@@ -123,13 +132,13 @@ class MessageHandler:
         plain_text = ""
         if "multipart" in mime_type:
             for sub_part in part.get("parts", []):
-                text, files = MessageHandler.process_message_part(service, message_id, sub_part, files)
+                text, files = MessageHandler.process_message_part(message_id, sub_part, files)
                 plain_text += text
 
         return plain_text, files
 
     @staticmethod
-    def process_message(service, message):
+    def process_message(message):
         """
         단일 메시지를 처리하고 본문을 디코딩합니다.
         인자:
@@ -137,7 +146,7 @@ class MessageHandler:
             message (dict): 전체 메시지 상세 정보.
         """
         payload = message.get("payload", {})
-        body, filenames = MessageHandler.process_message_part(service, message["id"], payload)
+        body, filenames = MessageHandler.process_message_part(message["id"], payload)
         replaced_body, attachments = replace_image_pattern_with(body, filenames)
         replaced_body = replace_url_pattern_from(replaced_body)
         return replaced_body, attachments
