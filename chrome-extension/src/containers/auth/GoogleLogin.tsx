@@ -4,10 +4,12 @@ import { FcGoogle } from "react-icons/fc"
 import axiosInstance from "@/utils/axiosInstance"
 import { userIdState } from "@/states/auth"
 import useToast from "@/hooks/useToast"
+import useErrorResponseHandler from "@/hooks/useErrorResponseHandler"
 
 export default function GoogleLoginBtn() {
   const setUserId = useSetRecoilState(userIdState)
   const { addSuccessToast, addErrorToast } = useToast()
+  const errorHandler = useErrorResponseHandler()
 
   const { mutate: oAuthMutate } = useMutation({
     mutationFn: (data: any) => {
@@ -17,6 +19,7 @@ export default function GoogleLoginBtn() {
       setUserId(res.data.response.user_id)
       addSuccessToast("환영합니다!")
     },
+    onError: (err) => errorHandler(err),
   })
 
   const googleLogin = () => {
