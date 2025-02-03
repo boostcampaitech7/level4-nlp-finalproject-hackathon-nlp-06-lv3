@@ -23,7 +23,7 @@ export default function GoogleLoginBtn() {
   })
 
   const googleLogin = () => {
-    const redirectUri = chrome.identity.getRedirectURL()
+    const redirectUri = "http://localhost:8000/auth/google/callback"
 
     const scope = [
       "openid",
@@ -37,7 +37,7 @@ export default function GoogleLoginBtn() {
       "&access_type=offline" +
       "&response_type=code" +
       "&prompt=consent" +
-      "&state=state_parameter_passthrough_value" +
+      `&state=${chrome.identity.getRedirectURL()}` +
       `&redirect_uri=${redirectUri}` +
       `&client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}`
 
