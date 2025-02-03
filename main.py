@@ -1,4 +1,3 @@
-import json
 import time
 
 import openai
@@ -6,8 +5,14 @@ from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
 from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent
-from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
-from evaluator import evaluate_summary
+from evaluation import (
+    ClassificationEvaluationAgent,
+    format_source_texts_for_report,
+    generate_final_report_text,
+    print_evaluation_results,
+    summary_evaluation_data,
+)
+from evaluator import evaluate_report, evaluate_summary
 from gmail_api import Mail
 from utils import TokenManager, fetch_mails, load_config, print_result, run_with_retry
 
@@ -24,8 +29,9 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
     )
 
     for mail_id, mail in mail_dict.items():
-        summary = run_with_retry(self_refine_agent.process, mail, summary_agent)
+        summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
         mail_dict[mail_id].summary = summary
+        TokenManager.total_token_usage += token_usage
 
         if config["evaluation"]["classification_eval"]:
             category = run_with_retry(class_eval_agent.process, mail, classification_agent)
@@ -56,19 +62,22 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
 def generate_report(mail_dict: dict[str, Mail], config: dict):
     # TODO: 리포트 생성 로직 변경하기
     report_agent = SummaryAgent("solar-pro", "final")
-    self_refine_agent = SelfRefineAgent("solar-pro", "final")
 
-    try:
-        report, report_token_usage = self_refine_agent.process(mail_dict, report_agent, 5)
-        TokenManager.total_token_usage += report_token_usage
-        return report
-    except json.decoder.JSONDecodeError as json_err:
-        print("[JSONDecodeError] JSON 디코딩 중 오류 발생. 응답 내용이 올바른 JSON 형식인지 확인하세요.")
-        print(f"에러 메시지: {json_err}")
-        print("디버깅을 위해 원본 응답 내용을 출력합니다.")
-        response_content = getattr(json_err, "doc", "응답 내용을 확인할 수 없습니다.")
-        print(f"응답 내용:\n{response_content}")
-        return {}  # 오류 발생 시 빈 딕셔너리 반환
+    report, report_token_usage = run_with_retry(report_agent.process, mail_dict)
+    TokenManager.total_token_usage += report_token_usage
+
+    if config["evaluation"]["report_eval"]:
+        report_texts = []
+        report_texts.append(generate_final_report_text(report, mail_dict))
+        summarized = []
+        summarized.append(format_source_texts_for_report(summary_evaluation_data.summarized_texts))
+        references = []
+        references.append("gold")
+
+        report_results = evaluate_report(config, summarized, report_texts, references)
+        print_evaluation_results(report_results, eval_type="report", additional=True)
+
+    return report
 
 
 def main():
