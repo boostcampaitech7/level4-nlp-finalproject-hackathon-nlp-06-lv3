@@ -2,7 +2,6 @@ import os
 from datetime import datetime, timezone
 
 import requests
-from fastapi import HTTPException
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
@@ -83,13 +82,13 @@ def get_token_info(access_token: str):
         response.raise_for_status()
         return response.json()  # Return token information
     except requests.exceptions.RequestException:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise CustomException(ErrorCode.INVALID_TOKEN)
 
 
 async def get_google_profile(user_id: int):
     user = await database.fetch_one("SELECT * FROM user_tb WHERE id = :user_id", {"user_id": user_id})
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise CustomException(ErrorCode.NOT_FOUND_USER)
 
     if is_expired(user["expiry"]):
         new_tokens = await refresh_access_token(user_id, user["refresh_token"])

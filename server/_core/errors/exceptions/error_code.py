@@ -11,6 +11,7 @@ from starlette.status import (
 
 
 class ErrorCode(Enum):
+    INVALID_TOKEN = (HTTP_401_UNAUTHORIZED, "유효하지 않은 토큰입니다.")
     UNAUTHORIZED = (HTTP_401_UNAUTHORIZED, "인증되지 않았습니다.")
     PERMISSION_DENIED = (HTTP_403_FORBIDDEN, "권한이 없습니다.")
     NOT_FOUND_USER = (HTTP_404_NOT_FOUND, "존재하지 않는 사용자입니다.")
