@@ -33,12 +33,15 @@ export default function Header() {
           {view.type === "home" ? (
             <TbBrandGmail />
           ) : (
-            <button type="button" onClick={() => setView({ type: "home" })}>
+            <button type="button" aria-label="back" onClick={() => setView({ type: "home" })}>
               <FaAngleLeft />
             </button>
           )}
         </span>
-        <h1 className="text-lg font-GmarketSansMedium">{view.type === "home" && "Daily Report"}</h1>
+        <h1 className="text-lg font-GmarketSansMedium">
+          {view.type === "home" && "Daily Reports"}
+          {view.type === "report" && "Report"}
+        </h1>
         <div className="w-16 h-full flex justify-end">
           <Profile />
         </div>
