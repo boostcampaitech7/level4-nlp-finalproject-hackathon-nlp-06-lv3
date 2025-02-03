@@ -1,3 +1,5 @@
+import time
+
 import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
@@ -6,7 +8,7 @@ from agents import BaseAgent, ClassificationAgent, EmbeddingManager, SelfRefineA
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
 from gmail_api import Mail
-from utils import TokenManager, fetch_mails, load_config, run_with_retry
+from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
@@ -14,11 +16,12 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
     summary_agent = SummaryAgent("solar-pro", "single")
     self_refine_agent = SelfRefineAgent("solar-pro", "single")  # TODO: reflexion으로 변경 실험
     classification_agent = ClassificationAgent("solar-pro")
-    class_eval_agent = ClassificationEvaluationAgent(
-        model="gpt-4o",
-        human_evaluation=config["classification"]["do_manual_filter"],
-        inference=config["classification"]["inference"],
-    )
+    if config["evaluation"]["classification_eval"]:
+        class_eval_agent = ClassificationEvaluationAgent(
+            model="gpt-4o",
+            human_evaluation=config["classification"]["do_manual_filter"],
+            inference=config["classification"]["inference"],
+        )
 
     for mail_id, mail in mail_dict.items():
         summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
@@ -52,17 +55,13 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
 
 
 def generate_report(mail_dict: dict[str, Mail], config: dict):
-    embedding_manager = EmbeddingManager("bge-m3", "cosine-similarity", 0.8, is_save_results=True)
-    clustred_mails = embedding_manager.run(mail_dict)
-
-    for category, similar_mail_dict in clustred_mails.items():
-        print(f"{'=' * 40}\n분류: {category}")
-        for mail_id, similar_mail_list in similar_mail_dict.items():
-            sim_summary = "\n".join(
-                [f"{i}위 제목: {mail_dict[sim_mail_id].subject}" for i, sim_mail_id in enumerate(similar_mail_list)]
-            )
-            print(f"메일 ID: {mail_id}\n제목: {mail_dict[mail_id].subject}\n{sim_summary}\n")
-        print()
+    embedding_manager = EmbeddingManager(
+        embedding_model_name=config["embedding"]["model_name"],
+        similarity_metric=config["embedding"]["similarity_metric"],
+        similarity_threshold=config["embedding"]["similarity_threshold"],
+        is_save_results=config["embedding"]["save_results"],
+    )
+    embedding_manager.run(mail_dict)
 
 
 def main():
@@ -78,13 +77,18 @@ def main():
             n=config["gmail"]["max_mails"],
         )
 
-        # start_time = time.time()
+        start_time = time.time()
 
         summary_and_classify(mail_dict, config)
 
         generate_report(mail_dict, config)
 
-        # print_result(start_time, report, mail_dict)
+        print_result(start_time, mail_dict)
+
+        # mysql db 전송 용 Data Frame
+        df = convert_mail_dict_to_df(mail_dict)
+
+        print(df)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -92,7 +96,8 @@ def main():
         print("[RateLimitError] API 한도가 초과되었습니다. 현재까지의 토큰 사용량만 보고합니다.")
         print(f"에러 메세지: {rate_err}")
     finally:
-        BaseAgent.plot_token_cost()
+        if config["token_tracking"]:
+            BaseAgent.plot_token_cost()
 
 
 if __name__ == "__main__":

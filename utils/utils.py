@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Callable
 
 import openai
+import pandas as pd
 import yaml
 from tqdm import tqdm
 
@@ -68,7 +69,7 @@ def map_category(english_label, filename="prompt/template/classification/categor
     return
 
 
-def print_result(start_time: str, report: str, mail_dict: dict[str, Mail]):
+def print_result(start_time: str, mail_dict: dict[str, Mail]):
     print("=============FINAL_REPORT================")
 
     elapsed_time = time.time() - start_time
@@ -77,19 +78,33 @@ def print_result(start_time: str, report: str, mail_dict: dict[str, Mail]):
     else:
         tpm = 0  # 실행 시간이 0이면 0으로 처리
 
-    print(f"실행 시간: {elapsed_time:.2f}초")
-    print("평가 배제 토큰 사용 정보")
-    print(f"최종 토큰 사용량: {TokenManager.total_token_usage}")
-    print(f"Tokens Per Minute (TPM): {tpm:.2f}")
-    print()
+    print(
+        f"실행 시간: {elapsed_time:.2f}초"
+        "평가 배제 토큰 사용 정보"
+        f"최종 토큰 사용량: {TokenManager.total_token_usage}"
+        f"Tokens Per Minute (TPM): {tpm:.2f}\n"
+    )
 
-    for label, mail_reports in report.items():
-        print(map_category(label))
-        for mail_report in mail_reports:
-            mail_subject = mail_dict[mail_report["mail_id"]].subject
-            print(f"메일 subject: {mail_subject}")
-            print(f"리포트: {mail_report['report']}")
-        print()
+    for mail_id, mail in mail_dict.items():
+        sim_mails_str = "\n".join(
+            [
+                f"\t{i + 1}번째 유사 메일\n"
+                f"\tID: {sim_mail_id}\n"
+                f"\t제목: {mail_dict[sim_mail_id].subject}\n"
+                f"\t요약: {mail_dict[sim_mail_id].summary}\n"
+                for i, sim_mail_id in enumerate(mail.similar_mails)
+            ]
+        )
+
+        # TODO: map_category 함수 변경
+        print(
+            f"ID: {mail_id}\n"
+            f"분류: {mail.label_action}\n"
+            f"제목: {mail.subject}\n"
+            f"요약: {mail.summary}\n"
+            f"{sim_mails_str}\n"
+            f"{'=' * 40}\n\n"
+        )
 
 
 def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
@@ -99,7 +114,7 @@ def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
         # 신규 mail_id 정의: 받은 시간 순 오름차순
         mail_id = f"{end_date}/{len(messages)-idx:04d}"
         mail = Mail(message_metadata["id"], mail_id)
-        # 룰베이스 분류
+        # TODO: 룰베이스 분류 강화
         if "(광고)" not in mail.subject:
             mail_dict[mail_id] = mail
     return mail_dict
@@ -117,8 +132,20 @@ def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, di
 
     Examples:
         실행 결과
-        ```
+        ```json
+        {
+            "academic": {
+                "2025/02/01/0001": Mail,
+                "2025/02/01/0002": Mail,
+                ...
+            },
+            "administration": {...},
+            "other": {...},
 
+            # 예정
+            "action needed": {...},
+            "read only": {...},
+        }
         ```
     """
 
@@ -131,3 +158,25 @@ def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, di
             grouped_df[mail.label_category][mail_id] = mail
 
     return grouped_df
+
+
+def convert_mail_dict_to_df(mail_dict: dict[str, Mail]) -> pd.DataFrame:
+    indices: list[str] = []
+    data: list[dict[str, str]] = []
+
+    for mail_id, mail in mail_dict.items():
+        indices.append(mail_id)
+        data.append(
+            {
+                "subject": mail.subject,
+                "summary": mail.summary,
+                "label_category": mail.label_category,
+                "label_action": mail.label_action,
+                "similar_mails": str(mail.similar_mails),
+            }
+        )
+
+    df = pd.DataFrame(data=data, index=indices)
+    df.index.name = "id"
+
+    return df

@@ -56,3 +56,11 @@ classification:
 
 self_refine:
   max_iteration: 5
+
+embedding:
+  model_name: "bge-m3" # 혹은 "upstage"
+  similarity_metric: "cosine_similarity" # 혹은 "dot-product"
+  similarity_threshold: 0.8
+  save_results: true
+
+token_tracking: true

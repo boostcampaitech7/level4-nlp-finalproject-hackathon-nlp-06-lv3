@@ -79,10 +79,10 @@ class EmbeddingManager:
         self.threshold = similarity_threshold
         self.is_save_results = is_save_results
 
-    def run(self, mail_dict: dict[str, Mail]) -> dict[str, SimilarityDict]:
+    def run(self, mail_dict: dict[str, Mail]) -> dict[str, Mail]:
         grouped_dict = group_mail_dict_2_classification(mail_dict)
 
-        clustered_dict = {}
+        clustered_dict: dict[str, dict[str, list[str]]] = {}
         for category, grouped_mail_dict in grouped_dict.items():
             embedding_vectors = {
                 mail_id: self.embedding_model.process(mail.subject) for mail_id, mail in grouped_mail_dict.items()
@@ -93,9 +93,12 @@ class EmbeddingManager:
                 self._save_top_match(category, grouped_mail_dict, similar_dict)
                 self._save_similar_emails(category, grouped_mail_dict, similar_dict)
 
+            # TODO: prefix를 붙여서 2가지 분류 기준을 구분할 것
             clustered_dict.update({category: self._process_similar_mails(similar_dict)})
 
-        return clustered_dict
+        for similar_mail_dict in clustered_dict.values():
+            for mail_id, similar_mail_list in similar_mail_dict.items():
+                mail_dict[mail_id].similar_mails = similar_mail_list
 
     # built-in functions
     def _save_top_match(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
@@ -127,7 +130,7 @@ class EmbeddingManager:
             f.write(txt_content)
         print(f"Saved similar emails to {filename}")
 
-    def _process_similar_mails(self, similar_dict: SimilarityDict):
+    def _process_similar_mails(self, similar_dict: SimilarityDict) -> dict[str, list[str]]:
         filtered_dict: dict[str, list[str]] = {
             mail_id: [sim_id for sim_id, sim_score in similar_list if sim_score >= self.threshold]
             for mail_id, similar_list in similar_dict.items()
