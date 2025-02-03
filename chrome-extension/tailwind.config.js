@@ -13,6 +13,7 @@ export default {
     fontFamily: {
       GmarketSansMedium: ["GmarketSansMedium", "Arial", "Helvetica", "sans-serif"],
       SUITRegular: ["SUIT-Regular", "Arial", "Helvetica", "sans-serif"],
+      Inter: ["Inter", "Arial", "Helvetica", "sans-serif"],
     },
   },
   plugins: [],
