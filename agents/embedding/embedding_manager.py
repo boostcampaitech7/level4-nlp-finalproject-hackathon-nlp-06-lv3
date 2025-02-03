@@ -71,7 +71,7 @@ class EmbeddingManager:
 
         if similarity_metric == "dot-product":
             self.compute_similarity: Callable[[dict[str, np.ndarray]], SimilarityDict] = _compute_dot_product_similarity
-        elif similarity_metric == "cosine_similarity":
+        elif similarity_metric == "cosine-similarity":
             self.compute_similarity: Callable[[dict[str, np.ndarray]], SimilarityDict] = _compute_cosine_similarity
         else:
             raise ValueError(f"{similarity_metric}은 유효한 유사도 메트릭이 아닙니다.")
@@ -85,7 +85,7 @@ class EmbeddingManager:
         clustered_dict = {}
         for category, grouped_mail_dict in grouped_dict.items():
             embedding_vectors = {
-                mail_id: self.embedding_model.process(mail.summary) for mail_id, mail in grouped_mail_dict.items()
+                mail_id: self.embedding_model.process(mail.subject) for mail_id, mail in grouped_mail_dict.items()
             }
             similar_dict = self.compute_similarity(embedding_vectors)
 

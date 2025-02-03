@@ -9,6 +9,7 @@ from collections import defaultdict
 import matplotlib.pyplot as plt
 import numpy as np
 from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
 
 class BaseAgent(ABC):
@@ -27,7 +28,7 @@ class BaseAgent(ABC):
         # response_format을 사용하기 위해 OpenAI 객체로 선언합니다.
         # response_format과 JsonOutputParser의 차이는 다음 링크에서 간단하게 설명합니다.
         # https://www.notion.so/gamchan/OpenAI-182815b39d398070b7fbc783bd7205ca?pvs=4
-        self.client: OpenAI = self.initialize_chat(model, temperature, seed)
+        self.client: OpenAI | SentenceTransformer = self.initialize_chat(model, temperature, seed)
         self.model_name = model
         self.temperature = temperature
         self.seed = seed
