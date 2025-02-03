@@ -10,7 +10,7 @@ from sklearn.metrics import confusion_matrix
 
 class MetricCalculator:
     """
-    - 2×2 혼동행렬 계산 및 시각화
+    - 2×2 Confusion Matrix 계산 및 시각화
     - 멀티클래스 지표(Entropy, Diversity, Chi-Square, Accuracy, Cramer's V) 계산
     - Ground Truth vs Inference 상관계수 계산
     """
@@ -19,13 +19,13 @@ class MetricCalculator:
     def compute_metrics(results: list, ground_truth: str):
         """
         (1) Entropy, (2) Diversity Index, (3) Chi-Square p-value, (4) Accuracy, (5) Cramer's V
-           을 멀티클래스 관점에서 계산.
+           을 '메일 단위'로 계산 (ground_truth 1개에 대해 여러 번 추론한 results).
         """
         value_counts = pd.Series(results).value_counts(normalize=True)
         entropy_value = entropy(value_counts)  # (1)
-        diversity_index = len(value_counts) / len(results)  # (2)
+        diversity_index = len(value_counts) / len(results) if len(results) > 0 else 0  # (2)
 
-        # 멀티클래스 혼동행렬
+        # 멀티클래스 Confusion Matrix
         unique_labels = sorted(set([ground_truth] + results))
         true_arr = [ground_truth] * len(results)
         conf_matrix = confusion_matrix(true_arr, results, labels=unique_labels)
@@ -34,7 +34,8 @@ class MetricCalculator:
         try:
             _, p_val, _, _ = chi2_contingency(conf_matrix)
         except ValueError:
-            _, p_val = 0, 1
+            # 기대빈도가 0이거나 카테고리가 1개뿐이면 오류 => p_val=1
+            p_val = 1
 
         # accuracy (4) = diagonal / total
         total = conf_matrix.sum()
@@ -63,50 +64,29 @@ class MetricCalculator:
     @staticmethod
     def compute_binary_confusion_matrix(eval_df: pd.DataFrame, category: str, inference_count: int):
         """
-        [수정된 버전]
-        - 전체 데이터셋을 대상으로, 'category'가 실제(Positive)인지 아닌지,
-          'category'로 예측(Positive)했는지 아닌지 기준으로 2×2 혼동 행렬 계산.
-        - inference_count가 여러 개인 경우, 각 row마다 inference_{i}를 모두 모아
-          별도의 "샘플"로 취급해서 확장.
-
-        Returns
-        -------
-        conf_matrix : np.ndarray
-            shape=(2, 2). [[TN, FP], [FN, TP]] 형태
-        labels_2class : list
-            ["Negative", "Positive"]
+        - 전체 데이터셋을 대상으로, 'category' vs. 'not-category'로 2×2 Confusion Matrix 계산.
+        - inference_count 회 각각을 샘플로 본다.
         """
-
         all_predictions = []
         all_ground_truths = []
 
-        # 모든 row에 대해, 각 inference_i 결과를 하나씩 추출
         for _, row in eval_df.iterrows():
             gt = row["ground_truth"]
-            # inference_1, inference_2, ...
             for i in range(inference_count):
                 pred = row[f"inference_{i+1}"]
                 # ground_truth가 category이면 Positive, 아니면 Negative
-                if gt == category:
-                    all_ground_truths.append("Positive")
-                else:
-                    all_ground_truths.append("Negative")
-
+                all_ground_truths.append("Positive" if gt == category else "Negative")
                 # 예측이 category이면 Positive, 아니면 Negative
-                if pred == category:
-                    all_predictions.append("Positive")
-                else:
-                    all_predictions.append("Negative")
+                all_predictions.append("Positive" if pred == category else "Negative")
 
         labels_2class = ["Negative", "Positive"]
         conf_matrix = confusion_matrix(all_ground_truths, all_predictions, labels=labels_2class)
-
         return conf_matrix, labels_2class
 
     @staticmethod
     def plot_confusion_matrix(conf_matrix, labels, category):
         """
-        2×2 혼동행렬 시각화 -> png 저장
+        2×2 Confusion Matrix 시각화 -> png 저장
         """
         output_dir = "evaluation/classification/figure"
         os.makedirs(output_dir, exist_ok=True)
@@ -118,7 +98,7 @@ class MetricCalculator:
             fmt="d",
             cmap="Blues",
             xticklabels=labels,
-            yticklabels=labels,  # 실제 라벨 / 예측 라벨 동일
+            yticklabels=labels,
             ax=ax,
             linewidths=1,
             linecolor="black",
@@ -138,7 +118,9 @@ class MetricCalculator:
     @staticmethod
     def compute_overall_accuracy(eval_df: pd.DataFrame, inference_count: int) -> float:
         """
-        - 전체(row) 기준: inference 결과 중 ground_truth와 일치하는지
+        전체 데이터셋에 대해:
+        - 각 row(메일)에 대해 inference_count회 한 예측을 전부 샘플로 보고,
+        - ground_truth와 일치하는지 여부를 총합으로 계산.
         """
         inf_cols = [f"inference_{i+1}" for i in range(inference_count)]
         total_correct = 0
@@ -151,21 +133,19 @@ class MetricCalculator:
                 total_count += 1
                 if pred == gt:
                     total_correct += 1
+
         return total_correct / total_count if total_count > 0 else 0
 
     @staticmethod
     def compute_category_accuracy_2x2(eval_df: pd.DataFrame, inference_count: int):
         """
-        [수정된 버전]
-        - 전체 데이터셋을 대상으로, 각 카테고리에 대해 2×2 혼동행렬을 구성.
-        - (TP+TN)/total 로 Accuracy 계산.
-        - 카테고리별로 plot_confusion_matrix도 수행.
+        - 전체 데이터셋을 대상으로, 카테고리마다 2×2 confusion matrix 계산.
+        - (TP+TN)/total 로 Accuracy 계산 및 그림 저장.
         """
         cat_accuracy = {}
         unique_cats = sorted(eval_df["ground_truth"].unique())
 
         for category in unique_cats:
-            # 카테고리별 2x2 혼동행렬
             cm_2x2, label2class = MetricCalculator.compute_binary_confusion_matrix(eval_df, category, inference_count)
             MetricCalculator.plot_confusion_matrix(cm_2x2, label2class, str(category))
 
@@ -178,7 +158,8 @@ class MetricCalculator:
     @staticmethod
     def group_consistency_metrics(eval_df: pd.DataFrame, inference_count: int) -> pd.DataFrame:
         """
-        Ground Truth별로 모은 뒤, 멀티클래스 지표(Entropy, Accuracy, 등)를 종합해 DataFrame화
+        Ground Truth별로 모아서, 각 그룹 내 (메일별) inference 결과를 합쳐
+        Entropy, Diversity, p-value, Accuracy, Cramer's V를 계산.
         """
         if eval_df.empty:
             return pd.DataFrame()
@@ -187,15 +168,32 @@ class MetricCalculator:
         grouped = eval_df.groupby("ground_truth")
 
         for gt, group_df in grouped:
-            # 해당 GT 그룹 내 모든 inference 결과
+            # 해당 GT 그룹 내 '여러 메일의 inference 결과'를 하나로 통합
             cat_results = group_df.iloc[:, 2:-5].values.flatten().tolist()
-
             (entropy_value, diversity_index, p_value, accuracy, _, _, c_v) = MetricCalculator.compute_metrics(
                 cat_results, gt
             )
-
             grouped_results.append([gt, entropy_value, diversity_index, p_value, accuracy, c_v])
 
         columns = ["Ground Truth", "Entropy", "Diversity Index", "Chi-Square p-value", "Accuracy", "Cramer's V"]
         summary_df = pd.DataFrame(grouped_results, columns=columns)
         return summary_df
+
+    @staticmethod
+    def compute_overall_multiclass_confusion_matrix(eval_df: pd.DataFrame, inference_count: int):
+        """
+        전체 데이터셋에 대해 (메일 × inference_count) 샘플을 전부 모아 멀티클래스 Confusion Matrix 생성
+        """
+        all_preds = []
+        all_gts = []
+
+        for _, row in eval_df.iterrows():
+            gt = row["ground_truth"]
+            for i in range(inference_count):
+                pred = row[f"inference_{i+1}"]
+                all_preds.append(pred)
+                all_gts.append(gt)
+
+        label_list = sorted(set(all_preds + all_gts))
+        conf_matrix = confusion_matrix(all_gts, all_preds, labels=label_list)
+        return conf_matrix, label_list

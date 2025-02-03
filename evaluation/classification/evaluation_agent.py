@@ -1,4 +1,5 @@
 import os
+from collections import Counter
 
 from openai import OpenAI
 
@@ -38,13 +39,13 @@ class ClassificationEvaluationAgent(BaseAgent):
                 template_type="classification",
                 target_range="single",
                 action="classification",
-                mail=str(mail),
+                mail=mail.summary,
                 categories=categories_text,
             ),
         )
         return response.choices[0].message.content.strip()
 
-    def process(self, mail: Mail, classifier: ClassificationAgent) -> Mail:
+    def process(self, mail: Mail, classifier: ClassificationAgent) -> str:
         """
         1) Ground Truth를 GPT로 생성.
         2) 사람이 검수(human_evaluation) 옵션이 True면 콘솔에서 수정 가능.
@@ -65,9 +66,12 @@ class ClassificationEvaluationAgent(BaseAgent):
         # 동일 메일에 대해 여러 번 분류
         results = [classifier.process(mail) for _ in range(self.inference_iteration)]
 
-        # CSV에 저장
+        # CSV에 저장 (메일 단위로 Entropy 등 기록)
         self.df_manager.update_eval_df(mail.id, results, ground_truth)
-        return mail
+
+        # 여기서는 majority vote 등으로 최종값 return (예: 가장 많이 나온 라벨)
+        label_counter = Counter(results)
+        return label_counter.most_common(1)[0][0]
 
     def print_evaluation(self):
         """

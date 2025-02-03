@@ -26,3 +26,6 @@ bert-score==0.3.13
 scipy==1.15.1
 scikit-learn==1.6.1
 seaborn==0.13.2
+
+# Chooose after experiments(for serving)
+sentence-transformers==3.4.1

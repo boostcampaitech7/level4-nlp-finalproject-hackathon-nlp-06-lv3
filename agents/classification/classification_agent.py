@@ -64,13 +64,13 @@ class ClassificationAgent(BaseAgent):
                 template_type="classification",
                 target_range="single",
                 action="classification",
-                mail=str(mail),
+                mail=mail.summary,
                 categories=categories_text,
             ),
         )
-        summarized_content: str = response.choices[0].message.content
-        return summarized_content
 
-    @staticmethod
-    def calculate_token_cost():
-        pass
+        super().add_usage(self.__class__.__name__, "classification", response.usage.total_tokens)
+
+        label: str = response.choices[0].message.content
+
+        return label

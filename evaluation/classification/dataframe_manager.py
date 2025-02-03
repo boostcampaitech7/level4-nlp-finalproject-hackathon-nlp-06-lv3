@@ -41,7 +41,7 @@ class DataFrameManager:
             if existing.iloc[:, 2:-5].notna().all(axis=None):
                 return
 
-        # metric 계산
+        # metric 계산 (메일 단위로 Entropy, Diversity 등만 구함)
         (entropy_val, diversity_val, p_val, acc_val, _, _, c_v) = MetricCalculator.compute_metrics(
             results, ground_truth
         )
@@ -56,34 +56,34 @@ class DataFrameManager:
     def print_df(self):
         """
         최종 결과를 출력:
-          1) Correctness(카테고리별 2×2 혼동행렬, 전체/카테고리별 정확도, GT vs Inference 상관계수)
+          1) Correctness(카테고리별 2×2 Confusion Matrix, 전체/카테고리별 정확도, GT vs Inference 상관계수)
           2) Consistency(Ground Truth 별 요약된 메트릭)
+          3) 전체 데이터셋 대상 멀티클래스 Confusion Matrix
         """
         if self.eval_df.empty:
             print("⚠️ 저장된 평가 데이터가 없습니다.")
             return
-        self._print_correctness()
 
+        self._print_correctness()
         self._print_consistency()
+        self._print_multiclass_confusion_matrix()
 
     def _print_correctness(self):
         """
         Correctness:
-         - 카테고리별(ground_truth별) 2×2 혼동행렬 시각화
+         - 카테고리별(ground_truth별) 2×2 Confusion Matrix 시각화
          - 전체 정확도, 카테고리별 정확도
-         - Ground Truth vs Inference_i 상관계수(회차별)
         """
         # (1) 전체 정확도
         overall_acc = MetricCalculator.compute_overall_accuracy(self.eval_df, self.inference_count)
 
-        # (2) 카테고리별 2×2 혼동행렬 & 정확도
+        # (2) 카테고리별 2×2 Confusion Matrix & 정확도
         cat_accuracy_dict = MetricCalculator.compute_category_accuracy_2x2(self.eval_df, self.inference_count)
 
         print("\nCorrectness")
         print(f"🎯 전체 정확도: {overall_acc:.4f}")
         for gt, acc in cat_accuracy_dict.items():
             print(f"🎯 {gt} 정확도: {acc:.4f}")
-
         print()
 
     def _print_consistency(self):
@@ -95,3 +95,16 @@ class DataFrameManager:
         print("Consistency")
         print("📊 Ground Truth 별 요약된 평가 메트릭")
         print(summary_df)
+
+    def _print_multiclass_confusion_matrix(self):
+        """
+        전체 데이터셋을 대상으로 한 멀티클래스 Confusion Matrix 출력.
+        (inference_count회 추론 모두를 '샘플'로 취급)
+        """
+        conf_matrix, label_list = MetricCalculator.compute_overall_multiclass_confusion_matrix(
+            self.eval_df, self.inference_count
+        )
+        print("\n=== Overall Multiclass Confusion Matrix ===")
+        print("Labels:", label_list)
+        print(conf_matrix)
+        print("===========================================\n")
