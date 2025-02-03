@@ -34,8 +34,22 @@ def _compute_dot_product_similarity(embedding_vectors: dict[str, np.ndarray]) ->
 
 
 def _compute_cosine_similarity(embedding_vectors: dict[str, np.ndarray]) -> SimilarityDict:
-    # TODO: 코사인 유사도 구현
-    pass
+    mail_ids = list(embedding_vectors.keys())
+    embedding_matrix = np.array(list(embedding_vectors.values()))
+
+    # 코사인 유사도 행렬 계산
+    norm_matrix = np.linalg.norm(embedding_matrix, axis=1, keepdims=True)
+    normalized_embeddings = embedding_matrix / (norm_matrix + 1e-10)  # 0으로 나누는 것 방지
+    similarity_matrix = np.dot(normalized_embeddings, normalized_embeddings.T)
+
+    similar_results: SimilarityDict = {
+        mail_ids[i]: [
+            (mail_ids[j], float(similarity_matrix[i][j])) for j in np.argsort(-similarity_matrix[i]) if j != i
+        ]
+        for i in range(len(mail_ids))
+    }
+
+    return similar_results
 
 
 class EmbeddingManager:
