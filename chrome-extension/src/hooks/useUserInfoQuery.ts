@@ -5,7 +5,7 @@ export default function useUserInfoQuery() {
   const { data, isFetched } = useSuspenseQuery({
     queryKey: ["/auth/google/profile"],
     queryFn: async () => {
-      return axiosInstance.get("/auth/google/profile").then((res) => res.data.data)
+      return axiosInstance.get("/auth/google/profile").then((res) => res.data.response)
     },
     staleTime: 300_000,
   })

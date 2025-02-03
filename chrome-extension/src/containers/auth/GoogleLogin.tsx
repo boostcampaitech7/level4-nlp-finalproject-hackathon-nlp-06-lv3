@@ -13,8 +13,8 @@ export default function GoogleLoginBtn() {
     mutationFn: (data: any) => {
       return axiosInstance.post("/auth/google", data)
     },
-    onSuccess: (data) => {
-      setUserId(data.data.user_id)
+    onSuccess: (res) => {
+      setUserId(res.data.response.user_id)
       addSuccessToast("환영합니다!")
     },
   })
