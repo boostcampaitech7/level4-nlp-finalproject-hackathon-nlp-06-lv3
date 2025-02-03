@@ -16,7 +16,7 @@ class Bgem3EmbeddingAgent(BaseAgent):
     def process(self, summary: str, model=None):
         splitted_sentences = split_sentences(summary)
 
-        embedding_vectors = self.client.encode(splitted_sentences)["dense_vecs"]
+        embedding_vectors = self.client.encode(splitted_sentences)
 
         embedding_matrix = np.array(embedding_vectors)
         mean_pooled_vector = np.mean(embedding_matrix, axis=0)
