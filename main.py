@@ -2,21 +2,14 @@ import json
 import time
 
 import openai
-import yaml
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
 from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent
-from evaluation import (
-    ClassificationEvaluationAgent,
-    format_source_texts_for_report,
-    generate_final_report_text,
-    print_evaluation_results,
-    summary_evaluation_data,
-)
-from evaluator import evaluate_report, evaluate_summary
+from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
+from evaluator import evaluate_summary
 from gmail_api import Mail
-from utils import fetch_mails, load_config, print_result, run_with_retry
+from utils import TokenManager, fetch_mails, load_config, print_result, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
@@ -67,7 +60,7 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
 
     try:
         report, report_token_usage = self_refine_agent.process(mail_dict, report_agent, 5)
-        total_token_usage += report_token_usage
+        TokenManager.total_token_usage += report_token_usage
         return report
     except json.decoder.JSONDecodeError as json_err:
         print("[JSONDecodeError] JSON 디코딩 중 오류 발생. 응답 내용이 올바른 JSON 형식인지 확인하세요.")
@@ -76,30 +69,6 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
         response_content = getattr(json_err, "doc", "응답 내용을 확인할 수 없습니다.")
         print(f"응답 내용:\n{response_content}")
         return {}  # 오류 발생 시 빈 딕셔너리 반환
-
-
-def print_result(start_time: str, report: str, mail_dict: dict[str, Mail]):
-    print("=============FINAL_REPORT================")
-
-    elapsed_time = time.time() - start_time
-    if elapsed_time > 0:
-        tpm = (total_token_usage / elapsed_time) * 60
-    else:
-        tpm = 0  # 실행 시간이 0이면 0으로 처리
-
-    print(f"실행 시간: {elapsed_time:.2f}초")
-    print("평가 배제 토큰 사용 정보")
-    print(f"최종 토큰 사용량: {total_token_usage}")
-    print(f"Tokens Per Minute (TPM): {tpm:.2f}")
-    print()
-
-    for label, mail_reports in report.items():
-        print(map_category(label))
-        for mail_report in mail_reports:
-            mail_subject = mail_dict[mail_report["mail_id"]].subject
-            print(f"메일 subject: {mail_subject}")
-            print(f"리포트: {mail_report['report']}")
-        print()
 
 
 def main():
