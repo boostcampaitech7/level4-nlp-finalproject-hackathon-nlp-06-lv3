@@ -5,6 +5,7 @@ from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
 from gmail_api import Mail
+from utils.utils import run_with_retry
 
 from ..utils import FEEDBACK_FORMAT, REFINE_FORMAT, build_messages, generate_plain_text_report
 
@@ -65,7 +66,7 @@ class SelfRefineAgent(BaseAgent):
         """
         # 초기 요약 및 로그 생성
         token_usage = 0
-        summarization, summary_token_usage = model.process(data)
+        summarization, summary_token_usage = run_with_retry(model.process, data)
         token_usage += summary_token_usage
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
         logging_file_prefix = self.target_range
@@ -92,16 +93,19 @@ class SelfRefineAgent(BaseAgent):
             token_usage += groundness_token_usage
 
             # Feedback
-            feedback_response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=build_messages(
-                    template_type="self_refine",
-                    target_range=self.target_range,
-                    action="feedback",
-                    mails=input_mail_data,
-                    report=refine_target,
-                ),
-                response_format=FEEDBACK_FORMAT,
+            feedback_messages = build_messages(
+                template_type="self_refine",
+                target_range=self.target_range,
+                action="feedback",
+                mails=input_mail_data,
+                report=refine_target,
+            )
+            feedback_response = run_with_retry(
+                lambda: self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=feedback_messages,
+                    response_format=FEEDBACK_FORMAT,
+                )
             )
             feedback = feedback_response.choices[0].message.content
             super().add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
@@ -118,17 +122,20 @@ class SelfRefineAgent(BaseAgent):
                 break
 
             # Refine
-            revision_response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=build_messages(
-                    template_type="self_refine",
-                    target_range=self.target_range,
-                    action="refine",
-                    mails=input_mail_data,
-                    report=refine_target,
-                    reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
-                ),
-                response_format=REFINE_FORMAT if self.target_range == "final" else None,
+            refine_messages = build_messages(
+                template_type="self_refine",
+                target_range=self.target_range,
+                action="refine",
+                mails=input_mail_data,
+                report=refine_target,
+                reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
+            )
+            revision_response = run_with_retry(
+                lambda: self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=refine_messages,
+                    response_format=REFINE_FORMAT if self.target_range == "final" else None,
+                )
             )
             revision_content = revision_response.choices[0].message.content
             super().add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)

@@ -18,15 +18,8 @@ class UpstageEmbeddingAgent(BaseAgent):
     def process(self, summary: str, model=None) -> np.ndarray:
         splitted_sentences = split_sentences(summary)
 
-        embedding_vectors = []
-        if len(splitted_sentences) == 1:
-            response = (
-                self.client.embeddings.create(input=splitted_sentences[0], model="embedding-query").data[0].embedding
-            )
-            embedding_vectors.append(response)  # shape == (1, N)
-        else:
-            response = self.client.embeddings.create(input=splitted_sentences, model="embedding-passage").data
-            embedding_vectors = [i.embedding for i in response]  # shape == (k, N)
+        response = self.client.embeddings.create(input=splitted_sentences, model="embedding-passage").data
+        embedding_vectors = [i.embedding for i in response]  # shape == (k, N)
 
         embedding_matrix = np.array(embedding_vectors)
         mean_pooled_vector = np.mean(embedding_matrix, axis=0)
