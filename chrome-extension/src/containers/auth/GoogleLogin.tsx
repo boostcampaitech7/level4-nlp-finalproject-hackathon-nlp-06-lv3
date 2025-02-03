@@ -23,7 +23,7 @@ export default function GoogleLoginBtn() {
   })
 
   const googleLogin = () => {
-    const redirectUri = "http://localhost:8000/auth/google/callback"
+    const redirectUri = `${import.meta.env.VITE_API_URL}/auth/google/callback`
 
     const scope = [
       "openid",
