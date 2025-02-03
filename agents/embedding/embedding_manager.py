@@ -1,31 +1,13 @@
-from typing import Callable, TypedDict
+from typing import Callable
 
 import numpy as np
 
+from agents.embedding.typing import SimilarityDict
 from gmail_api import Mail
 from utils.utils import group_mail_dict_2_classification
 
 from .bge_m3_embedding import Bgem3EmbeddingAgent
 from .upstage_embedding import UpstageEmbeddingAgent
-
-
-class SimilarityEntry(TypedDict):
-    mail_id: str
-    similarity_score: float
-
-
-class SimilarityDict(TypedDict):
-    """
-    {
-        메일 ID: [
-            (Top 1 메일 ID, 유사도),
-            ...
-        ],
-        ...
-    }
-    """
-
-    mail_id: list[SimilarityEntry]
 
 
 def _compute_dot_product_similarity(embedding_vectors: dict[str, np.ndarray]) -> SimilarityDict:
@@ -41,7 +23,7 @@ def _compute_dot_product_similarity(embedding_vectors: dict[str, np.ndarray]) ->
     #   "mail_id_2": [],
     #   ...
     # }
-    similar_results = {
+    similar_results: SimilarityDict = {
         mail_ids[i]: [
             (mail_ids[j], float(similarity_matrix[i][j])) for j in np.argsort(-similarity_matrix[i]) if j != i
         ]
@@ -61,7 +43,7 @@ class EmbeddingManager:
         self,
         embedding_model_name: str,
         similarity_metric: str,
-        similarity_threshold: int = None,
+        similarity_threshold: float = 0.51,
         is_save_results: bool = False,
     ):
         self.model_name = embedding_model_name
@@ -83,28 +65,30 @@ class EmbeddingManager:
         self.threshold = similarity_threshold
         self.is_save_results = is_save_results
 
-    def run(self, mail_dict: dict[str, Mail]):
+    def run(self, mail_dict: dict[str, Mail]) -> dict[str, SimilarityDict]:
         grouped_dict = group_mail_dict_2_classification(mail_dict)
 
+        clustered_dict = {}
         for category, grouped_mail_dict in grouped_dict.items():
             embedding_vectors = {
                 mail_id: self.embedding_model.process(mail.summary) for mail_id, mail in grouped_mail_dict.items()
             }
-            similarities = self.compute_similarity(embedding_vectors)
+            similar_dict = self.compute_similarity(embedding_vectors)
 
             if self.is_save_results:
-                self._save_top_match(category, grouped_mail_dict, similarities)
-                self._save_similar_emails(category, grouped_mail_dict, similarities)
+                self._save_top_match(category, grouped_mail_dict, similar_dict)
+                self._save_similar_emails(category, grouped_mail_dict, similar_dict)
 
-            # TODO: Threshold 값 적용 후 반환하기
+            clustered_dict.update({category: self._process_similar_mails(similar_dict)})
+
+        return clustered_dict
 
     # built-in functions
-
-    def _save_top_match(self, category: str, mail_dict: dict[str, Mail], similar_results: SimilarityDict):
+    def _save_top_match(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
         filename = f"{self.model_name}_{category}_top_match.txt"
 
         with open(filename, "w", encoding="utf-8") as f:
-            for mail_id, similar_list in similar_results.items():
+            for mail_id, similar_list in similar_dict.items():
                 f.write(f"Email ID: {mail_id}\n")
                 f.write(f"Summary: {mail_dict[mail_id].summary}\n")
                 f.write("Similar Emails:\n")
@@ -117,14 +101,21 @@ class EmbeddingManager:
                 f.write("\n" + "=" * 80 + "\n\n")
         print(f"Saved similar emails to {filename}")
 
-    def _save_similar_emails(self, category: str, mail_dict: dict[str, Mail], similar_results: SimilarityDict):
+    def _save_similar_emails(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
         filename = f"{self.model_name}_{category}_{self.compute_similarity.__name__}_similarities.txt"
 
         txt_content = "\n\n".join(
             f"Email ID: {mail_id}\nSummary: {mail_dict[mail_id].summary}\nSimilar Emails:\n"
-            + "\n".join(f"  - {sim_id}: {sim_score:.4f}" for sim_id, sim_score in similar_results[mail_id])
-            for mail_id in similar_results.keys()
+            + "\n".join(f"  - {sim_id}: {sim_score:.4f}" for sim_id, sim_score in similar_dict[mail_id])
+            for mail_id in similar_dict.keys()
         )
         with open(filename, "w", encoding="utf-8") as f:
             f.write(txt_content)
         print(f"Saved similar emails to {filename}")
+
+    def _process_similar_mails(self, similar_dict: SimilarityDict):
+        filtered_dict: dict[str, list[str]] = {
+            mail_id: [sim_id for sim_id, sim_score in similar_list if sim_score >= self.threshold]
+            for mail_id, similar_list in similar_dict.items()
+        }
+        return filtered_dict

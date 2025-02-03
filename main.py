@@ -54,7 +54,16 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
 def generate_report(mail_dict: dict[str, Mail], config: dict):
     # TODO: 리포트 생성 로직 변경하기
     embedding_manager = EmbeddingManager("upstage", "dot-product", is_save_results=True)
-    embedding_manager.run(mail_dict)
+    clustred_mails = embedding_manager.run(mail_dict)
+
+    for category, similar_mail_dict in clustred_mails.items():
+        print(f"{'=' * 40}\n분류: {category}")
+        for mail_id, similar_mail_list in similar_mail_dict.items():
+            sim_summary = "\n".join(
+                [f"{i}위 요약문: {mail_dict[sim_mail_id].summary}" for i, sim_mail_id in enumerate(similar_mail_list)]
+            )
+            print(f"메일 ID: {mail_id}\n요약문: {mail_dict[mail_id].summary}\n{sim_summary}")
+        print()
 
 
 def main():
@@ -75,8 +84,6 @@ def main():
         summary_and_classify(mail_dict, config)
 
         generate_report(mail_dict, config)
-
-        # report = generate_report(mail_dict, config)
 
         # print_result(start_time, report, mail_dict)
 
