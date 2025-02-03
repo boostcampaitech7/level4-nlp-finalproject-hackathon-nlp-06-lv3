@@ -163,7 +163,7 @@ FEEDBACK_FORMAT = {
                     },
                 },
             },
-            "required": ["evaluation"],
+            "required": ["evaluation", "issues"],
         },
     },
 }

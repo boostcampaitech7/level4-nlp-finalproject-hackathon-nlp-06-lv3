@@ -65,7 +65,11 @@ class SelfRefineAgent(BaseAgent):
         # 초기 요약 및 로그 생성
         summarization = model.process(data)
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
-        self.logging("./agents/self_refine/log/init_report.txt", generate_plain_text_report(refine_target))
+        logging_file_prefix = self.target_range
+        logging_file_prefix += "_".join(data.id.split("/")) if self.target_range == "single" else ""
+        self.logging(
+            f"./agents/self_refine/log/{logging_file_prefix}_init.txt", generate_plain_text_report(refine_target)
+        )
 
         # 데이터 문자열로 전처리
         if self.target_range == "single":
@@ -94,7 +98,7 @@ class SelfRefineAgent(BaseAgent):
             )
             feedback = feedback_response.choices[0].message.content
             self.logging(
-                f"./agents/self_refine/log/self_refine_{i}_feedback.txt",
+                f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_feedback.txt",
                 f"feedback: {feedback}\n groundness: {groundness}",
             )
             feedback_dict = json.loads(feedback)
@@ -120,7 +124,7 @@ class SelfRefineAgent(BaseAgent):
 
             # 요약문 혹은 리포트 업데이트 및 로깅
             refine_target = json.loads(revision_content) if self.target_range == "final" else revision_content
-            self.logging(f"./agents/self_refine/log/self_refine_{i}_refine.txt", revision_content)
+            self.logging(f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_refine.txt", revision_content)
 
         return refine_target
 
