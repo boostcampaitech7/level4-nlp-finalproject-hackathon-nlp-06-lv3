@@ -1,5 +1,6 @@
 import { useSetRecoilState } from "recoil"
 import { useMutation } from "@tanstack/react-query"
+import { FcGoogle } from "react-icons/fc"
 import axiosInstance from "@/utils/axiosInstance"
 import { userIdState } from "@/states/auth"
 import useToast from "@/hooks/useToast"
@@ -49,7 +50,12 @@ export default function GoogleLoginBtn() {
   }
 
   return (
-    <button type="button" onClick={() => googleLogin()}>
+    <button
+      type="button"
+      className="w-full h-10 flex justify-center items-center gap-2 rounded-lg bg-main-theme text-white hover:brightness-110 transition-all"
+      onClick={() => googleLogin()}
+    >
+      <FcGoogle />
       <span>Continue with Google</span>
     </button>
   )
