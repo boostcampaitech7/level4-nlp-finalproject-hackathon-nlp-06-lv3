@@ -4,11 +4,11 @@ gmail:
   # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
   end_date:
   # gmail에서 불러올 메일 최대 개수
-  max_mails: 30
+  max_mails: 10
 
 # 평가 설정
 evaluation:
-  summary_eval: false # Summary 평가 수행 여부
+  summary_eval: true # Summary 평가 수행 여부
   classification_eval: false # Classification 평가 수행 여부
   report_eval: false # Final Report 평가 수행 여부
 
@@ -59,7 +59,7 @@ self_refine:
 
 embedding:
   model_name: "bge-m3" # 혹은 "upstage"
-  similarity_metric: "cosine_similarity" # 혹은 "dot-product"
+  similarity_metric: "cosine-similarity" # 혹은 "dot-product"
   similarity_threshold: 0.8
   save_results: true
 
