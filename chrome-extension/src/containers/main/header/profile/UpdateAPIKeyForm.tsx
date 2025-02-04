@@ -7,7 +7,7 @@ import useToast from "@/hooks/useToast"
 import useErrorResponseHandler from "@/hooks/useErrorResponseHandler"
 
 export default function UpdateAPIKeyForm({ onSubmit }: { onSubmit: () => void }) {
-  const { addSuccessToast } = useToast()
+  const { addSuccessToast, addWarningToast } = useToast()
   const openLink = useOpenLink()
 
   const { userInfo } = useUserInfoQuery()
@@ -30,6 +30,10 @@ export default function UpdateAPIKeyForm({ onSubmit }: { onSubmit: () => void })
       className="flex flex-col gap-4 pt-[98px]"
       onSubmit={(e) => {
         e.preventDefault()
+        if (!upstageApiKey || upstageApiKey === "") {
+          addWarningToast("API Key를 입력해주세요.")
+          return
+        }
         mutate({ upstage_api_key: upstageApiKey })
         onSubmit()
       }}
@@ -49,7 +53,7 @@ export default function UpdateAPIKeyForm({ onSubmit }: { onSubmit: () => void })
         <input
           className="w-full h-10 p-2 rounded-lg border border-border-gray text-text-gray focus:bg-gray-50"
           placeholder="Key 입력"
-          value={upstageApiKey}
+          value={upstageApiKey || ""}
           onChange={(e) => setUpstageApiKey(e.target.value)}
           onBlur={() => {
             const trimKey = upstageApiKey.replaceAll(" ", "")

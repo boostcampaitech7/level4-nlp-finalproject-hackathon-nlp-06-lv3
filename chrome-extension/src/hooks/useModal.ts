@@ -7,13 +7,15 @@ export default function useModal() {
   const setModalList = useSetRecoilState(modalState)
 
   const openModal = (body: React.ReactNode) => {
+    const id = Date.now()
     setModalList((prev) => [
       ...prev,
       {
-        id: Date.now(),
+        id,
         body,
       },
     ])
+    return id
   }
   const onCloseModal = () => {
     setModalList((prev: ModalData[]) => {
@@ -21,5 +23,11 @@ export default function useModal() {
     })
   }
 
-  return { openModal, onCloseModal }
+  const onCloseModalWithId = (id: number) => {
+    setModalList((prev: ModalData[]) => {
+      return prev.filter((item) => item.id !== id)
+    })
+  }
+
+  return { openModal, onCloseModal, onCloseModalWithId }
 }
