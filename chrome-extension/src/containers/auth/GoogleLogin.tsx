@@ -4,10 +4,12 @@ import { FcGoogle } from "react-icons/fc"
 import axiosInstance from "@/utils/axiosInstance"
 import { userIdState } from "@/states/auth"
 import useToast from "@/hooks/useToast"
+import useErrorResponseHandler from "@/hooks/useErrorResponseHandler"
 
 export default function GoogleLoginBtn() {
   const setUserId = useSetRecoilState(userIdState)
   const { addSuccessToast, addErrorToast } = useToast()
+  const errorHandler = useErrorResponseHandler()
 
   const { mutate: oAuthMutate } = useMutation({
     mutationFn: (data: any) => {
@@ -17,10 +19,11 @@ export default function GoogleLoginBtn() {
       setUserId(res.data.response.user_id)
       addSuccessToast("환영합니다!")
     },
+    onError: (err) => errorHandler(err),
   })
 
   const googleLogin = () => {
-    const redirectUri = chrome.identity.getRedirectURL()
+    const redirectUri = `${import.meta.env.VITE_API_URL}/auth/google/callback`
 
     const scope = [
       "openid",
@@ -34,7 +37,7 @@ export default function GoogleLoginBtn() {
       "&access_type=offline" +
       "&response_type=code" +
       "&prompt=consent" +
-      "&state=state_parameter_passthrough_value" +
+      `&state=${chrome.identity.getRedirectURL()}` +
       `&redirect_uri=${redirectUri}` +
       `&client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}`
 

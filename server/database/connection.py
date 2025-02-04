@@ -1,6 +1,9 @@
 import os
 
 from databases import Database
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # MySQL 연결 URL (환경 변수나 .env로 관리하는 것이 좋음)
 DATABASE_URL = (

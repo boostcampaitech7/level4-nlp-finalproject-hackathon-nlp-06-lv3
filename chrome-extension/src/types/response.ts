@@ -1,5 +1,5 @@
 export interface ApiResponse {
   status: number
   response: any
-  errorMessage: string | null
+  error_message: string | null
 }

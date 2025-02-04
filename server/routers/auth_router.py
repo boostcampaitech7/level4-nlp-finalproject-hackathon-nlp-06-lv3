@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import RedirectResponse
 
 from server._core.dependencies.session import get_user_id_from_session
 from server._core.utils.api_response import ApiResponse
@@ -39,5 +40,5 @@ async def google_profile(
 
 
 @auth_router.get("/google/callback")
-async def google_callback(code: str) -> ApiResponse[auth_response.GoogleCallbackDto]:
-    return ApiResponse.success(auth_service.google_callback(code))
+async def google_callback(code: str, state: str) -> RedirectResponse:
+    return RedirectResponse(f"{state}?code={code}")
