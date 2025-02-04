@@ -10,4 +10,5 @@ class User(BaseModel):
     access_token: str
     refresh_token: str
     expiry: datetime
+    upstage_api_key: Optional[str] = None
     created_at: Optional[datetime] = None
