@@ -34,7 +34,6 @@
 
   input:focus {
     outline: none;
-    @apply brightness-[.98];
   }
 
   input[type="number"]::-webkit-outer-spin-button,

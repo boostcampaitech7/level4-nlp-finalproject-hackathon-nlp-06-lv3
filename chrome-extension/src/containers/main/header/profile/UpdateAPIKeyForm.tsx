@@ -22,7 +22,10 @@ export default function UpdateAPIKeyForm({ onSubmit }: { onSubmit: () => void })
           </button>
           를 입력하세요.
         </p>
-        <input className="w-full h-10 p-2 rounded-lg border border-border-gray text-text-gray" placeholder="Key 입력" />
+        <input
+          className="w-full h-10 p-2 rounded-lg border border-border-gray text-text-gray focus:bg-gray-50"
+          placeholder="Key 입력"
+        />
       </div>
       <button type="submit" className="w-full h-10 rounded-lg bg-main-theme text-white">
         확인
