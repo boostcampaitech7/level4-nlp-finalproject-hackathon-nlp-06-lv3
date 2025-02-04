@@ -25,7 +25,7 @@ export default function Header() {
     <>
       <header
         className={
-          `fixed top-0 left-0 z-[500] flex w-full items-center justify-between px-8 bg-white ` +
+          `fixed top-0 left-0 z-30 flex w-full items-center justify-between px-8 bg-white ` +
           `border border-b-border-gray shadow transition-all ${isScrolled ? "h-[50px]" : "h-[100px]"}`
         }
       >

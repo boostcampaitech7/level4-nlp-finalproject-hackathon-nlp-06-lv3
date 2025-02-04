@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import Content from "@/app/Content"
 import Toast from "@/components/toast/Toast"
 import AxiosInterceptorWrapper from "@/wrappers/AxiosInterceptorWrapper"
+import ModalList from "@/components/modal/ModalList"
 
 export default function App() {
   const queryClient = new QueryClient()
@@ -18,6 +19,7 @@ export default function App() {
             </Suspense>
           </div>
           <Toast />
+          <ModalList />
         </AxiosInterceptorWrapper>
       </RecoilRoot>
     </QueryClientProvider>

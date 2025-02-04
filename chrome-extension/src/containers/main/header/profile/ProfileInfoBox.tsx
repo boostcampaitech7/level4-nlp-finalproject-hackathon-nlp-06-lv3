@@ -1,8 +1,11 @@
 import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 import LogoutButton from "@/containers/main/header/profile/LogoutButton"
+import useModal from "@/hooks/useModal"
 
 export default function ProfileInfoBox({ onCloseClick }: { onCloseClick: () => void }) {
   const { userInfo } = useUserInfoQuery()
+
+  const { openModal } = useModal()
 
   return (
     <div className="absolute top-5 right-0 bg-white drop-shadow-lg border border-border-gray rounded-lg px-6 py-4 min-w-[170px]">
@@ -15,6 +18,7 @@ export default function ProfileInfoBox({ onCloseClick }: { onCloseClick: () => v
         className="w-full h-9 flex items-center"
         type="button"
         onClick={() => {
+          openModal("test")
           onCloseClick()
         }}
       >
