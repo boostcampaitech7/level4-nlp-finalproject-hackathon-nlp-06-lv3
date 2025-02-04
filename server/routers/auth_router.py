@@ -47,6 +47,15 @@ async def google_profile(
     return ApiResponse.success(await auth_service.get_profile(user))
 
 
+@auth_router.put("/profile")
+async def update_profile(
+    request_dto: auth_request.ProfileUpdateDto,
+    user: User = Depends(get_user_id_from_session),
+) -> ApiResponse:
+    await auth_service.update_profile(user, request_dto)
+    return ApiResponse.success()
+
+
 @auth_router.get("/google/callback")
 async def google_callback(code: str, state: str) -> RedirectResponse:
     return RedirectResponse(f"{state}?code={code}")

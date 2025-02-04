@@ -18,6 +18,7 @@ class GoogleAuthDto(BaseModel):
 
 
 class ProfileDto(BaseModel):
+    upstage_api_key: Optional[str]
     google_id: str
     email: str
     name: str

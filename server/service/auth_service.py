@@ -132,5 +132,13 @@ async def refresh_access_token(user_id: int, refresh_token: str) -> str:
         raise CustomException(ErrorCode.SERVER_ERROR, f"Token refresh failed: {str(e)}")
 
 
+async def update_profile(user: User, request_dto: auth_request.ProfileUpdateDto):
+    if request_dto.upstage_api_key:
+        await database.execute(
+            "UPDATE user_tb SET upstage_api_key = :upstage_api_key WHERE id = :id",
+            {"id": user.id, "upstage_api_key": request_dto.upstage_api_key},
+        )
+
+
 def google_callback(code: str):
     return auth_response.GoogleCallbackDto(code=code)
