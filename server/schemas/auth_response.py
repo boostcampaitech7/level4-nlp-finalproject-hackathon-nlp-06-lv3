@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from server.models.user import User
+
 
 class IsLoginDto(BaseModel):
     is_login: bool
@@ -15,7 +17,7 @@ class GoogleAuthDto(BaseModel):
     user_id: int
 
 
-class GoogleProfileDto(BaseModel):
+class ProfileDto(BaseModel):
     google_id: str
     email: str
     name: str
@@ -23,8 +25,10 @@ class GoogleProfileDto(BaseModel):
     family_name: str
     picture: str
 
-    def __init__(self, json_response: dict):
+    def __init__(self, user: User, json_response: dict):
         super().__init__(
+            id=user.id,
+            upstage_api_key=user.upstage_api_key,
             google_id=json_response.get("id"),
             email=json_response.get("email", ""),
             name=json_response.get("name", ""),

@@ -86,7 +86,7 @@ def get_token_info(access_token: str):
         raise CustomException(ErrorCode.INVALID_TOKEN)
 
 
-async def get_google_profile(user: User):
+async def get_profile(user: User):
     if is_expired(user.expiry):
         new_tokens = await refresh_access_token(user.id, user.refresh_token)
         access_token = new_tokens
@@ -98,7 +98,7 @@ async def get_google_profile(user: User):
         headers={"Authorization": f"Bearer {access_token}"},
     )
     response.raise_for_status()
-    return auth_response.GoogleProfileDto(response.json())
+    return auth_response.ProfileDto(user, response.json())
 
 
 def is_expired(expiry_time: datetime):
