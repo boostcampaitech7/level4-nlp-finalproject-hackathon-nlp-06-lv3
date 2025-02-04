@@ -25,12 +25,12 @@ class GoogleProfileDto(BaseModel):
 
     def __init__(self, json_response: dict):
         super().__init__(
-            google_id=json_response["id"],
-            email=json_response["email"],
-            name=json_response["name"],
-            given_name=json_response["given_name"],
-            family_name=json_response["family_name"],
-            picture=json_response["picture"],
+            google_id=json_response.get("id"),
+            email=json_response.get("email", ""),
+            name=json_response.get("name", ""),
+            given_name=json_response.get("given_name", ""),
+            family_name=json_response.get("family_name", ""),
+            picture=json_response.get("picture", ""),
         )
 
 
