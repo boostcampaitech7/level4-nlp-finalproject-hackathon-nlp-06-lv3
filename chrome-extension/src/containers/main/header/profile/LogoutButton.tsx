@@ -6,7 +6,7 @@ import axiosInstance from "@/utils/axiosInstance"
 import { userIdState } from "@/states/auth"
 import viewState from "@/states/viewState"
 
-export default function LogoutButton() {
+export default function LogoutButton({ onCloseClick }: { onCloseClick: () => void }) {
   const setUserId = useSetRecoilState(userIdState)
   const { addSuccessToast } = useToast()
   const setView = useSetRecoilState(viewState)
@@ -25,7 +25,14 @@ export default function LogoutButton() {
     },
   })
   return (
-    <button className="w-full flex items-center justify-between" type="button" onClick={() => logoutMutate()}>
+    <button
+      className="w-full h-9 flex items-center justify-between"
+      type="button"
+      onClick={() => {
+        logoutMutate()
+        onCloseClick()
+      }}
+    >
       <span>로그아웃</span>
       <span className="text-xl">
         <MdLogout />

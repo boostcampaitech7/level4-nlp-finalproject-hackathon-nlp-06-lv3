@@ -1,7 +1,7 @@
 import useUserInfoQuery from "@/hooks/useUserInfoQuery"
 import LogoutButton from "@/containers/main/header/profile/LogoutButton"
 
-export default function ProfileInfoBox() {
+export default function ProfileInfoBox({ onCloseClick }: { onCloseClick: () => void }) {
   const { userInfo } = useUserInfoQuery()
 
   return (
@@ -11,7 +11,16 @@ export default function ProfileInfoBox() {
         <p className="text-xs">{userInfo.email}</p>
       </div>
       <hr className="my-2" />
-      <LogoutButton />
+      <button
+        className="w-full h-9 flex items-center"
+        type="button"
+        onClick={() => {
+          onCloseClick()
+        }}
+      >
+        <p>API key 변경</p>
+      </button>
+      <LogoutButton onCloseClick={onCloseClick} />
     </div>
   )
 }
