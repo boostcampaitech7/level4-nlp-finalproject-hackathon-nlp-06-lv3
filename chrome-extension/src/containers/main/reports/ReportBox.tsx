@@ -1,4 +1,6 @@
 import { useSetRecoilState } from "recoil"
+import Markdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import viewState from "@/states/viewState"
 import ReportTitle from "@/containers/main/reports/ReportTitle"
 
@@ -12,9 +14,12 @@ export default function ReportBox({ report }: { report: any }) {
     >
       <ReportTitle dateString={report.date} />
       <div className="overflow-hidden w-full">
-        <p className="text-left text-text-gray line-clamp-3 overflow-hidden text-ellipsis whitespace-pre-wrap">
+        <Markdown
+          className="text-left text-text-gray markdown-container -mt-3 line-clamp-3 text-ellipsis flex flex-col"
+          remarkPlugins={[remarkGfm]}
+        >
           {report.content}
-        </p>
+        </Markdown>
       </div>
     </button>
   )
