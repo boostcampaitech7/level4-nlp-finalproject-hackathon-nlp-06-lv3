@@ -41,7 +41,14 @@ export default function ReportsContainers() {
   const { targetRef } = useIntersectionObserver(handleIntersect)
   return (
     <div className="flex flex-col gap-[10px]">
-      {data?.pages.map((page) => page?.reports.map((report: any) => <ReportBox key={report.id} report={report} />))}
+      {data?.pages[0].reports.length > 0 ? (
+        data?.pages.map((page) => page?.reports.map((report: any) => <ReportBox key={report.id} report={report} />))
+      ) : (
+        <div className="w-full h-screen -mt-[70px] flex flex-col items-center justify-center text-gray-400 gap-2">
+          <p>환영합니다.</p>
+          <p>매일 오전 9시에 레포트가 생성됩니다.</p>
+        </div>
+      )}
       {hasNextPage && <div ref={targetRef} />}
     </div>
   )
