@@ -59,7 +59,7 @@ export default function GoogleLoginBtn() {
       onClick={() => googleLogin()}
     >
       <FcGoogle />
-      <span>Continue with Google</span>
+      <span>Sign in with Google</span>
     </button>
   )
 }

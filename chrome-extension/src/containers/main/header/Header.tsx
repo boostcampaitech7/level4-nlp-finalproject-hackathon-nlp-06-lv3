@@ -1,44 +1,25 @@
-import { TbBrandGmail } from "react-icons/tb"
-import { useEffect, useState } from "react"
 import { useRecoilState } from "recoil"
 import { FaAngleLeft } from "react-icons/fa6"
 import Profile from "@/containers/main/header/profile/Profile"
 import viewState from "@/states/viewState"
+import Logo from "@/svgs/logo.svg?react"
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false)
-
   const [view, setView] = useRecoilState(viewState)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-    }
-  }, [])
 
   return (
     <>
-      <header
-        className={
-          `fixed top-0 left-0 z-30 flex w-full items-center justify-between px-8 bg-white ` +
-          `border border-b-border-gray shadow transition-all ${isScrolled ? "h-[50px]" : "h-[100px]"}`
-        }
-      >
-        <span className="text-4xl w-16">
+      <header className="fixed top-0 left-0 z-30 flex w-full h-[70px] items-center justify-between px-8 bg-background">
+        <span className="text-4xl w-16 flex items-center">
           {view.type === "home" ? (
-            <TbBrandGmail />
+            <Logo width={28} height={28} />
           ) : (
             <button type="button" aria-label="back" onClick={() => setView({ type: "home" })}>
               <FaAngleLeft />
             </button>
           )}
         </span>
-        <h1 className="text-lg font-GmarketSansMedium">
+        <h1 className="text-xl font-GmarketSansMedium">
           {view.type === "home" && "Daily Reports"}
           {view.type === "report" && "Report"}
         </h1>
@@ -46,7 +27,7 @@ export default function Header() {
           <Profile />
         </div>
       </header>
-      <div className="h-[100px]" />
+      <div className="h-[70px]" />
     </>
   )
 }

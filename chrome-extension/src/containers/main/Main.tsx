@@ -28,7 +28,7 @@ export default function Main() {
   return (
     <div className="flex flex-col justify-center w-full">
       <Header />
-      <div className="p-7">
+      <div className="px-[14px] py-[5px]">
         {view.type === "home" && <ReportsContainers />}
         {view.type === "report" && <ReportPage />}
       </div>

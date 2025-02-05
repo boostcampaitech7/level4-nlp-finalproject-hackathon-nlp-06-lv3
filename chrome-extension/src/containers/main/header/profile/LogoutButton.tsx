@@ -26,7 +26,7 @@ export default function LogoutButton({ onCloseClick }: { onCloseClick: () => voi
   })
   return (
     <button
-      className="w-full h-9 flex items-center justify-between"
+      className="bg-white hover:bg-gray-100 px-6 w-full h-12 flex items-center justify-between transition-all"
       type="button"
       onClick={() => {
         logoutMutate()
@@ -34,7 +34,7 @@ export default function LogoutButton({ onCloseClick }: { onCloseClick: () => voi
       }}
     >
       <span>로그아웃</span>
-      <span className="text-xl">
+      <span className="text-xl font-bold">
         <MdLogout />
       </span>
     </button>
