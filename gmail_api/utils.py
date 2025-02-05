@@ -3,8 +3,10 @@ import logging
 import os
 import re
 from collections import deque
+from datetime import datetime
 from typing import Optional
 
+import pytz
 import requests
 
 from .document_parse import parse_document
@@ -147,3 +149,40 @@ def replace_url_pattern_from(plain_text):
             logging.warning(f"Failed to process {url}: {e}")
 
     return replace_pattern_with(url_to_parsed_image, plain_text, url_pattern)
+
+
+TIMEZONE_MAP = {
+    "KST": "Asia/Seoul",
+    "JST": "Asia/Tokyo",
+    "PST": "America/Los_Angeles",
+    "EST": "America/New_York",
+    "CET": "Europe/Berlin",
+    "BST": "Europe/London",
+    "AEST": "Australia/Sydney",
+    "IST": "Asia/Kolkata",
+}
+
+
+def convert_to_seoul_time(date_str):
+    try:
+        # case 1️: UTC 오프셋이 포함된 경우
+        if any(char in date_str for char in ["+", "-"]) and "GMT" not in date_str:
+            dt = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+
+        # case 2️: GMT가 포함된 경우
+        elif "GMT" in date_str:
+            date_str = date_str.replace("GMT", "").strip()
+            dt = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S")
+            dt = dt.replace(tzinfo=pytz.utc)
+
+        else:
+            raise ValueError(date_str)
+
+        # 서울 시간으로 변환
+        seoul_tz = pytz.timezone("Asia/Seoul")
+        dt_seoul = dt.astimezone(seoul_tz)
+
+        return dt_seoul.strftime("%a, %d %b %Y %H:%M:%S %z")  # 최종 결과 반환
+
+    except Exception as e:
+        return f"지원하지 않는 날짜 형식입니다.: {e}"

@@ -24,13 +24,13 @@ class ClassificationEvaluationAgent(BaseAgent):
     def initialize_chat(self, model, temperature=None, seed=None):
         return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    def generate_ground_truth(self, mail: Mail) -> str:
+    def generate_ground_truth(self, mail: Mail, classification_type: str) -> str:
         """
         1) YAML로부터 카테고리 정보를 로드,
         2) GPT 모델로부터 Ground Truth 추론,
         3) 문자열로 리턴.
         """
-        categories = load_categories_from_yaml(is_prompt=True)
+        categories = load_categories_from_yaml(classification_type, is_prompt=True)
         categories_text = "\n".join([f"카테고리 명: {c['name']}\n분류 기준: {c['rubric']}" for c in categories])
 
         response = self.client.chat.completions.create(
@@ -45,14 +45,14 @@ class ClassificationEvaluationAgent(BaseAgent):
         )
         return response.choices[0].message.content.strip()
 
-    def process(self, mail: Mail, classifier: ClassificationAgent) -> str:
+    def process(self, mail: Mail, classifier: ClassificationAgent, classification_type: str) -> Mail:
         """
         1) Ground Truth를 GPT로 생성.
         2) 사람이 검수(human_evaluation) 옵션이 True면 콘솔에서 수정 가능.
         3) 여러 번(inference_iteration) 분류 수행.
         4) 결과를 DataFrameManager에 저장.
         """
-        ground_truth = self.generate_ground_truth(mail)
+        ground_truth = self.generate_ground_truth(mail, classification_type)
 
         if self.human_evaluation:
             user_input = input(
@@ -64,7 +64,7 @@ class ClassificationEvaluationAgent(BaseAgent):
             ground_truth = user_input.strip() if user_input else ground_truth
 
         # 동일 메일에 대해 여러 번 분류
-        results = [classifier.process(mail) for _ in range(self.inference_iteration)]
+        results = [classifier.process(mail, classification_type) for _ in range(self.inference_iteration)]
 
         # CSV에 저장 (메일 단위로 Entropy 등 기록)
         self.df_manager.update_eval_df(mail.id, results, ground_truth)

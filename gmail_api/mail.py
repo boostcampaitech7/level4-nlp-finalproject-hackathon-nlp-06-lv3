@@ -1,6 +1,7 @@
 from typing import Optional
 
 from .gmail_process import MessageHandler, gmail
+from .utils import convert_to_seoul_time
 
 
 class Mail:
@@ -9,7 +10,8 @@ class Mail:
         message_id: str,
         mail_id: str,
         summary: Optional[str] = None,
-        label: Optional[str] = None,
+        label_category: Optional[str] = None,
+        label_action: Optional[str] = None,
     ):
         """
         Args:
@@ -19,6 +21,7 @@ class Mail:
         body, attachments = MessageHandler.process_message(message)
         headers = MessageHandler.process_headers(message)
 
+        self.message_id = message_id
         self._id = mail_id
         self.sender = headers["sender"]
         self.recipients = [headers["recipients"]]
@@ -26,10 +29,10 @@ class Mail:
         self.body = body
         self.cc = [headers["cc"]] if headers["cc"] is not None else []
         self.attachments = attachments if attachments is not None else []
-        self.date = headers["date"]
+        self.date = convert_to_seoul_time(headers["date"])
         self._summary = summary
-        self._label_category = label
-        self._label_action = label
+        self._label_category = label_category
+        self._label_action = label_action
         self._similar_mails = []
 
     def __str__(self) -> str:
@@ -71,7 +74,7 @@ class Mail:
     @label_category.setter
     def label_category(self, value: str) -> None:
         if not value:
-            raise ValueError("Label cannot be empty.")
+            raise ValueError("Category Label cannot be empty.")
         self._label_category = value
 
     @property
@@ -81,7 +84,7 @@ class Mail:
     @label_action.setter
     def label_action(self, value: str) -> None:
         if not value:
-            raise ValueError("Label cannot be empty.")
+            raise ValueError("Action Label cannot be empty.")
         self._label_action = value
 
     @property

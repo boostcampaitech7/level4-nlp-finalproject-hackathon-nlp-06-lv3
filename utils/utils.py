@@ -1,12 +1,14 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Callable
 
 import openai
 import pandas as pd
+import pytz
 import yaml
 from tqdm import tqdm
 
+from agents import ClassificationType
 from gmail_api import Mail
 from gmail_api.gmail_process import gmail
 
@@ -45,8 +47,7 @@ def run_with_retry(func: Callable, *args, max_retry=9, base_wait=1):
                 raise e
 
 
-# YAML 파일에서 카테고리 정보 로드 후 해당 레이블 명을 한글로 매핑
-def map_category(english_label, filename="prompt/template/classification/categories.yaml") -> str:
+def map_category(classification_type: str, english_label: str) -> str:
     """
     영문 카테고리 명을 한글 명으로 변경합니다.
 
@@ -56,14 +57,16 @@ def map_category(english_label, filename="prompt/template/classification/categor
     Returns:
         str: 한글 카테고리 명
     """
+    yaml_file_path = f"prompt/template/classification/{classification_type}.yaml"
+
     try:
-        with open(filename, "r", encoding="utf-8") as file:
+        with open(yaml_file_path, "r", encoding="utf-8") as file:
             categories: dict = yaml.safe_load(file)
             for category in categories:
                 if category["name"] == english_label:
                     return category["korean"]
     except FileNotFoundError:
-        raise FileNotFoundError(f"카테고리 파일 {filename}이(가) 존재하지 않습니다.")
+        raise FileNotFoundError(f"카테고리 파일 {yaml_file_path}이(가) 존재하지 않습니다.")
     except yaml.YAMLError as e:
         raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
     return
@@ -96,10 +99,10 @@ def print_result(start_time: str, mail_dict: dict[str, Mail]):
             ]
         )
 
-        # TODO: map_category 함수 변경
         print(
             f"ID: {mail_id}\n"
-            f"분류: {mail.label_action}\n"
+            f"분류 1: {map_category(ClassificationType.CATEGORY,mail.label_category)}\n"
+            f"분류 2: {map_category(ClassificationType.ACTION,mail.label_action)}\n"
             f"제목: {mail.subject}\n"
             f"요약: {mail.summary}\n"
             f"{sim_mails_str}\n"
@@ -107,16 +110,39 @@ def print_result(start_time: str, mail_dict: dict[str, Mail]):
         )
 
 
+def get_yesterday_9am() -> datetime:
+    # 서울 시간 기준, 전일의 오전 9시 datetime객체를 반환합니다.
+    seoul_tz = pytz.timezone("Asia/Seoul")
+    now = datetime.now(seoul_tz)
+    yesterday = now - timedelta(days=1)
+    return datetime(yesterday.year, yesterday.month, yesterday.day, 9, 0, 0, tzinfo=seoul_tz)
+
+
+def is_before_yesterday_9am(date_str: str, yesterday_9am: datetime) -> bool:
+    # 인자의 날짜가 전일 9시 이전이면 True, 이후이면 False를 반환합니다.
+    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
+    seoul_tz = pytz.timezone("Asia/Seoul")
+    date_in_seoul = date.astimezone(seoul_tz)
+    return date_in_seoul < yesterday_9am
+
+
 def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
     messages = gmail.get_today_n_messages(start_date, n)
     mail_dict: dict[str, Mail] = {}
+    yesterday_9am = get_yesterday_9am()
+
     for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
         # 신규 mail_id 정의: 받은 시간 순 오름차순
         mail_id = f"{end_date}/{len(messages)-idx:04d}"
         mail = Mail(message_metadata["id"], mail_id)
+        if is_before_yesterday_9am(mail.date, yesterday_9am):
+            pass  # break 실제 실행 시에는 break 하여 더 이상 메일을 처리하지 않음
+
         # TODO: 룰베이스 분류 강화
         if "(광고)" not in mail.subject:
             mail_dict[mail_id] = mail
+
+    print(f"🕊️  전일 오전 9시 이후 수신한 메일 {len(mail_dict)}개를 저장하였습니다.")
     return mail_dict
 
 

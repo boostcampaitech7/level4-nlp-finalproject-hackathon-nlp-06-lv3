@@ -6,7 +6,7 @@ from openai import OpenAI
 from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 
-from ..utils import REPORT_FORMAT, SUMMARY_FORMAT, build_messages, generate_plain_text_report
+from ..utils import SUMMARY_FORMAT, build_messages, generate_plain_text_report
 
 
 class SummaryAgent(BaseAgent):
@@ -73,7 +73,7 @@ class SummaryAgent(BaseAgent):
             raise ValueError(f"{self.summary_type}의 잘못된 타입의 데이터 {type(mail)}가 들어왔습니다.")
 
         # 출력 포맷 지정
-        response_format = SUMMARY_FORMAT if self.summary_type == "single" else REPORT_FORMAT
+        response_format = SUMMARY_FORMAT
 
         # LLM 입력을 위한 문자열 처리
         input_mail_data = ""

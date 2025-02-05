@@ -2,11 +2,9 @@ import yaml
 
 from prompt import load_template, load_template_with_variables
 
-_YAML_FILE_PATH = "prompt/template/classification/categories.yaml"
-
 
 # YAML 파일에서 카테고리 정보 로드
-def load_categories_from_yaml(is_prompt: bool = False) -> list:
+def load_categories_from_yaml(classification_type: str, is_prompt: bool = False) -> list:
     """
     YAML 파일에서 카테고리 정보를 로드합니다.
 
@@ -21,8 +19,9 @@ def load_categories_from_yaml(is_prompt: bool = False) -> list:
         FileNotFoundError: 파일이 존재하지 않을 경우 예외를 발생시킵니다.
         ValueError: YAML 파일 파싱 중 오류가 발생할 경우 예외를 발생시킵니다.
     """
+    yaml_file_path = f"prompt/template/classification/{classification_type}.yaml"
     try:
-        with open(_YAML_FILE_PATH, "r", encoding="utf-8") as file:
+        with open(yaml_file_path, "r", encoding="utf-8") as file:
             categories: dict = yaml.safe_load(file)
 
             if is_prompt:
@@ -30,13 +29,10 @@ def load_categories_from_yaml(is_prompt: bool = False) -> list:
             else:
                 return [{"name": category["name"], "description": category["description"]} for category in categories]
     except FileNotFoundError:
-        raise FileNotFoundError(f"카테고리 파일 {_YAML_FILE_PATH}이(가) 존재하지 않습니다.")
+        raise FileNotFoundError(f"카테고리 파일 {yaml_file_path}이(가) 존재하지 않습니다.")
     except yaml.YAMLError as e:
         raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
 
-
-# 카테고리 정보 로드
-CATEGORIES_FOR_OUTPUT = load_categories_from_yaml()
 
 # 공통 JSON Schema 속성
 MAIL_PROPERTIES = {
@@ -95,6 +91,7 @@ SUMMARY_FORMAT = {
     },
 }
 
+""" 최종 report refine 적용하지 않게 되며 불필요해진 부분 일부 주석처리
 REPORT_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -103,6 +100,7 @@ REPORT_FORMAT = {
         "schema": create_category_schema(CATEGORIES_FOR_OUTPUT),
     },
 }
+"""
 
 FEEDBACK_FORMAT = {
     "type": "json_schema",
@@ -144,6 +142,7 @@ FEEDBACK_FORMAT = {
     },
 }
 
+"""  최종 report refine 적용하지 않게 되며 불필요해진 부분 일부 주석처리
 REFINE_FORMAT = {
     "type": "json_schema",
     "json_schema": {
@@ -152,6 +151,7 @@ REFINE_FORMAT = {
         "schema": create_category_schema(CATEGORIES_FOR_OUTPUT),
     },
 }
+"""
 
 
 # 시스템 및 사용자 프롬프트 생성 함수

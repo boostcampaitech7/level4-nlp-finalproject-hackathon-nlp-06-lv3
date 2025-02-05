@@ -18,11 +18,14 @@ def load_or_fetch_emails(mail_dict_path, gmail_service, date, n):
 
 
 def evaluate_emails(
-    mail_dict: dict, classification_agent: ClassificationAgent, evaluation_agent: ClassificationEvaluationAgent
+    mail_dict: dict,
+    classification_agent: ClassificationAgent,
+    evaluation_agent: ClassificationEvaluationAgent,
+    classification_type: str,
 ):
     """메일 데이터를 평가하는 함수."""
     for mail_id, mail in tqdm(mail_dict.items(), desc="이메일 평가 진행 중"):
-        mail_dict[mail_id] = evaluation_agent.process(mail, classification_agent)
+        mail_dict[mail_id] = evaluation_agent.process(mail, classification_agent, classification_type)
 
 
 def main():
@@ -33,7 +36,7 @@ def main():
     args = parse_arguments()
 
     gmail_service = GmailService()
-    N = 10
+    N = 20
     mail_dict_path = f"evaluation/classification/mails_{N}.pkl"
     mail_dict = load_or_fetch_emails(mail_dict_path, gmail_service, "2025/01/10", N)
 
@@ -42,7 +45,7 @@ def main():
         model="gpt-4o", human_evaluation=args.human_evaluation, inference=args.inference
     )
 
-    evaluate_emails(mail_dict, classification_agent, evaluation_agent)
+    evaluate_emails(mail_dict, classification_agent, evaluation_agent, "action")
 
     evaluation_agent.print_evaluation()
 
