@@ -4,7 +4,7 @@ import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import BaseAgent, ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents import BaseAgent, ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
 from gmail_api import Mail
@@ -31,11 +31,11 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
         TokenManager.total_token_usage += token_usage
 
         if config["evaluation"]["classification_eval"]:
-            category = run_with_retry(class_eval_agent.process, mail, classification_agent, "category")
-            action = run_with_retry(class_eval_agent.process, mail, classification_agent, "action")
+            category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
+            action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
         else:
-            category = run_with_retry(classification_agent.process, mail, "category")
-            action = run_with_retry(classification_agent.process, mail, "action")
+            category = run_with_retry(classification_agent.process, mail, ClassificationType.CATEGORY)
+            action = run_with_retry(classification_agent.process, mail, ClassificationType.ACTION)
         mail_dict[mail_id].label_category = category
         mail_dict[mail_id].label_action = action
 

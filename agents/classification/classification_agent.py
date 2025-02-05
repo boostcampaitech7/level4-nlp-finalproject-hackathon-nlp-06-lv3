@@ -8,6 +8,11 @@ from gmail_api import Mail
 from ..utils import build_messages, load_categories_from_yaml
 
 
+class ClassificationType:
+    CATEGORY = "category"
+    ACTION = "action"
+
+
 class ClassificationAgent(BaseAgent):
     """
     ClassificationAgent는 메일을 분류하는 에이전트 클래스입니다..
