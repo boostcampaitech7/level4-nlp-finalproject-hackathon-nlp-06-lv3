@@ -9,6 +9,9 @@ export default {
         "text-gray": "#757575",
         "border-gray": "#D9D9D9",
       },
+      dropShadow: {
+        main: "0 4px 4px 0 rgba(0, 0, 0, 0.25)",
+      },
     },
     fontFamily: {
       GmarketSansMedium: ["GmarketSansMedium", "Arial", "Helvetica", "sans-serif"],
