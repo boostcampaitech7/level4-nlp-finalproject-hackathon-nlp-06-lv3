@@ -14,4 +14,4 @@ async def get_user_id_from_session(request: Request) -> User:
     if not user:  # 세션에 저장된 user_id가 유효하지 않은 경우
         request.session.clear()
         raise CustomException(ErrorCode.NOT_FOUND_USER)
-    return user
+    return User(**user)

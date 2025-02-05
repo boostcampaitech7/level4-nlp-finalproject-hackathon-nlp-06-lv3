@@ -86,19 +86,19 @@ def get_token_info(access_token: str):
         raise CustomException(ErrorCode.INVALID_TOKEN)
 
 
-async def get_google_profile(user: User):
-    if is_expired(user["expiry"]):
-        new_tokens = await refresh_access_token(user.id, user["refresh_token"])
+async def get_profile(user: User):
+    if is_expired(user.expiry):
+        new_tokens = await refresh_access_token(user.id, user.refresh_token)
         access_token = new_tokens
     else:
-        access_token = user["access_token"]
+        access_token = user.access_token
 
     response = requests.get(
         "https://www.googleapis.com/oauth2/v1/userinfo",
         headers={"Authorization": f"Bearer {access_token}"},
     )
     response.raise_for_status()
-    return auth_response.GoogleProfileDto(response.json())
+    return auth_response.ProfileDto(user, response.json())
 
 
 def is_expired(expiry_time: datetime):
@@ -130,6 +130,14 @@ async def refresh_access_token(user_id: int, refresh_token: str) -> str:
         return credentials.token
     except Exception as e:
         raise CustomException(ErrorCode.SERVER_ERROR, f"Token refresh failed: {str(e)}")
+
+
+async def update_profile(user: User, request_dto: auth_request.ProfileUpdateDto):
+    if request_dto.upstage_api_key:
+        await database.execute(
+            "UPDATE user_tb SET upstage_api_key = :upstage_api_key WHERE id = :id",
+            {"id": user.id, "upstage_api_key": request_dto.upstage_api_key},
+        )
 
 
 def google_callback(code: str):

@@ -33,7 +33,7 @@ export default function Profile() {
       </button>
       {isOpenInfoBox && (
         <div ref={openedRef} className="relative">
-          <ProfileInfoBox />
+          <ProfileInfoBox onCloseClick={() => setIsOpenInfoBox(false)} />
         </div>
       )}
     </div>

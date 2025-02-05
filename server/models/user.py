@@ -1,12 +1,14 @@
 from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel
 
 
 class User(BaseModel):
-    id: int | None = None  # Auto-increment, so it can be optional
+    id: Optional[int] = None
     google_id: str
     access_token: str
     refresh_token: str
     expiry: datetime
-    created_at: datetime | None = None  # Defaults to current timestamp in DB
+    upstage_api_key: Optional[str] = None
+    created_at: Optional[datetime] = None

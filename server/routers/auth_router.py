@@ -32,11 +32,28 @@ async def google_auth(
     return ApiResponse.success(response_dto)
 
 
+@auth_router.get("/profile")
+async def profile(
+    user: User = Depends(get_user_id_from_session),
+) -> ApiResponse[auth_response.ProfileDto]:
+    return ApiResponse.success(await auth_service.get_profile(user))
+
+
+# DEPRECATED
 @auth_router.get("/google/profile")
 async def google_profile(
     user: User = Depends(get_user_id_from_session),
-) -> ApiResponse[auth_response.GoogleProfileDto]:
-    return ApiResponse.success(await auth_service.get_google_profile(user))
+) -> ApiResponse[auth_response.ProfileDto]:
+    return ApiResponse.success(await auth_service.get_profile(user))
+
+
+@auth_router.put("/profile")
+async def update_profile(
+    request_dto: auth_request.ProfileUpdateDto,
+    user: User = Depends(get_user_id_from_session),
+) -> ApiResponse:
+    await auth_service.update_profile(user, request_dto)
+    return ApiResponse.success()
 
 
 @auth_router.get("/google/callback")
