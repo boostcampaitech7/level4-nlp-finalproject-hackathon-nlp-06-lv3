@@ -27,7 +27,7 @@ export default function UpdateAPIKeyForm({ onSubmit }: { onSubmit: () => void })
 
   return (
     <form
-      className="flex flex-col gap-4 pt-[98px]"
+      className="flex flex-col gap-4 pt-[90px]"
       onSubmit={(e) => {
         e.preventDefault()
         if (!upstageApiKey || upstageApiKey === "") {
