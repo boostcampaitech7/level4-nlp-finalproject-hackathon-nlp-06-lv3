@@ -39,14 +39,6 @@ async def profile(
     return ApiResponse.success(await auth_service.get_profile(user))
 
 
-# DEPRECATED
-@auth_router.get("/google/profile")
-async def google_profile(
-    user: User = Depends(get_user_id_from_session),
-) -> ApiResponse[auth_response.ProfileDto]:
-    return ApiResponse.success(await auth_service.get_profile(user))
-
-
 @auth_router.put("/profile")
 async def update_profile(
     request_dto: auth_request.ProfileUpdateDto,
