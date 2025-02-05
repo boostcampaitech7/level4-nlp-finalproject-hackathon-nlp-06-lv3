@@ -10,7 +10,8 @@ export default {
         "border-gray": "#D9D9D9",
       },
       dropShadow: {
-        main: "0 4px 4px 0 rgba(0, 0, 0, 0.25)",
+        main: "0 4px 2px rgba(0, 0, 0, 0.25)",
+        small: "0 2px 1px rgba(0, 0, 0, 0.25)",
       },
     },
     fontFamily: {

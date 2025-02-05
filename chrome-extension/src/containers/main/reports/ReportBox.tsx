@@ -7,11 +7,15 @@ export default function ReportBox({ report }: { report: any }) {
   return (
     <button
       type="button"
-      className="flex flex-col w-full bg-white rounded-lg px-6 py-6 gap-2 h-[170px] border border-border-gray shadow hover:brightness-[.97] hover:drop-shadow-lg transition-all overflow-hidden group"
+      className="flex flex-col w-full bg-white rounded-lg p-6 gap-2 h-[170px] border border-border-gray drop-shadow-small hover:bg-gray-100 hover:drop-shadow-main transition-all group"
       onClick={() => setView({ type: "report", data: report })}
     >
       <ReportTitle dateString={report.date} />
-      <p className="text-left text-text-gray line-clamp-3 text-ellipsis whitespace-pre-wrap">{report.content}</p>
+      <div className="overflow-hidden w-full">
+        <p className="text-left text-text-gray line-clamp-3 overflow-hidden text-ellipsis whitespace-pre-wrap">
+          {report.content}
+        </p>
+      </div>
     </button>
   )
 }

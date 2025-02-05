@@ -10,7 +10,7 @@ export default function Header() {
   return (
     <>
       <header className="fixed top-0 left-0 z-30 flex w-full h-[70px] items-center justify-between px-8 bg-background">
-        <span className="text-4xl w-16">
+        <span className="text-4xl w-16 flex items-center">
           {view.type === "home" ? (
             <Logo width={28} height={28} />
           ) : (
