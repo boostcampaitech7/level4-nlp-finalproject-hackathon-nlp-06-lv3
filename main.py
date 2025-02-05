@@ -4,29 +4,26 @@ import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import BaseAgent, ClassificationAgent, SelfRefineAgent, SummaryAgent
-from evaluation import (
-    ClassificationEvaluationAgent,
-    format_source_texts_for_report,
-    generate_final_report_text,
-    print_evaluation_results,
-    summary_evaluation_data,
-)
-from evaluator import evaluate_report, evaluate_summary
+from agents import BaseAgent, ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
+from evaluator import evaluate_summary
 from gmail_api import Mail
-from utils import TokenManager, fetch_mails, load_config, print_result, run_with_retry
+from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
     # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single")
-    self_refine_agent = SelfRefineAgent("solar-pro", "single")  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent("solar-pro")
-    class_eval_agent = ClassificationEvaluationAgent(
-        model="gpt-4o",
-        human_evaluation=config["classification"]["do_manual_filter"],
-        inference=config["classification"]["inference"],
-    )
+    summary_agent = SummaryAgent("solar-pro", "single", config["temperature"]["summary"], config["seed"])
+    self_refine_agent = SelfRefineAgent(
+        "solar-pro", "single", config["temperature"]["summary"], config["seed"]
+    )  # TODO: reflexion으로 변경 실험
+    classification_agent = ClassificationAgent("solar-pro", config["temperature"]["classification"], config["seed"])
+    if config["evaluation"]["classification_eval"]:
+        class_eval_agent = ClassificationEvaluationAgent(
+            model="gpt-4o",
+            human_evaluation=config["classification"]["do_manual_filter"],
+            inference=config["classification"]["inference"],
+        )
 
     for mail_id, mail in mail_dict.items():
         summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
@@ -37,7 +34,7 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
             category = run_with_retry(class_eval_agent.process, mail, classification_agent)
         else:
             category = run_with_retry(classification_agent.process, mail)
-        mail_dict[mail_id].label = category
+        mail_dict[mail_id].label_category = category
 
         print(f"{mail_id}\n{category}\n{summary}\n{'=' * 40}")
 
@@ -60,24 +57,13 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
 
 
 def generate_report(mail_dict: dict[str, Mail], config: dict):
-    # TODO: 리포트 생성 로직 변경하기
-    report_agent = SummaryAgent("solar-pro", "final")
-
-    report, report_token_usage = run_with_retry(report_agent.process, mail_dict)
-    TokenManager.total_token_usage += report_token_usage
-
-    if config["evaluation"]["report_eval"]:
-        report_texts = []
-        report_texts.append(generate_final_report_text(report, mail_dict))
-        summarized = []
-        summarized.append(format_source_texts_for_report(summary_evaluation_data.summarized_texts))
-        references = []
-        references.append("gold")
-
-        report_results = evaluate_report(config, summarized, report_texts, references)
-        print_evaluation_results(report_results, eval_type="report", additional=True)
-
-    return report
+    embedding_manager = EmbeddingManager(
+        embedding_model_name=config["embedding"]["model_name"],
+        similarity_metric=config["embedding"]["similarity_metric"],
+        similarity_threshold=config["embedding"]["similarity_threshold"],
+        is_save_results=config["embedding"]["save_results"],
+    )
+    embedding_manager.run(mail_dict)
 
 
 def main():
@@ -97,9 +83,14 @@ def main():
 
         summary_and_classify(mail_dict, config)
 
-        report = generate_report(mail_dict, config)
+        generate_report(mail_dict, config)
 
-        print_result(start_time, report, mail_dict)
+        print_result(start_time, mail_dict)
+
+        # mysql db 전송 용 Data Frame
+        df = convert_mail_dict_to_df(mail_dict)
+
+        print(df)
 
     except HttpError as error:
         print(f"An error occurred: {error}")
@@ -107,7 +98,8 @@ def main():
         print("[RateLimitError] API 한도가 초과되었습니다. 현재까지의 토큰 사용량만 보고합니다.")
         print(f"에러 메세지: {rate_err}")
     finally:
-        BaseAgent.plot_token_cost()
+        if config["token_tracking"]:
+            BaseAgent.plot_token_cost()
 
 
 if __name__ == "__main__":

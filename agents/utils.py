@@ -5,30 +5,6 @@ from prompt import load_template, load_template_with_variables
 _YAML_FILE_PATH = "prompt/template/classification/categories.yaml"
 
 
-# YAML 파일에서 카테고리 정보 로드 후 해당 레이블 명을 한글로 매핑
-def map_category(english_label) -> str:
-    """
-    영문 카테고리 명을 한글 명으로 변경합니다.
-
-    Args:
-        english_label (_type_): 영문 카테고리 명
-
-    Returns:
-        str: 한글 카테고리 명
-    """
-    try:
-        with open(_YAML_FILE_PATH, "r", encoding="utf-8") as file:
-            categories: dict = yaml.safe_load(file)
-            for category in categories:
-                if category["name"] == english_label:
-                    return category["korean"]
-    except FileNotFoundError:
-        raise FileNotFoundError(f"카테고리 파일 {_YAML_FILE_PATH}이(가) 존재하지 않습니다.")
-    except yaml.YAMLError as e:
-        raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
-    return
-
-
 # YAML 파일에서 카테고리 정보 로드
 def load_categories_from_yaml(is_prompt: bool = False) -> list:
     """

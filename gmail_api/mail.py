@@ -28,7 +28,9 @@ class Mail:
         self.attachments = attachments if attachments is not None else []
         self.date = headers["date"]
         self._summary = summary
-        self._label = label
+        self._label_category = label
+        self._label_action = label
+        self._similar_mails = []
 
     def __str__(self) -> str:
         """
@@ -63,11 +65,31 @@ class Mail:
         self._summary = value
 
     @property
-    def label(self) -> Optional[str]:
-        return self._label
+    def label_category(self) -> Optional[str]:
+        return self._label_category
 
-    @label.setter
-    def label(self, value: str) -> None:
+    @label_category.setter
+    def label_category(self, value: str) -> None:
         if not value:
             raise ValueError("Label cannot be empty.")
-        self._label = value
+        self._label_category = value
+
+    @property
+    def label_action(self) -> Optional[str]:
+        return self._label_action
+
+    @label_action.setter
+    def label_action(self, value: str) -> None:
+        if not value:
+            raise ValueError("Label cannot be empty.")
+        self._label_action = value
+
+    @property
+    def similar_mails(self) -> Optional[list[str]]:
+        return self._similar_mails
+
+    @similar_mails.setter
+    def similar_mails(self, value: list[str]) -> None:
+        if not isinstance(value, list) and not value:
+            raise ValueError("Similar Mails cannot be empty.")
+        self._similar_mails = value

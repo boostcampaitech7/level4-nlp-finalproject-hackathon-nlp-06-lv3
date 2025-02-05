@@ -23,11 +23,7 @@ class DataFrameManager:
             + ["entropy", "diversity_index", "chi_square_p_value", "accuracy", "cramers_v"]
         )
 
-        if os.path.exists(self.csv_file_path):
-            self.eval_df = pd.read_csv(self.csv_file_path)
-            print(f"📄 기존 평가 데이터 로드 완료: {self.eval_df.shape[0]}개의 데이터")
-        else:
-            self.eval_df = pd.DataFrame(columns=self.columns)
+        self.eval_df = pd.DataFrame(columns=self.columns)
 
     def update_eval_df(self, mail_id: str, results: list, ground_truth: str):
         """

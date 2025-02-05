@@ -2,7 +2,7 @@ import json
 
 import yaml
 
-from agents import map_category
+from utils.utils import map_category
 
 
 def load_config(config_path):

@@ -10,9 +10,10 @@ from openai import OpenAI
 
 import eval_report
 import eval_summary
-from agents import BaseAgent, check_groundness, map_category
+from agents import BaseAgent, check_groundness
 from agents.utils import REPORT_FORMAT, SUMMARY_FORMAT, build_messages, generate_plain_text_report
 from gmail_api import Mail
+from utils.utils import map_category
 
 
 class ReflexionActorSummaryAgent(BaseAgent):
