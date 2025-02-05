@@ -7,7 +7,7 @@ from agents import BaseAgent, check_groundness
 from gmail_api import Mail
 from utils.utils import run_with_retry
 
-from ..utils import FEEDBACK_FORMAT, REFINE_FORMAT, build_messages, generate_plain_text_report
+from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
 
 
 class SelfRefineAgent(BaseAgent):
@@ -138,7 +138,7 @@ class SelfRefineAgent(BaseAgent):
                 lambda: self.client.chat.completions.create(
                     model=self.model_name,
                     messages=refine_messages,
-                    response_format=REFINE_FORMAT if self.target_range == "final" else None,
+                    response_format=None,
                     temperature=self.temperature,
                     seed=self.seed,
                 )

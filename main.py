@@ -31,12 +31,15 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
         TokenManager.total_token_usage += token_usage
 
         if config["evaluation"]["classification_eval"]:
-            category = run_with_retry(class_eval_agent.process, mail, classification_agent)
+            category = run_with_retry(class_eval_agent.process, mail, classification_agent, "category")
+            action = run_with_retry(class_eval_agent.process, mail, classification_agent, "action")
         else:
-            category = run_with_retry(classification_agent.process, mail)
+            category = run_with_retry(classification_agent.process, mail, "category")
+            action = run_with_retry(classification_agent.process, mail, "action")
         mail_dict[mail_id].label_category = category
+        mail_dict[mail_id].label_action = action
 
-        print(f"{mail_id}\n{category}\n{summary}\n{'=' * 40}")
+        print(f"{mail_id}\ncategory label: {category}\naction label: {action}\n{summary}\n{'=' * 40}")
 
         if config["evaluation"]["summary_eval"]:
             summary_evaluation_data.source_texts.append(mail.body)
