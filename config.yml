@@ -8,7 +8,7 @@ gmail:
 
 # 평가 설정
 evaluation:
-  summary_eval: true # Summary 평가 수행 여부
+  summary_eval: false # Summary 평가 수행 여부
   classification_eval: false # Classification 평가 수행 여부
   report_eval: false # Final Report 평가 수행 여부
 

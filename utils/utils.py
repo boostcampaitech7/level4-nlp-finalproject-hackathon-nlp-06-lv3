@@ -172,7 +172,7 @@ def convert_mail_dict_to_df(mail_dict: dict[str, Mail]) -> pd.DataFrame:
                 "summary": mail.summary,
                 "label_category": mail.label_category,
                 "label_action": mail.label_action,
-                "similar_mails": str(mail.similar_mails),
+                "similar_mails": mail.similar_mails,
             }
         )
 
