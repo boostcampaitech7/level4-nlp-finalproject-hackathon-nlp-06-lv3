@@ -1,4 +1,3 @@
-import time
 import warnings
 
 from dotenv import load_dotenv
@@ -27,7 +26,6 @@ def evaluate_emails(
     """메일 데이터를 평가하는 함수."""
     for mail_id, mail in tqdm(mail_dict.items(), desc="이메일 평가 진행 중"):
         mail_dict[mail_id] = evaluation_agent.process(mail, classification_agent, classification_type)
-        time.sleep(20)
 
 
 def main():
