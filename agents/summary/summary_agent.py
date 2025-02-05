@@ -36,6 +36,8 @@ class SummaryAgent(BaseAgent):
 
         # 추후 프롬프트 템플릿 로드 동작을 위해 string으로 받아 attribute로 저장합니다.
         self.summary_type = summary_type
+        self.temperature = temperature
+        self.seed = seed
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
@@ -92,6 +94,8 @@ class SummaryAgent(BaseAgent):
                     template_type="summary", target_range=self.summary_type, action="summary", mail=input_mail_data
                 ),
                 response_format=response_format,
+                temperature=self.temperature,
+                seed=self.seed,
             )
             summarized_content: dict = json.loads(response.choices[0].message.content)
 

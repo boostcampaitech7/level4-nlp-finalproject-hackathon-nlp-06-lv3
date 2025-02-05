@@ -13,9 +13,11 @@ from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_confi
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
     # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single")
-    self_refine_agent = SelfRefineAgent("solar-pro", "single")  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent("solar-pro")
+    summary_agent = SummaryAgent("solar-pro", "single", config["temperature"]["summary"], config["seed"])
+    self_refine_agent = SelfRefineAgent(
+        "solar-pro", "single", config["temperature"]["summary"], config["seed"]
+    )  # TODO: reflexion으로 변경 실험
+    classification_agent = ClassificationAgent("solar-pro", config["temperature"]["classification"], config["seed"])
     if config["evaluation"]["classification_eval"]:
         class_eval_agent = ClassificationEvaluationAgent(
             model="gpt-4o",

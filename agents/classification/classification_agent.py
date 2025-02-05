@@ -25,6 +25,8 @@ class ClassificationAgent(BaseAgent):
 
     def __init__(self, model_name: str, temperature=None, seed=None):
         super().__init__(model=model_name, temperature=temperature, seed=seed)
+        self.temperature = temperature
+        self.seed = seed
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
@@ -67,6 +69,8 @@ class ClassificationAgent(BaseAgent):
                 mail=mail.summary,
                 categories=categories_text,
             ),
+            temperature=self.temperature,
+            seed=self.seed,
         )
 
         super().add_usage(self.__class__.__name__, "classification", response.usage.total_tokens)

@@ -30,8 +30,6 @@ class BaseAgent(ABC):
         # https://www.notion.so/gamchan/OpenAI-182815b39d398070b7fbc783bd7205ca?pvs=4
         self.client: OpenAI | SentenceTransformer = self.initialize_chat(model, temperature, seed)
         self.model_name = model
-        self.temperature = temperature
-        self.seed = seed
         self.token_monitor = None
 
     @abstractmethod

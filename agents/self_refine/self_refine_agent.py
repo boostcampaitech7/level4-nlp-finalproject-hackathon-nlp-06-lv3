@@ -29,6 +29,8 @@ class SelfRefineAgent(BaseAgent):
                 f'target_range: {target_range}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
             )
         self.target_range = target_range
+        self.temperature = temperature
+        self.seed = seed
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
@@ -105,6 +107,8 @@ class SelfRefineAgent(BaseAgent):
                     model=self.model_name,
                     messages=feedback_messages,
                     response_format=FEEDBACK_FORMAT,
+                    temperature=self.temperature,
+                    seed=self.seed,
                 )
             )
             feedback = feedback_response.choices[0].message.content
@@ -135,6 +139,8 @@ class SelfRefineAgent(BaseAgent):
                     model=self.model_name,
                     messages=refine_messages,
                     response_format=REFINE_FORMAT if self.target_range == "final" else None,
+                    temperature=self.temperature,
+                    seed=self.seed,
                 )
             )
             revision_content = revision_response.choices[0].message.content
