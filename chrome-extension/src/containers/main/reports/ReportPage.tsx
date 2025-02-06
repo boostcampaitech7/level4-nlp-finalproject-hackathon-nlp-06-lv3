@@ -20,7 +20,10 @@ export default function ReportPage() {
               <div key={task.title} className="flex flex-col gap-3">
                 <h4>{task.title}</h4>
                 {task.items.map((item: any) => (
-                  <div key={item.description}>
+                  <div key={item.description} className="flex gap-2 items-start">
+                    <div className="py-1">
+                      <input type="checkbox" />
+                    </div>
                     <p className="text-text-gray">
                       {item.description}
                       {item.links.map((link: any) => (
