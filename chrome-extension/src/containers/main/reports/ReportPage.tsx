@@ -1,6 +1,8 @@
 import { useRecoilValue } from "recoil"
 import { useEffect, useState } from "react"
 import { useMutation } from "@tanstack/react-query"
+import { IoMdCheckboxOutline } from "react-icons/io"
+import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import ReportTitle from "@/containers/main/reports/ReportTitle"
 import viewState from "@/states/viewState"
 import useOpenLink from "@/hooks/useOpenLink"
@@ -56,13 +58,17 @@ export default function ReportPage() {
                       className="pr-2 flex items-start"
                       onClick={() => onCheckChange(item.description, !item.checked)}
                     >
-                      <div>
-                        <input type="checkbox" checked={item.checked} />
+                      <div className="pt-1 text-xl">
+                        {item.checked ? (
+                          <IoMdCheckboxOutline />
+                        ) : (
+                          <MdOutlineCheckBoxOutlineBlank className="text-text-gray" />
+                        )}
                       </div>
                     </button>
                     <div>
                       <p className="text-text-gray">
-                        {item.description}
+                        <span className={item.checked && "line-through"}>{item.description}</span>
                         {item.links.map((link: any) => (
                           <button type="button" key={link} onClick={() => openLink(link)}>
                             🔗
