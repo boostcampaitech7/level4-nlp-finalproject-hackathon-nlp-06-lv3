@@ -4,7 +4,6 @@ import os
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
-from gmail_api import Mail
 from utils.utils import run_with_retry
 
 from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
@@ -22,7 +21,8 @@ class SelfRefineAgent(BaseAgent):
         seed (int, optional): 결과 재현성을 위한 시드 값.
     """
 
-    def __init__(self, model_name: str, target_range: str, temperature=None, seed=None):
+    def __init__(self, model_name: str, target_range: str, api_key: str, temperature=None, seed=None):
+        self.api_key = api_key
         super().__init__(model=model_name, temperature=temperature, seed=seed)
         if target_range != "single" and target_range != "final":
             raise ValueError(
@@ -44,7 +44,7 @@ class SelfRefineAgent(BaseAgent):
         Returns:
             ChatUpstage: 초기화된 ChatUpstage 객체.
         """
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def logging(self, path, content):
         diretory = os.path.dirname(path)
@@ -53,7 +53,7 @@ class SelfRefineAgent(BaseAgent):
             file.write(content)
         print(f"{path} 로그 파일이 생성되었습니다.")
 
-    def process(self, data: Mail | dict[str, Mail], model: BaseAgent, max_iteration: int = 3):
+    def process(self, data, model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 
@@ -89,7 +89,7 @@ class SelfRefineAgent(BaseAgent):
         for i in range(max_iteration):
             # Groundness Check
             groundness, groundness_token_usage = check_groundness(
-                context=input_mail_data, answer=generate_plain_text_report(refine_target)
+                context=input_mail_data, answer=generate_plain_text_report(refine_target), api_key=self.api_key
             )
             super().add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage

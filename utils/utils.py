@@ -194,6 +194,7 @@ def convert_mail_dict_to_df(mail_dict: dict[str, Mail]) -> pd.DataFrame:
         indices.append(mail_id)
         data.append(
             {
+                "message_id": mail.message_id,
                 "subject": mail.subject,
                 "summary": mail.summary,
                 "label_category": mail.label_category,

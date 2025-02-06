@@ -1,10 +1,8 @@
 import json
-import os
 
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
-from gmail_api import Mail
 
 from ..utils import SUMMARY_FORMAT, build_messages, generate_plain_text_report
 
@@ -25,7 +23,8 @@ class SummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
+    def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
+        self.api_key = api_key
         super().__init__(model=model_name, temperature=temperature, seed=seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
@@ -51,9 +50,9 @@ class SummaryAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    def process(self, mail: dict[Mail] | Mail, max_iteration: int = 3) -> dict:
+    def process(self, mail, max_iteration: int = 3) -> dict:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -66,11 +65,6 @@ class SummaryAgent(BaseAgent):
             dict: 요약된 결과 JSON.
             token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
-        # self.summary_type에 따라 데이터 유효 검증 로직
-        if (self.summary_type == "single" and not isinstance(mail, Mail)) or (
-            self.summary_type == "final" and not isinstance(mail, dict)
-        ):
-            raise ValueError(f"{self.summary_type}의 잘못된 타입의 데이터 {type(mail)}가 들어왔습니다.")
 
         # 출력 포맷 지정
         response_format = SUMMARY_FORMAT
@@ -109,7 +103,9 @@ class SummaryAgent(BaseAgent):
                 result = generate_plain_text_report(summarized_content)
 
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(context=input_mail_data, answer=result)
+            groundness, groundness_token_usage = check_groundness(
+                context=input_mail_data, answer=result, api_key=self.api_key
+            )
             super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 

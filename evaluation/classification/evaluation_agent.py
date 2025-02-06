@@ -4,7 +4,6 @@ from collections import Counter
 from openai import OpenAI
 
 from agents import BaseAgent, ClassificationAgent, build_messages, load_categories_from_yaml
-from gmail_api import Mail
 
 from .dataframe_manager import DataFrameManager
 
@@ -24,7 +23,7 @@ class ClassificationEvaluationAgent(BaseAgent):
     def initialize_chat(self, model, temperature=None, seed=None):
         return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    def generate_ground_truth(self, mail: Mail, classification_type: str) -> str:
+    def generate_ground_truth(self, mail, classification_type: str) -> str:
         """
         1) YAML로부터 카테고리 정보를 로드,
         2) GPT 모델로부터 Ground Truth 추론,
@@ -45,7 +44,7 @@ class ClassificationEvaluationAgent(BaseAgent):
         )
         return response.choices[0].message.content.strip()
 
-    def process(self, mail: Mail, classifier: ClassificationAgent, classification_type: str) -> Mail:
+    def process(self, mail, classifier: ClassificationAgent, classification_type: str):
         """
         1) Ground Truth를 GPT로 생성.
         2) 사람이 검수(human_evaluation) 옵션이 True면 콘솔에서 수정 가능.

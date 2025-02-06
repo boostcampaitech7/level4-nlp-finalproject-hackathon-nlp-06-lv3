@@ -1,16 +1,15 @@
-import os
 import time
 
 import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import BaseAgent, ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents import ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from batch_serving import Mail, fetch_mails
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
-from gmail_api import Mail
 from markdown_report import build_and_save_markdown_report
-from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
+from utils import TokenManager, convert_mail_dict_to_df, load_config, print_result, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
@@ -73,14 +72,15 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
     embedding_manager.run(mail_dict)
 
 
-def main():
+def summary_and_report(gmail_service, api_key):
     load_dotenv()
-    api_key = os.getenv("UPSTAGE_API_KEY")
+
     # YAML 파일 로드
     config = load_config()
 
     try:
         mail_dict: dict[str, Mail] = fetch_mails(
+            gmail_service=gmail_service,
             start_date=config["gmail"]["start_date"],
             end_date=config["gmail"]["end_date"],
             n=config["gmail"]["max_mails"],
@@ -105,10 +105,3 @@ def main():
     except openai.RateLimitError as rate_err:
         print("[RateLimitError] API 한도가 초과되었습니다. 현재까지의 토큰 사용량만 보고합니다.")
         print(f"에러 메세지: {rate_err}")
-    finally:
-        if config["token_tracking"]:
-            BaseAgent.plot_token_cost()
-
-
-if __name__ == "__main__":
-    main()
