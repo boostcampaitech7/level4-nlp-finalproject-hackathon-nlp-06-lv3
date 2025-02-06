@@ -12,12 +12,15 @@ def main():
     # access token, refresh token 가져와서 service 객체 선언하기
     for user in users:
         user_id = user["id"]
+        api_key = user["upstage_api_key"]
+
+        # print(type(api_key))
         try:
             service = authenticate_gmail(connection, user_id)
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
-            final_report = summary_and_report(gmail_service)
+            final_report = summary_and_report(gmail_service, api_key)
 
             insert_report(connection, user["id"], final_report)
 

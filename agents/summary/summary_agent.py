@@ -1,5 +1,4 @@
 import json
-import os
 
 from openai import OpenAI
 
@@ -24,7 +23,8 @@ class SummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
+    def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
+        self.api_key = api_key
         super().__init__(model=model_name, temperature=temperature, seed=seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
@@ -50,7 +50,7 @@ class SummaryAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def process(self, mail, max_iteration: int = 3) -> dict:
         """
@@ -103,7 +103,9 @@ class SummaryAgent(BaseAgent):
                 result = generate_plain_text_report(summarized_content)
 
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(context=input_mail_data, answer=result)
+            groundness, groundness_token_usage = check_groundness(
+                context=input_mail_data, answer=result, api_key=self.api_key
+            )
             super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 

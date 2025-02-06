@@ -16,13 +16,15 @@ from evaluator import evaluate_summary
 from utils import TokenManager, load_config, print_result, run_with_retry
 
 
-def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
+def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
     # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single", config["temperature"]["summary"], config["seed"])
+    summary_agent = SummaryAgent("solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"])
     self_refine_agent = SelfRefineAgent(
-        "solar-pro", "single", config["temperature"]["summary"], config["seed"]
+        "solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"]
     )  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent("solar-pro", config["temperature"]["classification"], config["seed"])
+    classification_agent = ClassificationAgent(
+        "solar-pro", api_key, config["temperature"]["classification"], config["seed"]
+    )
     if config["evaluation"]["classification_eval"]:
         class_eval_agent = ClassificationEvaluationAgent(
             model="gpt-4o",
@@ -71,7 +73,7 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
     embedding_manager.run(mail_dict)
 
 
-def summary_and_report(gmail_service):
+def summary_and_report(gmail_service, api_key):
     load_dotenv()
 
     # YAML 파일 로드
@@ -87,7 +89,7 @@ def summary_and_report(gmail_service):
 
         start_time = time.time()
 
-        summary_and_classify(mail_dict, config)
+        summary_and_classify(mail_dict, config, api_key)
 
         generate_report(mail_dict, config)
 

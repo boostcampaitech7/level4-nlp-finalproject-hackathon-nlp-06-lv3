@@ -1,10 +1,8 @@
-import os
-
 from openai import OpenAI
 
 
-def check_groundness(context: str, answer: str) -> str:
-    client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+def check_groundness(context: str, answer: str, api_key) -> str:
+    client = OpenAI(api_key=api_key, base_url="https://api.upstage.ai/v1/solar")
     response = client.chat.completions.create(
         model="groundedness-check",
         messages=[

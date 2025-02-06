@@ -1,3 +1,4 @@
+import os
 import time
 
 import openai
@@ -12,13 +13,15 @@ from markdown_report import build_and_save_markdown_report
 from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
 
 
-def summary_and_classify(mail_dict: dict[str, Mail], config: dict):
+def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
     # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single", config["temperature"]["summary"], config["seed"])
+    summary_agent = SummaryAgent("solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"])
     self_refine_agent = SelfRefineAgent(
-        "solar-pro", "single", config["temperature"]["summary"], config["seed"]
+        "solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"]
     )  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent("solar-pro", config["temperature"]["classification"], config["seed"])
+    classification_agent = ClassificationAgent(
+        "solar-pro", api_key, config["temperature"]["classification"], config["seed"]
+    )
     if config["evaluation"]["classification_eval"]:
         class_eval_agent = ClassificationEvaluationAgent(
             model="gpt-4o",
@@ -72,7 +75,7 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
 
 def main():
     load_dotenv()
-
+    api_key = os.getenv("UPSTAGE_API_KEY")
     # YAML 파일 로드
     config = load_config()
 
@@ -85,7 +88,7 @@ def main():
 
         start_time = time.time()
 
-        summary_and_classify(mail_dict, config)
+        summary_and_classify(mail_dict, config, api_key)
 
         generate_report(mail_dict, config)
 

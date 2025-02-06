@@ -1,5 +1,3 @@
-import os
-
 from openai import OpenAI
 
 from agents import BaseAgent
@@ -27,7 +25,8 @@ class ClassificationAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, temperature=None, seed=None):
+    def __init__(self, model_name: str, api_key: str, temperature=None, seed=None):
+        self.api_key = api_key
         super().__init__(model=model_name, temperature=temperature, seed=seed)
         self.temperature = temperature
         self.seed = seed
@@ -44,7 +43,7 @@ class ClassificationAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def process(self, mail, classification_type: str) -> str:
         """

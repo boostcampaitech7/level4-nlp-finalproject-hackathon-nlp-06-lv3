@@ -1,6 +1,5 @@
 import argparse
 import json
-import os
 
 import yaml
 from langchain.prompts import PromptTemplate
@@ -33,7 +32,7 @@ class ReflexionActorSummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
+    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None, api_key=None):
         super().__init__(model=model_name, temperature=temperature, seed=seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
@@ -44,6 +43,7 @@ class ReflexionActorSummaryAgent(BaseAgent):
 
         # 추후 프롬프트 템플릿 로드 동작을 위해 string으로 받아 attribute로 저장합니다.
         self.summary_type = summary_type
+        self.api_key = api_key
 
     def initialize_chat(self, model: str, temperature=None, seed=None):
         """
@@ -57,7 +57,7 @@ class ReflexionActorSummaryAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def process(self, mail: dict[Mail] | Mail, max_iteration: int = 3, reflections: list = []) -> dict:
         """
@@ -142,7 +142,7 @@ class ReflexionActorSummaryAgent(BaseAgent):
                 result = generate_plain_text_report(summarized_content)
 
             # Groundness Check
-            groundness = check_groundness(context=input_mail_data, answer=result)
+            groundness = check_groundness(context=input_mail_data, answer=result, api_key=self.api_key)
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
@@ -186,12 +186,13 @@ class ReflexionEvaluator:
 
 
 class ReflexionSelfReflection:
-    def __init__(self, task):
+    def __init__(self, task, api_key):
         # Reflection을 담을 리스트를 선언해준다
         self.reflection_memory = []
         self.reflection_template = None
         self.aspects_description = None
         self.task = task
+        self.api_key = api_key
 
     def load_setup_texts(self):
         # Reflexion 프롬프트 템플릿을 읽어온다
@@ -226,7 +227,7 @@ class ReflexionSelfReflection:
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return ChatUpstage(api_key=os.getenv("UPSTAGE_API_KEY"), model=model, temperature=temperature, seed=seed)
+        return ChatUpstage(api_key=self.api_key, model=model, temperature=temperature, seed=seed)
 
     def generate_reflection(self, source_text, output_text, eval_result):
         """
