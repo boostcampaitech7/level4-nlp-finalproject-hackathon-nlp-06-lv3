@@ -29,7 +29,7 @@ class Mail:
             mail_id (str): 우리 서비스 내에서 매길 임의 id
         """
         message = gmail_service.get_message_details(message_id)
-        body, attachments = MessageHandler.process_message(message)
+        body, attachments = MessageHandler.process_message(message, gmail_service)
         headers = MessageHandler.process_headers(message)
 
         self.message_id = message_id
@@ -149,10 +149,10 @@ class MessageHandler:
         return plain_text, files
 
     @staticmethod
-    def process_message(message):
+    def process_message(message, gmail_service):
         payload = message.get("payload", {})
         body, filenames = MessageHandler.process_message_part(
-            message["id"], payload, gmail_service=None  # 임시, 아래에서 재호출에 주의
+            message["id"], payload, gmail_service=gmail_service  # 임시, 아래에서 재호출에 주의
         )
 
         # 위에서 gmail_service 인자가 필요한데, staticmethod 호출 방식에 맞춰
