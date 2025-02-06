@@ -1,6 +1,6 @@
 import { useRecoilValue } from "recoil"
 import { useEffect, useState } from "react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { IoMdCheckboxOutline } from "react-icons/io"
 import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import ReportTitle from "@/containers/main/reports/ReportTitle"
@@ -14,6 +14,7 @@ export default function ReportPage() {
   const report = view.data
   const openLink = useOpenLink()
   const errorHandler = useErrorResponseHandler()
+  const queryClient = useQueryClient()
 
   const [jsonReport, setJsonReport] = useState(JSON.parse(report.content))
 
@@ -33,6 +34,7 @@ export default function ReportPage() {
     mutationFn: (data: any) => {
       return axiosInstance.put(`/reports/temp/${report.id}`, data)
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["/reports/temp"] }),
     onError: (err) => errorHandler(err),
   })
 
@@ -68,7 +70,7 @@ export default function ReportPage() {
                     </button>
                     <div>
                       <p className="text-text-gray">
-                        <span className={item.checked && "line-through"}>{item.description}</span>
+                        <span className={item.checked ? "line-through" : ""}>{item.description}</span>
                         {item.links.map((link: any) => (
                           <button type="button" key={link} onClick={() => openLink(link)}>
                             🔗
