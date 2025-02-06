@@ -19,7 +19,5 @@ python_absolute_path = os.path.abspath(python_relative_path)
 update_command = f'echo "{cron_time} {python_absolute_path} {run_file_absolute_path}" | crontab -'
 subprocess.run(update_command, shell=True, check=True)
 print("-" * 25)
-print(
-    f"Crontab updated:\nUpdated Cron Expression: {cron_time}\nPython Path: {python_absolute_path}\nFile Path: {run_file_absolute_path}"
-)
+print(f"Updated Cron Expression: {cron_time}\nPython Path: {python_absolute_path}\nFile Path: {run_file_absolute_path}")
 print("-" * 25)
