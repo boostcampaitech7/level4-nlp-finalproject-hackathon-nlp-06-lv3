@@ -93,7 +93,9 @@ def main():
 
         df = convert_mail_dict_to_df(mail_dict)
 
-        build_and_save_markdown_report(df)
+        markdown_report = build_and_save_markdown_report(df)
+
+        return markdown_report
 
     except HttpError as error:
         print(f"An error occurred: {error}")

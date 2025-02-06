@@ -1,4 +1,8 @@
+import ast
+
 import pandas as pd
+
+GMAIL_URL = "https://mail.google.com/mail/u/0/?tab=rm&ogbl#inbox/"
 
 
 def build_and_save_markdown_report(df):
@@ -7,29 +11,47 @@ def build_and_save_markdown_report(df):
     print(markdown_report)
     report_builder.save_as_markdown()
 
+    return markdown_report
+
 
 class MarkdownReportBuilder:
     def __init__(self, df: pd.DataFrame):
         self.grouped_dfs = df.groupby(["label_category", "label_action"])
         self.categories = {
-            "### 📝 학술/연구": [
-                ("#### 📌 처리가 필요한 메일", "academic", "action needed"),
-                ("#### 📎 읽어볼 메일", "academic", "read only"),
+            "## 📝 학술/연구": [
+                ("### 📌 처리가 필요한 메일", "academic", "action needed"),
+                ("### 📎 읽어볼 메일", "academic", "read only"),
             ],
-            "### 🏢 행정 처리": [
-                ("#### 📌 처리가 필요한 메일", "administration", "action needed"),
-                ("#### 📎 읽어볼 메일", "administration", "read only"),
+            "## 🏢 행정 처리": [
+                ("### 📌 처리가 필요한 메일", "administration", "action needed"),
+                ("### 📎 읽어볼 메일", "administration", "read only"),
             ],
-            "### 📂 기타/그 외": [
-                ("#### 📌 처리가 필요한 메일", "other", "action needed"),
-                ("#### 📎 읽어볼 메일", "other", "read only"),
+            "## 📂 기타/그 외": [
+                ("### 📌 처리가 필요한 메일", "other", "action needed"),
+                ("### 📎 읽어볼 메일", "other", "read only"),
             ],
         }
 
     def df_to_text(self, df: pd.DataFrame) -> str:
         if df is None or df.empty:
             return None
-        return "\n".join(f"- [ ] {title}" for title in df["summary"].tolist())
+        is_seen = set()
+        result_lines = []
+        for _, row in df.iterrows():
+            if row["message_id"] in is_seen:  # 이미 표출한 메일이면 continue
+                continue
+
+            links = f"[🔗]({GMAIL_URL}{row['message_id']})"
+            if len(row["similar_mails"]) != 0:
+                for similar_ids in row["similar_mails"]:
+                    links += " " + f"[🔗]({GMAIL_URL}{similar_ids})"
+                    is_seen.add(similar_ids)
+
+            summary = row["summary"].replace("\n\n", "\n")
+
+            result_lines.append(f"- [ ] {summary} {links}")
+
+        return "\n".join(result_lines)
 
     def get_grouped_df_with(self, label_category: str, label_action: str) -> pd.DataFrame:
         return (
@@ -39,6 +61,7 @@ class MarkdownReportBuilder:
         )
 
     def make_report(self) -> str:
+
         report_sections = []
         for category, sections in self.categories.items():
             section_content = [
@@ -60,5 +83,6 @@ class MarkdownReportBuilder:
 
 if __name__ == "__main__":
     df = pd.read_csv("test_mail_10.csv", index_col=0)
-
+    df["similar_mails"] = df["similar_mails"].apply(ast.literal_eval)
+    print(df)
     build_and_save_markdown_report(df)
