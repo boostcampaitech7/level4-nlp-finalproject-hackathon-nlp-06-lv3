@@ -214,5 +214,5 @@ def fetch_mails(gmail_service: GmailService, start_date: str, end_date: str, n: 
         mail = Mail(gmail_service, msg_meta["id"], mail_id)
         # 예시로 (광고) 필터만 적용
         if "(광고)" not in mail.subject:
-            mail_dict[mail_id] = mail
+            mail_dict[msg_meta["id"]] = mail
     return mail_dict
