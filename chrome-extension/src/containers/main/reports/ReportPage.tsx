@@ -49,24 +49,27 @@ export default function ReportPage() {
               <div key={task.title} className="flex flex-col gap-3">
                 <h4>{task.title}</h4>
                 {task.items.map((item: any) => (
-                  <div key={item.description} className="flex gap-2 items-start">
-                    <div className="h-full">
+                  <div key={item.description} className="flex">
+                    <button
+                      type="button"
+                      aria-label="체크 박스"
+                      className="pr-2 flex items-start"
+                      onClick={() => onCheckChange(item.description, !item.checked)}
+                    >
                       <div>
-                        <input
-                          type="checkbox"
-                          checked={item.checked}
-                          onChange={(e) => onCheckChange(item.description, e.target.checked)}
-                        />
+                        <input type="checkbox" checked={item.checked} />
                       </div>
+                    </button>
+                    <div>
+                      <p className="text-text-gray">
+                        {item.description}
+                        {item.links.map((link: any) => (
+                          <button type="button" key={link} onClick={() => openLink(link)}>
+                            🔗
+                          </button>
+                        ))}
+                      </p>
                     </div>
-                    <p className="text-text-gray">
-                      {item.description}
-                      {item.links.map((link: any) => (
-                        <button type="button" key={link} onClick={() => openLink(link)}>
-                          🔗
-                        </button>
-                      ))}
-                    </p>
                   </div>
                 ))}
               </div>
