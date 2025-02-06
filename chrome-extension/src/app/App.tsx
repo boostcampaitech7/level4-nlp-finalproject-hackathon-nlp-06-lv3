@@ -14,7 +14,13 @@ export default function App() {
       <RecoilRoot>
         <AxiosInterceptorWrapper>
           <div className="flex flex-col w-full items-center">
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense
+              fallback={
+                <div className="flex w-full h-screen justify-center items-center">
+                  <div className="loading-dots" />
+                </div>
+              }
+            >
               <Content />
             </Suspense>
           </div>
