@@ -31,21 +31,21 @@ class MarkdownReportBuilder:
                 ("### 📎 읽어볼 메일", "other", "read only"),
             ],
         }
+        self.is_seen = set()
 
     def df_to_text(self, df: pd.DataFrame) -> str:
         if df is None or df.empty:
             return None
-        is_seen = set()
         result_lines = []
         for _, row in df.iterrows():
-            if row["message_id"] in is_seen:  # 이미 표출한 메일이면 continue
+            if row["message_id"] in self.is_seen:  # 이미 표출한 메일이면 continue
                 continue
 
             links = f"[🔗]({GMAIL_URL}{row['message_id']})"
             if len(row["similar_mails"]) != 0:
                 for similar_ids in row["similar_mails"]:
                     links += " " + f"[🔗]({GMAIL_URL}{similar_ids})"
-                    is_seen.add(similar_ids)
+                    self.is_seen.add(similar_ids)
 
             summary = row["summary"].replace("\n\n", "\n")
 
