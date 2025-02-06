@@ -70,3 +70,47 @@ def generate_final_report_text(report, mail_dict) -> str:
         final_report += "\n"  # 카테고리별 줄바꿈 추가
 
     return final_report
+
+
+def build_markdown_result(start_time: float, mail_dict) -> str:
+    """
+    동일한 인자값을 받아서, 기존 콘솔 출력 형태를
+    Markdown 형식으로 구성한 문자열을 반환합니다.
+    """
+    lines = []
+
+    # 헤더
+    lines.append("## FINAL_REPORT  \n")  # (줄바꿈+공백은 Markdown 스타일
+    #  로 원하는 대로 조정 가능합니다.)
+
+    # 각 메일 정보
+    for mail_id, mail in mail_dict.items():
+        # 유사 메일 문자열 구성
+        # (mail.similar_mails가 있다고 가정)
+        sim_mails_str = (
+            "\n".join(
+                [
+                    f"\t{i + 1}번째 유사 메일\n"
+                    f"\tID: {sim_mail_id}\n"
+                    f"\t제목: {mail_dict[sim_mail_id].subject}\n"
+                    f"\t요약: {mail_dict[sim_mail_id].summary}\n"
+                    for i, sim_mail_id in enumerate(mail.similar_mails)
+                ]
+            )
+            if hasattr(mail, "similar_mails")
+            else ""
+        )
+
+        # Mail 정보 출력 부분
+        lines.append(f"**ID**: {mail_id}")
+        lines.append(f"- 분류: {getattr(mail, 'label_action', '(no label)')}")
+        lines.append(f"- 제목: {mail.subject}")
+        lines.append(f"- 요약: {mail.summary}")
+        if sim_mails_str:
+            lines.append("```")
+            lines.append(sim_mails_str)
+            lines.append("```")
+        lines.append(f"{'=' * 40}\n")
+
+    # 최종적으로 줄들을 합쳐 하나의 문자열로 반환
+    return "\n".join(lines)
