@@ -15,3 +15,11 @@ async def get_reports(user: User, page: int, limit: int):
         },
     )
     return report_response.TempReportsDto(reports)
+
+
+async def set_reports(report_id: int, content: str) -> int:
+    updated: int = await database.execute(
+        ("UPDATE report_temp_tb Set content=:content WHERE report_id=:report_id"),
+        {"content": content, "report_id": report_id},
+    )
+    return updated

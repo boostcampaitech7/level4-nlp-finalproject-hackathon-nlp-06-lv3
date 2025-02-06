@@ -15,3 +15,8 @@ async def get_reports_temp(
     user: User = Depends(get_user_id_from_session), page: int = 1, limit: int = 20
 ) -> ApiResponse[report_response.TempReportsDto]:
     return ApiResponse.success(await report_service.get_reports(user, page, limit))
+
+
+@report_router.put("/temp/checked/{report_id}")
+async def put_reports_temp(report_id: int, content: str) -> ApiResponse[int]:
+    return ApiResponse.success(await report_service.set_reports(report_id, content))
