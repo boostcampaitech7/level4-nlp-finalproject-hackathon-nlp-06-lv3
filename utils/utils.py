@@ -140,7 +140,7 @@ def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
 
         # TODO: 룰베이스 분류 강화
         if "(광고)" not in mail.subject:
-            mail_dict[mail_id] = mail
+            mail_dict[message_metadata["id"]] = mail
 
     print(f"🕊️  전일 오전 9시 이후 수신한 메일 {len(mail_dict)}개를 저장하였습니다.")
     return mail_dict

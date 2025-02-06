@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
 from agents import BaseAgent, ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from checklist_builder import build_json_checklist
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
 from gmail_api import Mail
-from markdown_report import build_and_save_markdown_report
 from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
 
 
@@ -96,9 +96,9 @@ def main():
 
         df = convert_mail_dict_to_df(mail_dict)
 
-        markdown_report = build_and_save_markdown_report(df)
-
-        return markdown_report
+        json_checklist = build_json_checklist(df)
+        print(json_checklist)
+        return json_checklist
 
     except HttpError as error:
         print(f"An error occurred: {error}")
