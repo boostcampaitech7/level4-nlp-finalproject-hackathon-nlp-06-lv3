@@ -1,6 +1,8 @@
+from server._core.errors.exceptions.custom_exception import CustomException
+from server._core.errors.exceptions.error_code import ErrorCode
 from server.database.connection import database
 from server.models.user import User
-from server.schemas import report_response
+from server.schemas import report_request, report_response
 
 
 async def get_reports(user: User, page: int, limit: int):
@@ -17,9 +19,17 @@ async def get_reports(user: User, page: int, limit: int):
     return report_response.TempReportsDto(reports)
 
 
-async def set_reports(report_id: int, content: str) -> int:
-    updated: int = await database.execute(
-        ("UPDATE report_temp_tb Set content=:content WHERE report_id=:report_id"),
-        {"content": content, "report_id": report_id},
+async def set_reports(user: User, report_id: int, report_dto: report_request.ReportDto):
+    report_owner_id = await database.fetch_one(
+        ("SELECT user_id FROM report_temp_tb WHERE id=:report_id"),
+        {"report_id": report_id},
     )
-    return updated
+    if not report_owner_id:
+        raise CustomException(ErrorCode.NOT_FOUND_DATA)
+    if report_owner_id["user_id"] != user.id:
+        raise CustomException(ErrorCode.PERMISSION_DENIED)
+
+    await database.execute(
+        ("UPDATE report_temp_tb SET content=:content WHERE id=:report_id"),
+        {"content": report_dto.content, "report_id": report_id},
+    )
