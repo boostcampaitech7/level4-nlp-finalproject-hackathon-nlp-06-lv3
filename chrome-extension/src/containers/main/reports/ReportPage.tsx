@@ -57,10 +57,10 @@ export default function ReportPage() {
                     <button
                       type="button"
                       aria-label="체크 박스"
-                      className="pr-2 flex items-start"
+                      className="pr-2 flex items-start group"
                       onClick={() => onCheckChange(item.description, !item.checked)}
                     >
-                      <div className="pt-1 text-xl">
+                      <div className="pt-1 text-xl group-hover:drop-shadow-[0_0_4px_rgba(0,0,0,0.25)] transition-all">
                         {item.checked ? (
                           <IoMdCheckboxOutline />
                         ) : (
