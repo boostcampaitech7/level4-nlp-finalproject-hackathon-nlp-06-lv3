@@ -40,7 +40,7 @@ def get_connection():
 
 def fetch_users(connection):
     cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT id, access_token, refresh_token, expiry FROM user_tb")
+    cursor.execute("SELECT id, upstage_api_key FROM user_tb")
     users = cursor.fetchall()
     cursor.close()
     return users
