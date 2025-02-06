@@ -4,7 +4,17 @@ import ReportTitle from "@/containers/main/reports/ReportTitle"
 
 export default function ReportBox({ report }: { report: any }) {
   const setView = useSetRecoilState(viewState)
-  const jsonReport = JSON.parse(report.content)
+
+  const descriptions: string[] = []
+
+  JSON.parse(report.content).forEach((category: any) => {
+    category.task_objects.forEach((task: any) => {
+      task.items.forEach((item: any) => {
+        descriptions.push(item.description)
+      })
+    })
+  })
+
   return (
     <button
       type="button"
@@ -13,15 +23,11 @@ export default function ReportBox({ report }: { report: any }) {
     >
       <ReportTitle dateString={report.date} />
       <div className="flex flex-col items-start overflow-hidden w-full">
-        {jsonReport.map((category: any) =>
-          category.task_objects.map((task: any) =>
-            task.items.map((item: any) => (
-              <p key={item.description} className="text-start">
-                {item.description}
-              </p>
-            )),
-          ),
-        )}
+        {descriptions.slice(0, 3).map((description) => (
+          <p key={description} className="text-start text-ellipsis line-clamp-1">
+            {description}
+          </p>
+        ))}
       </div>
     </button>
   )
