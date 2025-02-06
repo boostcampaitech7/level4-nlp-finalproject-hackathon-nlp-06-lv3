@@ -53,7 +53,7 @@ class SelfRefineAgent(BaseAgent):
             file.write(content)
         print(f"{path} 로그 파일이 생성되었습니다.")
 
-    def process(self, data: Mail | dict[str, Mail], model: BaseAgent, max_iteration: int = 3):
+    def process(self, data, model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 

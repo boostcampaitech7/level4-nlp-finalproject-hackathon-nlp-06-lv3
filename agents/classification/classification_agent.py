@@ -3,7 +3,6 @@ import os
 from openai import OpenAI
 
 from agents import BaseAgent
-from gmail_api import Mail
 
 from ..utils import build_messages, load_categories_from_yaml
 
@@ -47,7 +46,7 @@ class ClassificationAgent(BaseAgent):
         """
         return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 
-    def process(self, mail: Mail, classification_type: str) -> str:
+    def process(self, mail, classification_type: str) -> str:
         """
         주어진 메일(또는 메일 리스트)을 분류하여 해당 레이블 문자열을 반환합니다.
 
@@ -57,8 +56,6 @@ class ClassificationAgent(BaseAgent):
         Returns:
             str: 메일의 분류 결과입니다.
         """
-        if not isinstance(mail, Mail):
-            raise ValueError(f"분류 작업에서 {type(mail)} 형식의 데이터가 들어왔습니다.")
 
         categories = load_categories_from_yaml(classification_type, is_prompt=True)
         categories_text = ""
