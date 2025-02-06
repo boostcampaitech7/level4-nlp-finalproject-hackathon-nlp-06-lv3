@@ -32,6 +32,7 @@ class Mail:
         body, attachments = MessageHandler.process_message(message)
         headers = MessageHandler.process_headers(message)
 
+        self.message_id = message_id
         self._id = mail_id
         self.sender = headers["sender"]
         self.recipients = [headers["recipients"]]

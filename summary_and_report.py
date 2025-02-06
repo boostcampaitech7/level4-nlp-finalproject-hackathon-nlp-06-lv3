@@ -4,16 +4,12 @@ import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents import ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
 from batch_serving import Mail, fetch_mails
-from evaluation import (
-    ClassificationEvaluationAgent,
-    build_markdown_result,
-    print_evaluation_results,
-    summary_evaluation_data,
-)
+from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
-from utils import TokenManager, load_config, print_result, run_with_retry
+from markdown_report import build_and_save_markdown_report
+from utils import TokenManager, convert_mail_dict_to_df, load_config, print_result, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
@@ -38,12 +34,15 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
         TokenManager.total_token_usage += token_usage
 
         if config["evaluation"]["classification_eval"]:
-            category = run_with_retry(class_eval_agent.process, mail, classification_agent)
+            category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
+            action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
         else:
-            category = run_with_retry(classification_agent.process, mail)
+            category = run_with_retry(classification_agent.process, mail, ClassificationType.CATEGORY)
+            action = run_with_retry(classification_agent.process, mail, ClassificationType.ACTION)
         mail_dict[mail_id].label_category = category
+        mail_dict[mail_id].label_action = action
 
-        print(f"{mail_id}\n{category}\n{summary}\n{'=' * 40}")
+        print(f"{mail_id}\ncategory label: {category}\naction label: {action}\n{summary}\n{'=' * 40}")
 
         if config["evaluation"]["summary_eval"]:
             summary_evaluation_data.source_texts.append(mail.body)
@@ -95,9 +94,11 @@ def summary_and_report(gmail_service, api_key):
 
         print_result(start_time, mail_dict)
 
-        report_text = build_markdown_result(start_time, mail_dict)
+        df = convert_mail_dict_to_df(mail_dict)
 
-        return report_text
+        markdown_report = build_and_save_markdown_report(df)
+
+        return markdown_report
 
     except HttpError as error:
         print(f"An error occurred: {error}")
