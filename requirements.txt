@@ -29,3 +29,6 @@ seaborn==0.13.2
 
 # Chooose after experiments(for serving)
 sentence-transformers==3.4.1
+
+# Batch Serving
+mysql-connector-python
