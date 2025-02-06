@@ -3,7 +3,6 @@ import json
 
 import pandas as pd
 
-
 category_titles = {"academic": "📝 학술/연구", "administration": "🏢 행정 처리", "other": "📂 기타/그 외"}
 action_titles = {"action needed": "📌 처리가 필요한 메일", "read only": "👀 읽어볼 메일"}
 
