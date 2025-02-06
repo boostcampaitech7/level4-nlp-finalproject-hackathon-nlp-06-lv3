@@ -86,13 +86,3 @@ class Mail:
         if not value:
             raise ValueError("Action Label cannot be empty.")
         self._label_action = value
-
-    @property
-    def similar_mails(self) -> Optional[list[str]]:
-        return self._similar_mails
-
-    @similar_mails.setter
-    def similar_mails(self, value: list[str]) -> None:
-        if not isinstance(value, list) and not value:
-            raise ValueError("Similar Mails cannot be empty.")
-        self._similar_mails = value
