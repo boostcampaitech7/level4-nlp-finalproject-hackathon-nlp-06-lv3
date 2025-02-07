@@ -48,10 +48,10 @@ export default function ReportPage() {
       <div className="flex flex-col gap-10">
         {jsonReport.map((category: any) => (
           <div key={category.title} className="flex flex-col gap-3">
-            <h3 className="text-xl">{category.title}</h3>
+            <h3 className="text-xl font-bold">{category.title}</h3>
             {category.task_objects.map((task: any) => (
               <div key={task.title} className="flex flex-col gap-3">
-                <h4>{task.title}</h4>
+                <h4 className="font-bold">{task.title}</h4>
                 {task.items.map((item: any) => (
                   <div key={item.description} className="flex">
                     <button
