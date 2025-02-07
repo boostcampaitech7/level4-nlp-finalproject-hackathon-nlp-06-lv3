@@ -37,7 +37,7 @@ export default function ReportBox({ report }: { report: any }) {
         {descriptions.map((description) => (
           <p
             key={description}
-            className={`text-start text-ellipsis line-clamp-1 text-[#5A5A5A] ${isCompleted ? "line-through" : ""}`}
+            className={`text-start text-ellipsis line-clamp-1 text-[#5A5A5A] break-all ${isCompleted ? "line-through" : ""}`}
           >
             {description}
           </p>
