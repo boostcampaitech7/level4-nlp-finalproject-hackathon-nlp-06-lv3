@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from mysql.connector.abstracts import MySQLConnectionAbstract
 
 load_dotenv()
 
@@ -38,7 +39,7 @@ def get_connection():
     return connection
 
 
-def fetch_users(connection):
+def fetch_users(connection: MySQLConnectionAbstract):
     cursor = connection.cursor(dictionary=True)
     cursor.execute("SELECT id, upstage_api_key FROM user_tb")
     users = cursor.fetchall()
@@ -46,7 +47,7 @@ def fetch_users(connection):
     return users
 
 
-def get_user_tokens(connection, user_id):
+def get_user_tokens(connection: MySQLConnectionAbstract, user_id):
     cursor = connection.cursor(dictionary=True)
     cursor.execute(
         "SELECT access_token, refresh_token, expiry FROM user_tb WHERE id = %s",
@@ -65,7 +66,7 @@ def is_expired(expiry_time: datetime) -> bool:
     return utc_current_time >= expiry_time
 
 
-def refresh_access_token(connection, user_id: int, refresh_token: str) -> Credentials:
+def refresh_access_token(connection: MySQLConnectionAbstract, user_id: int, refresh_token: str) -> Credentials:
     credentials = Credentials(
         None,
         refresh_token=refresh_token,
@@ -89,7 +90,7 @@ def refresh_access_token(connection, user_id: int, refresh_token: str) -> Creden
     return credentials
 
 
-def authenticate_gmail(connection, user_id: int):
+def authenticate_gmail(connection: MySQLConnectionAbstract, user_id: int):
     user_tokens = get_user_tokens(connection, user_id)
     if not user_tokens:
         print(f"[Error] user_id={user_id}의 토큰 정보가 없습니다.")
@@ -116,7 +117,7 @@ def authenticate_gmail(connection, user_id: int):
     return build("gmail", "v1", credentials=creds)
 
 
-def insert_report(connection, user_id, report):
+def insert_report(connection: MySQLConnectionAbstract, user_id, report):
     cursor = connection.cursor()
     current_datetime = datetime.now()
 
