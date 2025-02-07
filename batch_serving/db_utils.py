@@ -95,12 +95,12 @@ def authenticate_gmail(connection: MySQLConnectionAbstract, user: dict):
     return build("gmail", "v1", credentials=creds)
 
 
-def insert_report(connection: MySQLConnectionAbstract, user_id, report):
+def insert_report(connection: MySQLConnectionAbstract, user_id, report, json_checklist):
     cursor = connection.cursor()
     current_datetime = datetime.now()
 
-    sql = "INSERT INTO report_temp_tb (user_id, content, date, refresh_time) VALUES (%s, %s, %s, %s)"
-    cursor.execute(sql, (user_id, report, current_datetime.date(), current_datetime))
+    sql = "INSERT INTO report_temp_tb (user_id, content, report, date, refresh_time) VALUES (%s, %s, %s, %s, %s)"
+    cursor.execute(sql, (user_id, json_checklist, report, current_datetime.date(), current_datetime))
     connection.commit()
     cursor.close()
 
