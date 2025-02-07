@@ -1,19 +1,30 @@
 import { useSetRecoilState } from "recoil"
+import { useEffect, useState } from "react"
 import viewState from "@/states/viewState"
 import ReportTitle from "@/containers/main/reports/ReportTitle"
 
 export default function ReportBox({ report }: { report: any }) {
   const setView = useSetRecoilState(viewState)
 
-  const descriptions: string[] = []
+  const [isCompleted, setIsCompleted] = useState(false)
+  const [descriptions, setDescriptions] = useState<string[]>([])
 
-  JSON.parse(report.content).forEach((category: any) => {
-    category.task_objects.forEach((task: any) => {
-      task.items.forEach((item: any) => {
-        descriptions.push(item.description)
+  useEffect(() => {
+    const descriptionTemps: string[] = []
+    let isCompletedTemp = true
+    JSON.parse(report.content).forEach((category: any) => {
+      category.task_objects.forEach((task: any) => {
+        task.items.forEach((item: any) => {
+          descriptionTemps.push(item.description)
+          if (!item.checked) {
+            isCompletedTemp = false
+          }
+        })
       })
+      setIsCompleted(isCompletedTemp)
+      setDescriptions(descriptionTemps.slice(0, 3))
     })
-  })
+  }, [report])
 
   return (
     <button
@@ -23,8 +34,11 @@ export default function ReportBox({ report }: { report: any }) {
     >
       <ReportTitle dateString={report.date} />
       <div className="flex flex-col items-start overflow-hidden w-full">
-        {descriptions.slice(0, 3).map((description) => (
-          <p key={description} className="text-start text-ellipsis line-clamp-1 text-[#5A5A5A]">
+        {descriptions.map((description) => (
+          <p
+            key={description}
+            className={`text-start text-ellipsis line-clamp-1 text-[#5A5A5A] ${isCompleted ? "line-through" : ""}`}
+          >
             {description}
           </p>
         ))}
