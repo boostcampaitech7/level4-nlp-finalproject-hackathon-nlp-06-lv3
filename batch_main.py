@@ -1,4 +1,4 @@
-from agents.summary_and_report import summary_and_report
+from agents.pipeline import pipeline
 from batch_serving import GmailService, authenticate_gmail, fetch_users, get_connection, insert_report
 
 
@@ -19,7 +19,7 @@ def main():
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
-            json_checklist, report = summary_and_report(gmail_service, api_key)
+            json_checklist, report = pipeline(gmail_service, api_key)
             print("=" * 10)
             print("user_id", user_id)
             print(report)
