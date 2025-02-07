@@ -4,7 +4,7 @@ import os
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
-from utils.utils import run_with_retry
+from utils import retry_with_exponential_backoff
 
 from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
 
@@ -53,6 +53,26 @@ class SelfRefineAgent(BaseAgent):
             file.write(content)
         print(f"{path} 로그 파일이 생성되었습니다.")
 
+    @retry_with_exponential_backoff()
+    def feedback(self, feedback_messages: str):
+        return self.client.chat.completions.create(
+            model=self.model_name,
+            messages=feedback_messages,
+            response_format=FEEDBACK_FORMAT,
+            temperature=self.temperature,
+            seed=self.seed,
+        )
+
+    @retry_with_exponential_backoff()
+    def refine(self, refine_messages: str):
+        return self.client.chat.completions.create(
+            model=self.model_name,
+            messages=refine_messages,
+            response_format=None,
+            temperature=self.temperature,
+            seed=self.seed,
+        )
+
     def process(self, data, model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
@@ -68,7 +88,7 @@ class SelfRefineAgent(BaseAgent):
         """
         # 초기 요약 및 로그 생성
         token_usage = 0
-        summarization, summary_token_usage = run_with_retry(model.process, str(data))
+        summarization, summary_token_usage = model.process(str(data))
         token_usage += summary_token_usage
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
         logging_file_prefix = self.target_range
@@ -102,15 +122,7 @@ class SelfRefineAgent(BaseAgent):
                 mails=input_mail_data,
                 report=refine_target,
             )
-            feedback_response = run_with_retry(
-                lambda: self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=feedback_messages,
-                    response_format=FEEDBACK_FORMAT,
-                    temperature=self.temperature,
-                    seed=self.seed,
-                )
-            )
+            feedback_response = self.feedback(feedback_messages)
             feedback = feedback_response.choices[0].message.content
             super().add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
             token_usage += feedback_response.usage.total_tokens
@@ -134,15 +146,7 @@ class SelfRefineAgent(BaseAgent):
                 report=refine_target,
                 reasoning=str(feedback_dict["issues"]),  # TODO: 메일 요약문과 피드백을 하나로 처리할 것
             )
-            revision_response = run_with_retry(
-                lambda: self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=refine_messages,
-                    response_format=None,
-                    temperature=self.temperature,
-                    seed=self.seed,
-                )
-            )
+            revision_response = self.refine(refine_messages)
             revision_content = revision_response.choices[0].message.content
             super().add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
             token_usage += revision_response.usage.total_tokens

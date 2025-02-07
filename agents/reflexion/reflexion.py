@@ -1,4 +1,4 @@
-from utils.utils import map_category, run_with_retry
+from utils import map_category
 
 from ..summary import SummaryAgent
 from .evaluator import ReflexionEvaluator
@@ -24,7 +24,7 @@ class ReflexionFramework:
 
         return output_text
 
-    def process(self, origin_mail, model: SummaryAgent):
+    def process(self, origin_mail, summary_agent: SummaryAgent) -> tuple[str, int]:
         """
         Reflexion을 실행합니다.
 
@@ -40,8 +40,8 @@ class ReflexionFramework:
 
         scores = []
         outputs = []
-        output_text, _ = run_with_retry(model.process, origin_mail)
-        output_text = output_text["summary"]
+        initail_content, _ = summary_agent.process(origin_mail)
+        output_text = initail_content["summary"]
         total_token_usage = 0
         for i in range(self.config["self_reflection"]["max_iteration"]):
             # 평가하기
@@ -56,14 +56,14 @@ class ReflexionFramework:
             total_token_usage += eval_token_usage
 
             # 성찰하기
-            _, reflection_token_usage = run_with_retry(
-                self.self_reflection.generate_reflection, origin_mail, output_text, eval_result_str
+            _, reflection_token_usage = self.self_reflection.generate_reflection(
+                origin_mail, output_text, eval_result_str
             )
             total_token_usage += reflection_token_usage
 
             # 출력문 다시 생성하기
             previous_reflections = self.self_reflection.reflection_memory
-            output_text, token_usage = run_with_retry(model.process, origin_mail, 3, previous_reflections)
+            output_text, token_usage = summary_agent.process(origin_mail, 3, previous_reflections)
             total_token_usage += token_usage
 
             eval_average = round(aspect_score / aspect_len, 1)
@@ -97,12 +97,12 @@ class ReflexionFramework:
 
         return final, total_token_usage
 
-    def process_with_solar_as_judge(self, mail, model: SummaryAgent, config: dict):
+    def process_with_solar_as_judge(self, mail, summary_agent: SummaryAgent, config: dict):
         source_text_str = str(mail)
         check_results = []
         scores = []
         outputs = []
-        output_text = run_with_retry(model.process, mail)
+        output_text, _ = summary_agent.process(mail)
         total_token_usage = 0
         print("\n\nINITIATE REFLEXION w/ Solar as Judge\n")
         for i in range(config["self_reflection"]["max_iteration"]):
@@ -121,14 +121,14 @@ class ReflexionFramework:
             # print(f"{type(output_text)}")
             # print(f"{type(items_failed_str)}")
             # 성찰하기
-            _, reflection_token_usage = run_with_retry(
-                self.self_reflection.generate_reflection_solar_as_judge, source_text_str, output_text, items_failed_str
+            _, reflection_token_usage = self.self_reflection.generate_reflection_solar_as_judge(
+                source_text_str, output_text, items_failed_str
             )
             total_token_usage += reflection_token_usage
 
             # 출력문 다시 생성하기
             previous_reflections = self.self_reflection.reflection_memory
-            output_text, token_usage = run_with_retry(model.process, mail, 3, previous_reflections)
+            output_text, token_usage = summary_agent.process(mail, 3, previous_reflections)
             total_token_usage += token_usage
 
             outputs.append(output_text)

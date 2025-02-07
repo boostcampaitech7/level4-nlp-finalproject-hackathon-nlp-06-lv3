@@ -1,6 +1,6 @@
 from agents.base_agent import BaseAgent
 from evaluation import calculate_g_eval, run_solar_as_judge
-from utils.utils import load_config
+from utils.utils import load_config, retry_with_exponential_backoff
 
 
 class ReflexionEvaluator(BaseAgent):
@@ -14,6 +14,7 @@ class ReflexionEvaluator(BaseAgent):
     def process(self, data, model=None):
         pass
 
+    @retry_with_exponential_backoff()
     def get_geval_scores(self, source_text: str, output_text: str):
         """참조한 텍스트와 생성한 텍스트를 입력으로 받고 점수를 매긴다.
 
@@ -36,6 +37,7 @@ class ReflexionEvaluator(BaseAgent):
 
         return eval_list, token_usage
 
+    @retry_with_exponential_backoff()
     def get_solar_as_judge_result(self, source_text: str, output_text: str):
         """참조한 텍스트와 생성한 텍스트를 입력으로 받고 점수를 매긴다.
 

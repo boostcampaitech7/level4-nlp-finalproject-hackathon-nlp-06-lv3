@@ -1,13 +1,7 @@
 from openai import OpenAI
 
-from agents import BaseAgent
-
+from ..base_agent import BaseAgent
 from ..utils import build_messages, load_categories_from_yaml
-
-
-class ClassificationType:
-    CATEGORY = "category"
-    ACTION = "action"
 
 
 class ClassificationAgent(BaseAgent):
