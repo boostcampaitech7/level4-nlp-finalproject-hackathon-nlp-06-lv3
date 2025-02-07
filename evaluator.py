@@ -27,24 +27,3 @@ def evaluate_summary(config, source_texts, report_texts, reference_texts):
         )
 
     return results
-
-
-def evaluate_report(config, source_texts, report_texts, reference_texts):
-    """
-    설정(config)에 따라 Final Report에 대해 G-EVAL 평가 수행.
-    - 기본적으로 G-EVAL만 사용 (ROUGE / BERT 없음)
-    - additional=True로 항상 7개 평가 기준 적용
-    """
-    report_config = config.get("report", {})  # report 설정 가져오기
-    metrics = report_config.get("metrics", [])  # report의 평가 메트릭 리스트
-
-    results = {}
-
-    # G-EVAL 평가 (항상 additional=True)
-    if "g-eval" in metrics:
-        g_eval_config = report_config.get("g_eval", {})  # g-eval 설정만 추출
-        results["g-eval"] = calculate_g_eval(
-            source_texts, report_texts, g_eval_config, eval_type="report", additional=True
-        )
-
-    return results
