@@ -70,9 +70,15 @@ def replace_pattern_with(parsed_items: dict, text: str, pattern: str) -> str:
     return re.sub(pattern, replacement, text)
 
 
+def remove_http_brackets(text):
+    return re.sub(r"<[^>]*http[^>]*>", "", text)
+
+
 def replace_url_pattern_from(plain_text: str) -> str:
+
+    clean_text = remove_http_brackets(plain_text)
     url_pattern = r"\[([^\]]+)\]"
-    urls = re.findall(url_pattern, plain_text)
+    urls = re.findall(url_pattern, clean_text)
     url_to_parsed_image = {}
 
     for url in urls:
@@ -94,11 +100,11 @@ def replace_url_pattern_from(plain_text: str) -> str:
                     parsed_image = parse_document(file_path)
                     url_to_parsed_image[url] = parsed_image
                     delete_file(file_path)
-
+            clean_text.replace("url", "")
         except Exception as e:
             logging.warning(f"Failed to process {url}: {e}")
 
-    return replace_pattern_with(url_to_parsed_image, plain_text, url_pattern)
+    return replace_pattern_with(url_to_parsed_image, clean_text, url_pattern)
 
 
 def replace_image_pattern_with(plain_text: str, files: deque):
