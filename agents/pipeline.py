@@ -5,7 +5,7 @@ from googleapiclient.errors import HttpError
 from agents import EmbeddingManager, ReflexionFramework, SummaryAgent
 from agents.classify_single_mail import classify_single_mail
 from agents.summary_single_mail import summary_single_mail
-from batch_serving import GmailService, Mail, fetch_mails
+from batch_serving import GmailService, Mail
 from checklist_builder import build_json_checklist
 from utils import convert_mail_dict_to_df, load_config, run_with_retry
 
@@ -47,8 +47,7 @@ def pipeline(gmail_service: GmailService, api_key: str):
     config = load_config()
 
     try:
-        mail_dict: dict[str, Mail] = fetch_mails(
-            gmail_service=gmail_service,
+        mail_dict: dict[str, Mail] = gmail_service.fetch_mails(
             start_date=config["gmail"]["start_date"],
             end_date=config["gmail"]["end_date"],
             n=config["gmail"]["max_mails"],
