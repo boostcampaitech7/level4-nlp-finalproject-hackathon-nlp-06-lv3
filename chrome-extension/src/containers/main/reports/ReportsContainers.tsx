@@ -40,7 +40,7 @@ export default function ReportsContainers() {
 
   const { targetRef } = useIntersectionObserver(handleIntersect)
   return (
-    <div className="flex flex-col gap-[10px]">
+    <div className="flex flex-col gap-[10px] pb-5">
       {data?.pages[0].reports.length > 0 ? (
         data?.pages.map((page) => page?.reports.map((report: any) => <ReportBox key={report.id} report={report} />))
       ) : (
