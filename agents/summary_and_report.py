@@ -2,29 +2,19 @@ import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import (
-    ClassificationAgent,
-    ClassificationType,
-    EmbeddingManager,
-    ReflexionFramework,
-    SelfRefineAgent,
-    SummaryAgent,
-)
+from agents import ClassificationAgent, ClassificationType, EmbeddingManager, ReflexionFramework, SummaryAgent
+from agents.summary_single_mail import summary_single_mail
 from batch_serving import GmailService, Mail, fetch_mails
 from checklist_builder import build_json_checklist
-from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
-from evaluator import evaluate_summary
-from utils import TokenManager, convert_mail_dict_to_df, load_config, run_with_retry
+from evaluation import ClassificationEvaluationAgent
+from utils import convert_mail_dict_to_df, load_config, run_with_retry
 
 
-def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
+def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
     temperature: int = config["temperature"]["summary"]
     seed: int = config["seed"]
     do_class_eval: bool = config["evaluation"]["classification_eval"]
-    do_sum_eval: bool = config["evaluation"]["summary_eval"]
 
-    summary_agent = SummaryAgent("solar-pro", "single", api_key, temperature, seed)
-    self_refine_agent = SelfRefineAgent("solar-pro", "single", api_key, temperature, seed)
     classification_agent = ClassificationAgent("solar-pro", api_key, temperature, seed)
     if do_class_eval:
         class_eval_agent = ClassificationEvaluationAgent(
@@ -34,10 +24,6 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
         )
 
     for mail_id, mail in mail_dict.items():
-        summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
-        mail_dict[mail_id].summary = summary
-        TokenManager.total_token_usage += token_usage
-
         if do_class_eval:
             category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
             action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
@@ -47,24 +33,10 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
         mail_dict[mail_id].label_category = category
         mail_dict[mail_id].label_action = action
 
-        print(f"{mail_id}\ncategory label: {category}\naction label: {action}\n{summary}\n{'=' * 40}")
 
-        if do_sum_eval:
-            summary_evaluation_data.source_texts.append(mail.body)
-            summary_evaluation_data.summarized_texts.append(summary)
-            summary_evaluation_data.reference_texts.append(mail.subject)
-
-    # Summary Evaluation
-    if do_sum_eval:
-        summary_results = evaluate_summary(
-            config,
-            summary_evaluation_data.source_texts,
-            summary_evaluation_data.summarized_texts,
-            summary_evaluation_data.reference_texts,
-        )
-        print_evaluation_results(
-            summary_results, eval_type="summary", additional=config.get("g_eval_additional", False)
-        )
+def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key: str):
+    summary_single_mail(mail_dict, config, api_key)
+    classify_single_mail(mail_dict, config, api_key)
 
 
 def generate_report(mail_dict: dict[str, Mail], config: dict):
