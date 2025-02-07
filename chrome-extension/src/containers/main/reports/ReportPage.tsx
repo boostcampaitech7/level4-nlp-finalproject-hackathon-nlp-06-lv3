@@ -82,7 +82,7 @@ export default function ReportPage() {
                     </button>
                     <div className="w-full min-w-0">
                       <p className={`break-words ${item.checked ? "text-text-gray" : "text-[#303030]"}`}>
-                        <span className={item.checked ? "line-through" : ""}>{item.description}</span>
+                        <span className={item.checked ? "line-through" : ""}>{item.description} </span>
                         {item.links.map((link: any, idx: number) => (
                           <LinkButton key={link} link={link} idx={idx + 1} />
                         ))}
