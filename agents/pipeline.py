@@ -7,7 +7,7 @@ from agents.classify_single_mail import classify_single_mail
 from agents.summary_single_mail import summary_single_mail
 from batch_serving import GmailService, Mail
 from checklist_builder import build_json_checklist
-from utils import convert_mail_dict_to_df, load_config, run_with_retry
+from utils import convert_mail_dict_to_df, load_config
 
 
 def cluster_mails(mail_dict: dict[str, Mail], config: dict):
@@ -35,7 +35,7 @@ def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
 
     self_reflection_agent = ReflexionFramework("solar_pro", "final", config)
 
-    reflexion_summary, token_usage = run_with_retry(self_reflection_agent.process, origin_mail, summary_agent)
+    reflexion_summary, token_usage = self_reflection_agent.process(origin_mail, summary_agent)
 
     return reflexion_summary
 

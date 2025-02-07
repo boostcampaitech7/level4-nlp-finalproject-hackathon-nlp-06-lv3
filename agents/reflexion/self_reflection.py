@@ -3,6 +3,7 @@ import os
 from openai import OpenAI
 
 from agents.base_agent import BaseAgent
+from utils import retry_with_exponential_backoff
 
 
 class ReflexionSelfReflection(BaseAgent):
@@ -55,6 +56,7 @@ class ReflexionSelfReflection(BaseAgent):
         self.seed = seed
         return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 
+    @retry_with_exponential_backoff()
     def generate_reflection(self, source_text, output_text, eval_result):
         """
         참조된 텍스트와 생성 텍스트를 입력으로 받고 Reflection을 생성한다.
@@ -97,6 +99,7 @@ class ReflexionSelfReflection(BaseAgent):
         # 최종 리플렉션 결과 반환
         return reflection_text, reflection_response.usage.total_tokens
 
+    @retry_with_exponential_backoff()
     def generate_reflection_solar_as_judge(self, source_text, output_text, items_failed):
         """
         참조된 텍스트와 생성 텍스트를 입력으로 받고 Reflection을 생성한다. (Solar-as-Judge)

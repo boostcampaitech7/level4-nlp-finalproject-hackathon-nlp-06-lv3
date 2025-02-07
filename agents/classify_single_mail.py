@@ -1,7 +1,7 @@
-from agents import ClassificationAgent, ClassificationType
+from agents import ClassificationAgent
+from agents.classification.classification_type import ClassificationType
 from batch_serving import Mail
 from evaluation import ClassificationEvaluationAgent
-from utils import run_with_retry
 
 
 def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
@@ -19,10 +19,10 @@ def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str)
 
     for mail_id, mail in mail_dict.items():
         if do_class_eval:
-            category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
-            action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
+            category = class_eval_agent.process(mail, classification_agent, ClassificationType.CATEGORY)
+            action = class_eval_agent.process(mail, classification_agent, ClassificationType.ACTION)
         else:
-            category = run_with_retry(classification_agent.process, mail, ClassificationType.CATEGORY)
-            action = run_with_retry(classification_agent.process, mail, ClassificationType.ACTION)
+            category = classification_agent.process(mail, ClassificationType.CATEGORY)
+            action = classification_agent.process(mail, ClassificationType.ACTION)
         mail_dict[mail_id].label_category = category
         mail_dict[mail_id].label_action = action

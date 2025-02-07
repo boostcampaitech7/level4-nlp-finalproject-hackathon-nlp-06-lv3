@@ -2,7 +2,7 @@ from agents import SelfRefineAgent, SummaryAgent
 from batch_serving import Mail
 from evaluation import print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
-from utils import TokenManager, run_with_retry
+from utils import TokenManager
 
 
 def summary_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
@@ -13,7 +13,7 @@ def summary_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
     summary_agent = SummaryAgent("solar-pro", "single", api_key, temperature, seed)
     self_refine_agent = SelfRefineAgent("solar-pro", "single", api_key, temperature, seed)
     for mail_id, mail in mail_dict.items():
-        summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
+        summary, token_usage = self_refine_agent.process(mail, summary_agent)
         mail_dict[mail_id].summary = summary
         TokenManager.total_token_usage += token_usage
 

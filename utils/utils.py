@@ -1,5 +1,6 @@
 import time
 from datetime import datetime, timedelta
+from functools import wraps
 from typing import Callable
 
 import openai
@@ -8,7 +9,7 @@ import pytz
 import yaml
 from tqdm import tqdm
 
-from agents import ClassificationType
+from agents.classification.classification_type import ClassificationType
 from gmail_api import Mail
 from gmail_api.gmail_process import gmail
 
@@ -27,24 +28,6 @@ def load_config(config_path="config.yml"):
     )
 
     return config
-
-
-def run_with_retry(func: Callable, *args, max_retry=9, base_wait=1):
-    """
-    지수 백오프 방식으로 재시도하는 헬퍼 함수
-    """
-    wait_time = base_wait
-    for attempt in range(max_retry):
-        try:
-            return func(*args)
-        except openai.RateLimitError as e:
-            print(f"[RateLimitError] 재시도 {attempt+1}/{max_retry}회: {e}")
-            if attempt < max_retry - 1:
-                time.sleep(wait_time)
-                wait_time *= 2
-            else:
-                # 최대 재시도 횟수를 초과하면 에러를 다시 던짐
-                raise e
 
 
 def map_category(classification_type: str, english_label: str) -> str:
@@ -207,3 +190,28 @@ def convert_mail_dict_to_df(mail_dict: dict[str, Mail]) -> pd.DataFrame:
     df.index.name = "id"
 
     return df
+
+
+def retry_with_exponential_backoff(max_retry: int = 9, base_wait: int = 1):
+    """
+    지수 백오프 방식으로 재시도하는 데코레이터
+    """
+
+    def decorator(func: Callable):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            wait_time = base_wait
+            for attempt in range(max_retry):
+                try:
+                    return func(*args, **kwargs)
+                except openai.RateLimitError as e:
+                    print(f"[RateLimitError] 재시도 {attempt+1}/{max_retry}회: {e}")
+                    if attempt < max_retry - 1:
+                        time.sleep(wait_time)
+                        wait_time *= 2
+                    else:
+                        raise e  # 최대 재시도 횟수 초과 시 에러 발생
+
+        return wrapper
+
+    return decorator

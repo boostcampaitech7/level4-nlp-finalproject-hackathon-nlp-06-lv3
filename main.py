@@ -5,12 +5,13 @@ import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import BaseAgent, ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents import BaseAgent, ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents.classification.classification_type import ClassificationType
 from checklist_builder import build_json_checklist
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
 from gmail_api import Mail
-from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result, run_with_retry
+from utils import TokenManager, convert_mail_dict_to_df, fetch_mails, load_config, print_result
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
@@ -30,16 +31,16 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
         )
 
     for mail_id, mail in mail_dict.items():
-        summary, token_usage = run_with_retry(self_refine_agent.process, mail, summary_agent)
+        summary, token_usage = self_refine_agent.process(mail, summary_agent)
         mail_dict[mail_id].summary = summary
         TokenManager.total_token_usage += token_usage
 
         if config["evaluation"]["classification_eval"]:
-            category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
-            action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
+            category = class_eval_agent.process, mail(classification_agent, ClassificationType.CATEGORY)
+            action = class_eval_agent.process(mail, classification_agent, ClassificationType.ACTION)
         else:
-            category = run_with_retry(classification_agent.process, mail, ClassificationType.CATEGORY)
-            action = run_with_retry(classification_agent.process, mail, ClassificationType.ACTION)
+            category = classification_agent.process(mail, ClassificationType.CATEGORY)
+            action = classification_agent.process(mail, ClassificationType.ACTION)
         mail_dict[mail_id].label_category = category
         mail_dict[mail_id].label_action = action
 
