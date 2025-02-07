@@ -24,7 +24,7 @@ class ReflexionFramework:
 
         return output_text
 
-    def process(self, origin_mail, model: SummaryAgent):
+    def process(self, origin_mail, model: SummaryAgent) -> tuple[str, int]:
         """
         Reflexion을 실행합니다.
 

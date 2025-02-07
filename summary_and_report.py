@@ -10,7 +10,7 @@ from agents import (
     SelfRefineAgent,
     SummaryAgent,
 )
-from batch_serving import Mail, fetch_mails
+from batch_serving import GmailService, Mail, fetch_mails
 from checklist_builder import build_json_checklist
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
@@ -18,15 +18,15 @@ from utils import TokenManager, convert_mail_dict_to_df, load_config, run_with_r
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
-    # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"])
-    self_refine_agent = SelfRefineAgent(
-        "solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"]
-    )  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent(
-        "solar-pro", api_key, config["temperature"]["classification"], config["seed"]
-    )
-    if config["evaluation"]["classification_eval"]:
+    temperature: int = config["temperature"]["summary"]
+    seed: int = config["seed"]
+    do_class_eval: bool = config["evaluation"]["classification_eval"]
+    do_sum_eval: bool = config["evaluation"]["summary_eval"]
+
+    summary_agent = SummaryAgent("solar-pro", "single", api_key, temperature, seed)
+    self_refine_agent = SelfRefineAgent("solar-pro", "single", api_key, temperature, seed)
+    classification_agent = ClassificationAgent("solar-pro", api_key, temperature, seed)
+    if do_class_eval:
         class_eval_agent = ClassificationEvaluationAgent(
             model="gpt-4o",
             human_evaluation=config["classification"]["do_manual_filter"],
@@ -38,7 +38,7 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
         mail_dict[mail_id].summary = summary
         TokenManager.total_token_usage += token_usage
 
-        if config["evaluation"]["classification_eval"]:
+        if do_class_eval:
             category = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.CATEGORY)
             action = run_with_retry(class_eval_agent.process, mail, classification_agent, ClassificationType.ACTION)
         else:
@@ -49,13 +49,13 @@ def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
 
         print(f"{mail_id}\ncategory label: {category}\naction label: {action}\n{summary}\n{'=' * 40}")
 
-        if config["evaluation"]["summary_eval"]:
+        if do_sum_eval:
             summary_evaluation_data.source_texts.append(mail.body)
             summary_evaluation_data.summarized_texts.append(summary)
             summary_evaluation_data.reference_texts.append(mail.subject)
 
     # Summary Evaluation
-    if config["evaluation"]["summary_eval"]:
+    if do_sum_eval:
         summary_results = evaluate_summary(
             config,
             summary_evaluation_data.source_texts,
@@ -77,7 +77,7 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
     embedding_manager.run(mail_dict)
 
 
-def add_reflexion(mail_dict, api_key, config):
+def add_reflexion(mail_dict: dict[str, Mail], api_key: str, config: dict):
     summary_agent = SummaryAgent(
         model_name="solar-pro",
         summary_type="final",
@@ -101,7 +101,7 @@ def add_reflexion(mail_dict, api_key, config):
     return reflexion_summary
 
 
-def summary_and_report(gmail_service, api_key):
+def summary_and_report(gmail_service: GmailService, api_key: str):
     load_dotenv()
 
     # YAML 파일 로드
