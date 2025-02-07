@@ -12,10 +12,27 @@ evaluation:
   classification_eval: false # Classification 평가 수행 여부
   report_eval: false # Final Report 평가 수행 여부
 
+  solar_as_judge:
+    items:
+      item1: "요약문에 원문 이메일의 목적이 잘 드러났는지?"
+      item2: "이메일 원문에 일정 사항이 명시 돼 있다면, 요약문에 명시된 일정 사항이 잘 드러나있는지? (이메일의 원문에 일정 사항이 애초에 없다면 무조건 Yes로 답할 것)"
+      item3: "이메일 원문에 요청 사항이 명시 돼 있다면, 요약문에 명시된 요청 사항이 잘 드러나있는지? (이메일의 원문에 요청 사항이 애초에 없다면 무조건 Yes로 답할 것)"
+      item4: "요약문이 한국어로 작성 됐는지?"
+      item5: "요약문이 명사형 어미로 작성 됐는지?"
+    prompt_path: prompt/template/solar_as_judge/solar_as_judge_prompt_template.txt
+    items_in_a_volume: 3
+
 seed: 42
 temperature:
   summary: 0
   classification: 0.7
+
+self_reflection:
+  type: reflexion # self-refine | reflexion 변경 가능
+  max_iteration: 3
+  reflexion:
+    threshold_type: "average"
+    threshold: 3.5
 
 # Summary 평가 관련 설정
 summary:
