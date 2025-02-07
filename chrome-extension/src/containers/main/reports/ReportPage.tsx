@@ -62,9 +62,9 @@ export default function ReportPage() {
                     >
                       <div className="pt-1 text-xl group-hover:drop-shadow-[0_0_4px_rgba(0,0,0,0.25)] transition-all">
                         {item.checked ? (
-                          <IoMdCheckboxOutline />
+                          <IoMdCheckboxOutline className="text-text-gray" />
                         ) : (
-                          <MdOutlineCheckBoxOutlineBlank className="text-text-gray" />
+                          <MdOutlineCheckBoxOutlineBlank className="text-[#303030]" />
                         )}
                       </div>
                     </button>
