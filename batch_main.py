@@ -15,7 +15,7 @@ def main():
         api_key = user["upstage_api_key"]
 
         try:
-            service = authenticate_gmail(connection, user_id)
+            service = authenticate_gmail(connection, user)
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
