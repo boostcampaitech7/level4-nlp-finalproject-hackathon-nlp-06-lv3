@@ -32,6 +32,7 @@
     // react 17부턴 import 안해도돼서 기능 끔
     "import/no-extraneous-dependencie": "off",
     "import/extensions": "off",
+    "react/require-default-props": "off",
     // 경고표시, 파일 확장자를 .ts나 .tsx 모두 허용함
     "react/jsx-filename-extension": [
       "warn",
