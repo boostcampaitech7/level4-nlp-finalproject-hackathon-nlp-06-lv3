@@ -43,14 +43,14 @@ export default function ReportPage() {
   }, [jsonReport])
 
   return (
-    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-3 min-h-[170px] border border-border-gray drop-shadow-small">
+    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-4 min-h-[170px] border border-border-gray drop-shadow-small">
       <ReportTitle dateString={report.date} />
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-4">
         {jsonReport.map((category: any) => (
-          <div key={category.title} className="flex flex-col gap-3">
+          <div key={category.title} className="flex flex-col gap-4">
             <h3 className="text-xl font-bold">{category.title}</h3>
             {category.task_objects.map((task: any) => (
-              <div key={task.title} className="flex flex-col gap-3">
+              <div key={task.title} className="flex flex-col gap-4">
                 <h4 className="font-bold">{task.title}</h4>
                 {task.items.map((item: any) => (
                   <div key={item.description} className="flex">
