@@ -24,7 +24,7 @@ export default function ReportBox({ report }: { report: any }) {
       <ReportTitle dateString={report.date} />
       <div className="flex flex-col items-start overflow-hidden w-full">
         {descriptions.slice(0, 3).map((description) => (
-          <p key={description} className="text-start text-ellipsis line-clamp-1 text-text-gray">
+          <p key={description} className="text-start text-ellipsis line-clamp-1 text-[#5A5A5A]">
             {description}
           </p>
         ))}

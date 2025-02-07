@@ -69,7 +69,7 @@ export default function ReportPage() {
                       </div>
                     </button>
                     <div>
-                      <p className="text-text-gray">
+                      <p className={`${item.checked ? "text-text-gray" : "text-[#303030]"}`}>
                         <span className={item.checked ? "line-through" : ""}>{item.description}</span>
                         {item.links.map((link: any) => (
                           <button type="button" key={link} onClick={() => openLink(link)}>
