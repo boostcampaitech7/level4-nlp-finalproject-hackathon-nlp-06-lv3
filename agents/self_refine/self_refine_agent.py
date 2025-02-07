@@ -68,7 +68,7 @@ class SelfRefineAgent(BaseAgent):
         """
         # 초기 요약 및 로그 생성
         token_usage = 0
-        summarization, summary_token_usage = run_with_retry(model.process, data)
+        summarization, summary_token_usage = run_with_retry(model.process, str(data))
         token_usage += summary_token_usage
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
         logging_file_prefix = self.target_range

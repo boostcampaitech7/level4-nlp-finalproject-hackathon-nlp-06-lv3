@@ -20,6 +20,7 @@ def calculate_g_eval(source_texts, generated_texts, g_eval_config, eval_type, ad
     if additional:
         aspects += ["readability", "clearance", "practicality"]
 
+    total_token_usage = 0
     results_list = []
     for src, gen in zip(source_texts, generated_texts):
         aspect_scores = {}
@@ -48,6 +49,7 @@ def calculate_g_eval(source_texts, generated_texts, g_eval_config, eval_type, ad
 
                 # GPT가 준 output을 float로 변환
                 gpt_text = response.choices[0].message.content.strip()
+                total_token_usage += response.usage.total_tokens
                 score_value = float(gpt_text)
                 aspect_scores[aspect] = score_value
 
@@ -57,4 +59,4 @@ def calculate_g_eval(source_texts, generated_texts, g_eval_config, eval_type, ad
 
         results_list.append(aspect_scores)
 
-    return results_list
+    return results_list, total_token_usage
