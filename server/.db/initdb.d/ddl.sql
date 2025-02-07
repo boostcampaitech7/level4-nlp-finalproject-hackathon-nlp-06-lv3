@@ -14,6 +14,7 @@ CREATE TABLE report_temp_tb
     id           BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id      BIGINT    NOT NULL,
     content      TEXT,
+    report       TEXT,
     date         DATE      NOT NULL,
     refresh_time TIMESTAMP NOT NULL,
     created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
