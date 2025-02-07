@@ -55,7 +55,7 @@ export default function ReportPage() {
   }, [jsonReport])
 
   return (
-    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-4 min-h-[170px] border border-border-gray drop-shadow-small">
+    <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-4 min-h-[170px] border border-border-gray drop-shadow-small pb-10">
       <ReportTitle dateString={report.date} />
       <div className="flex flex-col gap-4">
         {jsonReport.map((category: any) => (
