@@ -9,10 +9,22 @@ import useOpenLink from "@/hooks/useOpenLink"
 import axiosInstance from "@/utils/axiosInstance"
 import useErrorResponseHandler from "@/hooks/useErrorResponseHandler"
 
+function LinkButton({ link, idx }: { link: string; idx: number }) {
+  const openLink = useOpenLink()
+
+  return (
+    <button type="button" onClick={() => openLink(link)} className="group relative">
+      🔗
+      <div className="absolute top-6 left-0 invisible group-hover:visible bg-main-theme text-white p-1 text-sm">
+        mail{idx}
+      </div>
+    </button>
+  )
+}
+
 export default function ReportPage() {
   const view = useRecoilValue(viewState)
   const report = view.data
-  const openLink = useOpenLink()
   const errorHandler = useErrorResponseHandler()
   const queryClient = useQueryClient()
 
@@ -71,10 +83,8 @@ export default function ReportPage() {
                     <div>
                       <p className={`${item.checked ? "text-text-gray" : "text-[#303030]"}`}>
                         <span className={item.checked ? "line-through" : ""}>{item.description}</span>
-                        {item.links.map((link: any) => (
-                          <button type="button" key={link} onClick={() => openLink(link)}>
-                            🔗
-                          </button>
+                        {item.links.map((link: any, idx: number) => (
+                          <LinkButton key={link} link={link} idx={idx + 1} />
                         ))}
                       </p>
                     </div>
