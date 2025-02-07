@@ -7,6 +7,7 @@ class TempReportsDto(BaseModel):
     class Report(BaseModel):
         id: int
         content: str
+        report: str
         date: date
         refresh_time: datetime
 
@@ -18,6 +19,7 @@ class TempReportsDto(BaseModel):
                 self.Report(
                     id=report["id"],
                     content=report["content"],
+                    report=report["report"] if report["report"] else "",
                     date=report["date"],
                     refresh_time=report["refresh_time"],
                 )

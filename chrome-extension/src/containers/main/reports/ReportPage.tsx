@@ -3,11 +3,11 @@ import { useEffect, useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { IoMdCheckboxOutline } from "react-icons/io"
 import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
-import ReportTitle from "@/containers/main/reports/ReportTitle"
 import viewState from "@/states/viewState"
 import useOpenLink from "@/hooks/useOpenLink"
 import axiosInstance from "@/utils/axiosInstance"
 import useErrorResponseHandler from "@/hooks/useErrorResponseHandler"
+import { convertDateToTitle } from "@/utils/util"
 
 function LinkButton({ link, idx }: { link: string; idx: number }) {
   const openLink = useOpenLink()
@@ -56,7 +56,8 @@ export default function ReportPage() {
 
   return (
     <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-4 min-h-[170px] border border-border-gray drop-shadow-small pb-10">
-      <ReportTitle dateString={report.date} />
+      <h2 className="text-2xl font-bold">{convertDateToTitle(report.date)}</h2>
+      <p className="text-[#303030] break-words">{report.report}</p>
       <div className="flex flex-col gap-4">
         {jsonReport.map((category: any) => (
           <div key={category.title} className="flex flex-col gap-4">
@@ -80,9 +81,9 @@ export default function ReportPage() {
                         )}
                       </div>
                     </button>
-                    <div>
-                      <p className={`${item.checked ? "text-text-gray" : "text-[#303030]"}`}>
-                        <span className={item.checked ? "line-through" : ""}>{item.description}</span>
+                    <div className="w-full min-w-0">
+                      <p className={`break-words ${item.checked ? "text-text-gray" : "text-[#303030]"}`}>
+                        <span className={item.checked ? "line-through" : ""}>{item.description} </span>
                         {item.links.map((link: any, idx: number) => (
                           <LinkButton key={link} link={link} idx={idx + 1} />
                         ))}

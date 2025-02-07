@@ -18,11 +18,11 @@ def main():
             gmail_service = GmailService(service)
 
             json_checklist, report = pipeline(gmail_service, user["upstage_api_key"])
-            print("=" * 10)
-            print("user_id", user["id"])
+            print(f"============ FINAL REPORT of {user['id']} =============")
             print(report)
+            print("=======================================================")
 
-            insert_report(connection, user["id"], json_checklist)
+            insert_report(connection, user["id"], report, json_checklist)
 
         except Exception as e:
             print(e)
