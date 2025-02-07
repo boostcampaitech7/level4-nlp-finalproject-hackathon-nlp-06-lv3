@@ -4,7 +4,7 @@ from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
 
-from ..utils import SUMMARY_FORMAT, build_messages, generate_plain_text_report
+from ..utils import SUMMARY_FORMAT, build_messages
 
 
 class SummaryAgent(BaseAgent):
@@ -52,7 +52,7 @@ class SummaryAgent(BaseAgent):
         """
         return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    def process(self, mail, max_iteration: int = 3) -> dict:
+    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -69,13 +69,24 @@ class SummaryAgent(BaseAgent):
         # 출력 포맷 지정
         response_format = SUMMARY_FORMAT
 
-        # LLM 입력을 위한 문자열 처리
-        input_mail_data = ""
-        if self.summary_type == "single":
-            input_mail_data = str(mail)
+        if reflections:
+            input_reflections = "제공된 피드백 없음" if not reflections else "\n".join(reflections)
+
+            with open("prompt/template/reflexion/single_reflexion_system.txt", "r", encoding="utf-8") as file:
+                system_prompt = file.read().strip()
+            with open("prompt/template/reflexion/single_reflexion_user.txt", "r", encoding="utf-8") as file:
+                user_prompt = file.read().strip()
+
+            user_prompt = user_prompt.format(mail=mail, previous_reflections=input_reflections)
+
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ]
+
         else:
-            input_mail_data = "\n".join(
-                [f"메일 id: {item.id} 분류: {item.label} 요약문: {item.summary}" for _, item in mail.items()]
+            messages = build_messages(
+                template_type="summary", target_range=self.summary_type, action="summary", mail=mail
             )
 
         token_usage = 0
@@ -84,9 +95,7 @@ class SummaryAgent(BaseAgent):
             response = self.client.chat.completions.create(
                 model=self.model_name,
                 # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
-                messages=build_messages(
-                    template_type="summary", target_range=self.summary_type, action="summary", mail=input_mail_data
-                ),
+                messages=messages,
                 response_format=response_format,
                 temperature=self.temperature,
                 seed=self.seed,
@@ -97,15 +106,10 @@ class SummaryAgent(BaseAgent):
             token_usage += response.usage.total_tokens
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
-            if self.summary_type == "single":
-                result = summarized_content["summary"]
-            else:
-                result = generate_plain_text_report(summarized_content)
+            result = summarized_content["summary"]
 
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(
-                context=input_mail_data, answer=result, api_key=self.api_key
-            )
+            groundness, groundness_token_usage = check_groundness(context=mail, answer=result, api_key=self.api_key)
             super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 

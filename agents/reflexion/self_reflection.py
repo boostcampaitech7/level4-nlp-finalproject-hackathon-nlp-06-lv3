@@ -1,6 +1,5 @@
 import os
 
-from langchain.prompts import PromptTemplate
 from openai import OpenAI
 
 from agents.base_agent import BaseAgent
@@ -68,18 +67,12 @@ class ReflexionSelfReflection(BaseAgent):
         Returns:
             str: generated reflection
         """
-
-        # 최종 프롬프트 선언
-        prompt = PromptTemplate(
-            input_variables=["source_input", "source_output", "eval_result", "eval_aspects_description"],
-            template=self.reflection_template,
-        )
         if not self.reflection_memory:
             previous_reflections = "없음"
         else:
             previous_reflections = "\n".join(self.reflection_memory)
 
-        formatted_prompt = prompt.format(
+        formatted_prompt = self.reflection_template.format(
             source_input=source_text,
             source_output=output_text,
             eval_result=eval_result,
@@ -122,24 +115,17 @@ class ReflexionSelfReflection(BaseAgent):
         with open(reflection_template_solar_as_judge_path, "r", encoding="utf-8") as file:
             template = file.read()
 
-        # 최종 프롬프트 선언
-        prompt = PromptTemplate(
-            input_variables=["source_input", "source_output", "check_items_failed", "previous_reflections"],
-            template=template,
-        )
         if not self.reflection_memory:
             previous_reflections = "없음"
         else:
             previous_reflections = "\n".join(self.reflection_memory)
 
-        formatted_prompt = prompt.format(
+        formatted_prompt = template.format(
             source_input=source_text,
             source_output=output_text,
             check_items_failed=items_failed,
             previous_reflections=previous_reflections,
         )
-
-        print(formatted_prompt)
 
         # 메시지 구성
         messages = [{"role": "user", "content": formatted_prompt}]

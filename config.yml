@@ -4,7 +4,7 @@ gmail:
   # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
   end_date:
   # gmail에서 불러올 메일 최대 개수
-  max_mails: 10
+  max_mails: 20
 
 # 평가 설정
 evaluation:
@@ -28,7 +28,7 @@ temperature:
   classification: 0.7
 
 self_reflection:
-  type: reflexion # self-refine | reflexion 변경 가능
+  type: self-refine # self-refine | reflexion 변경 가능
   max_iteration: 3
   reflexion:
     threshold_type: "average"

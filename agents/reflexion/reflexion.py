@@ -10,6 +10,7 @@ class ReflexionFramework:
         self.task = task
         self.evaluator = ReflexionEvaluator(task)
         self.self_reflection = ReflexionSelfReflection(task)
+        self.config = config
 
     def preprocess_actor_output(self, actor_output):
         output_text = ""
@@ -23,7 +24,7 @@ class ReflexionFramework:
 
         return output_text
 
-    def process(self, mail, model: SummaryAgent, config: dict):
+    def process(self, origin_mail, model: SummaryAgent):
         """
         Reflexion을 실행합니다.
 
@@ -32,20 +33,19 @@ class ReflexionFramework:
         Returns:
             모든 aspect 점수의 평균값이 제일 높은 text가 반환됩니다.
         """
-        threshold_type = config["self_reflection"]["reflexion"]["threshold_type"]
-        threshold = config["self_reflection"]["reflexion"]["threshold"]
+        threshold_type = self.config["self_reflection"]["reflexion"]["threshold_type"]
+        threshold = self.config["self_reflection"]["reflexion"]["threshold"]
 
         self.self_reflection.load_setup_texts()
 
-        source_text_str = str(mail)
         scores = []
         outputs = []
-        output_text = run_with_retry(model.process, mail)
-
+        output_text, _ = run_with_retry(model.process, origin_mail)
+        output_text = output_text["summary"]
         total_token_usage = 0
-        for i in range(config["self_reflection"]["max_iteration"]):
+        for i in range(self.config["self_reflection"]["max_iteration"]):
             # 평가하기
-            eval_result_list, eval_token_usage = self.evaluator.get_geval_scores(source_text_str, output_text)
+            eval_result_list, eval_token_usage = self.evaluator.get_geval_scores(origin_mail, output_text)
             eval_result_str = ""
             aspect_score = 0
             for eval_result in eval_result_list:
@@ -57,18 +57,18 @@ class ReflexionFramework:
 
             # 성찰하기
             _, reflection_token_usage = run_with_retry(
-                self.self_reflection.generate_reflection, source_text_str, output_text, eval_result_str
+                self.self_reflection.generate_reflection, origin_mail, output_text, eval_result_str
             )
             total_token_usage += reflection_token_usage
 
             # 출력문 다시 생성하기
             previous_reflections = self.self_reflection.reflection_memory
-            output_text, token_usage = run_with_retry(model.process, mail, 3, previous_reflections)
+            output_text, token_usage = run_with_retry(model.process, origin_mail, 3, previous_reflections)
             total_token_usage += token_usage
 
             eval_average = round(aspect_score / aspect_len, 1)
             scores.append(eval_average)
-            outputs.append(output_text)
+            outputs.append(output_text["summary"])
             previous_reflections_msg = "\n".join(previous_reflections)
             print(
                 "\n\nINITIALIZE REFLEXION\n"
@@ -79,7 +79,7 @@ class ReflexionFramework:
                 f"{'-' * 25}\n"
                 f"Reflection 메모리:\n{previous_reflections_msg}\n\n"
                 f"{'-' * 25}\n"
-                f"성찰 후 재생성된 텍스트:\n{output_text}"
+                f"성찰 후 재생성된 텍스트:\n{output_text['summary']}"
             )
 
             if (threshold_type == "all" and all(value > threshold for value in scores)) or (

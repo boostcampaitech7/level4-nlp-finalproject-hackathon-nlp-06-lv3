@@ -1,15 +1,20 @@
-import time
-
 import openai
 from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-from agents import ClassificationAgent, ClassificationType, EmbeddingManager, SelfRefineAgent, SummaryAgent
+from agents import (
+    ClassificationAgent,
+    ClassificationType,
+    EmbeddingManager,
+    ReflexionFramework,
+    SelfRefineAgent,
+    SummaryAgent,
+)
 from batch_serving import Mail, fetch_mails
 from checklist_builder import build_json_checklist
 from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
 from evaluator import evaluate_summary
-from utils import TokenManager, convert_mail_dict_to_df, load_config, print_result, run_with_retry
+from utils import TokenManager, convert_mail_dict_to_df, load_config, run_with_retry
 
 
 def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
@@ -72,6 +77,30 @@ def generate_report(mail_dict: dict[str, Mail], config: dict):
     embedding_manager.run(mail_dict)
 
 
+def add_reflexion(mail_dict, api_key, config):
+    summary_agent = SummaryAgent(
+        model_name="solar-pro",
+        summary_type="final",
+        api_key=api_key,
+        temperature=config["temperature"]["summary"],
+        seed=config["seed"],
+    )
+
+    origin_mail = ""
+    for mail_id, mail in mail_dict.items():
+        origin_mail += mail.summary + "\n"
+
+    print(f"origin_mail:{origin_mail}\n")
+
+    self_reflection_agent = ReflexionFramework("solar_pro", "final", config)
+
+    reflexion_summary, token_usage = run_with_retry(self_reflection_agent.process, origin_mail, summary_agent)
+    print(f"reflexion_summary:{reflexion_summary}")
+    print(f"token_usage:{token_usage}")
+
+    return reflexion_summary
+
+
 def summary_and_report(gmail_service, api_key):
     load_dotenv()
 
@@ -86,19 +115,17 @@ def summary_and_report(gmail_service, api_key):
             n=config["gmail"]["max_mails"],
         )
 
-        start_time = time.time()
-
         summary_and_classify(mail_dict, config, api_key)
 
         generate_report(mail_dict, config)
 
-        print_result(start_time, mail_dict)
+        report = add_reflexion(mail_dict, api_key, config)
 
         df = convert_mail_dict_to_df(mail_dict)
 
         json_checklist = build_json_checklist(df)
         print(json_checklist)
-        return json_checklist
+        return json_checklist, report
 
     except HttpError as error:
         print(f"An error occurred: {error}")

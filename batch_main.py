@@ -14,19 +14,20 @@ def main():
         user_id = user["id"]
         api_key = user["upstage_api_key"]
 
-        # print(type(api_key))
         try:
             service = authenticate_gmail(connection, user_id)
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
-            final_report = summary_and_report(gmail_service, api_key)
+            json_checklist, report = summary_and_report(gmail_service, api_key)
+            print("=" * 10)
+            print("user_id", user_id)
+            print(report)
 
-            insert_report(connection, user["id"], final_report)
+            insert_report(connection, user["id"], json_checklist)
 
         except Exception as e:
             print(e)
-            continue
 
     connection.close()
     print("MySQL connection is closed")
