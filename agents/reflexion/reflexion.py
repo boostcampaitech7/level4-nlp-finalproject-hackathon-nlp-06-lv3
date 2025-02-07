@@ -40,9 +40,10 @@ class ReflexionFramework:
 
         scores = []
         outputs = []
-        initail_content, _ = summary_agent.process(origin_mail)
+        initail_content, _ = summary_agent.process(origin_mail, 3, ["start"])
         output_text = initail_content["summary"]
         total_token_usage = 0
+        print("\n\nINITIATE REFLEXION\n")
         for i in range(self.config["self_reflection"]["max_iteration"]):
             # 평가하기
             eval_result_list, eval_token_usage = self.evaluator.get_geval_scores(origin_mail, output_text)
@@ -71,7 +72,6 @@ class ReflexionFramework:
             outputs.append(output_text["summary"])
             previous_reflections_msg = "\n".join(previous_reflections)
             print(
-                "\n\nINITIALIZE REFLEXION\n"
                 f"{'=' * 25}\n"
                 f"{i + 1}회차\n"
                 f"{'-' * 25}\n"

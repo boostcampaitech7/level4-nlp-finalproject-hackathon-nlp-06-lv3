@@ -1,5 +1,0 @@
-메일 요약문 및 분류 정보:
-{mail}
-
-이전 리포트들에 대한 피드백 내역:
-{previous_reflections}

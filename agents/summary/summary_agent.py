@@ -70,7 +70,7 @@ class SummaryAgent(BaseAgent):
         response_format = SUMMARY_FORMAT
 
         if reflections:
-            input_reflections = "제공된 피드백 없음" if not reflections else "\n".join(reflections)
+            input_reflections = "제공된 피드백 없음" if reflections[0] == "start" else "\n".join(reflections)
 
             with open("prompt/template/reflexion/single_reflexion_system.txt", "r", encoding="utf-8") as file:
                 system_prompt = file.read().strip()
