@@ -34,7 +34,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     results_list = []
     for src, gen in zip(source_texts, generated_texts):
         aspect_scores = {}
-
+        print("=====================================================")
         for aspect in aspects:
             prompt_path: str = prompt_files[aspect].format(eval_type=eval_type)
             if not prompt_path:
@@ -59,12 +59,15 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
 
                 # GPT가 준 output을 float로 변환
                 gpt_text = response.choices[0].message.content.strip()
+                print(f"[G-EVAL] aspect={aspect}, gpt_text={gpt_text}")
 
                 # 정규표현식으로 숫자만 추출, 예: "abc123def" -> numbers = ['1','2','3']
-                numbers = re.findall(r"(\d*.?\d+)", gpt_text)
+                numbers = re.findall(r"\d", gpt_text)
 
                 # 숫자 중 마지막으로 출력된 점수를 Score Value 로
                 score_value = float(numbers[-1])
+                if score_value > 5:
+                    score_value = 1
 
                 total_token_usage += response.usage.total_tokens
 
