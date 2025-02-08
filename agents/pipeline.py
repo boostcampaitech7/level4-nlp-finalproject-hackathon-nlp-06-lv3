@@ -8,7 +8,6 @@ from agents.summary_single_mail import summary_single_mail
 from gmail_api.gmail_service import GmailService
 from gmail_api.mail import Mail
 from utils.checklist_builder import build_json_checklist
-from utils.configuration import Config
 from utils.utils import convert_mail_dict_to_df
 
 
@@ -17,11 +16,11 @@ def pipeline(gmail_service: GmailService, api_key: str):
         mail_dict: dict[str, Mail] = gmail_service.fetch_mails()
 
         summary_single_mail(mail_dict, api_key)
-        classify_single_mail(mail_dict, Config.config, api_key)
+        classify_single_mail(mail_dict, api_key)
 
         cluster_mails(mail_dict)
 
-        report = make_report(mail_dict, api_key, Config.config)
+        report = make_report(mail_dict, api_key)
 
         df = convert_mail_dict_to_df(mail_dict)
 

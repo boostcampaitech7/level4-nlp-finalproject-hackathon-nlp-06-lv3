@@ -1,14 +1,14 @@
 from agents.reflexion.evaluator import ReflexionEvaluator
 from agents.reflexion.self_reflection import ReflexionSelfReflection
 from agents.summary.summary_agent import SummaryAgent
+from utils.configuration import Config
 
 
 class ReflexionFramework:
-    def __init__(self, model_name: str, task: str, config: dict):
+    def __init__(self, task: str):
         self.task = task
         self.evaluator = ReflexionEvaluator(task)
         self.self_reflection = ReflexionSelfReflection(task)
-        self.config = config
 
     def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
         """
@@ -19,15 +19,15 @@ class ReflexionFramework:
         Returns:
             모든 aspect 점수의 평균값이 제일 높은 text가 반환됩니다.
         """
-        threshold_type = self.config["self_reflection"]["reflexion"]["threshold_type"]
-        threshold = self.config["self_reflection"]["reflexion"]["threshold"]
+        threshold_type = Config.config["self_reflection"]["reflexion"]["threshold_type"]
+        threshold = Config.config["self_reflection"]["reflexion"]["threshold"]
 
         scores = []
         outputs = []
         initail_content = summary_agent.process(origin_mail, 3, ["start"])
         output_text = initail_content["summary"]
         print("\n\nINITIATE REFLEXION\n")
-        for i in range(self.config["self_reflection"]["max_iteration"]):
+        for i in range(Config.config["self_reflection"]["max_iteration"]):
             # 평가하기
             eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)
             eval_result_str = ""

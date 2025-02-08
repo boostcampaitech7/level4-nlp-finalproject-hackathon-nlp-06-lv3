@@ -5,7 +5,7 @@ from gmail_api.mail import Mail
 from utils.configuration import Config
 
 
-def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
+def classify_single_mail(mail_dict: dict[str, Mail], api_key: str):
     temperature: int = Config.config["temperature"]["summary"]
     seed: int = Config.config["seed"]
     do_class_eval: bool = Config.config["evaluation"]["classification_eval"]
@@ -14,8 +14,8 @@ def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str)
     if do_class_eval:
         class_eval_agent = ClassificationEvaluationAgent(
             model="gpt-4o",
-            human_evaluation=config["classification"]["do_manual_filter"],
-            inference=config["classification"]["inference"],
+            human_evaluation=Config.config["classification"]["do_manual_filter"],
+            inference=Config.config["classification"]["inference"],
         )
 
     for mail_id, mail in mail_dict.items():
