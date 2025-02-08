@@ -1,15 +1,16 @@
 import os
 
 from dotenv import load_dotenv
+from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from h11 import Request
 
 from agents.pipeline import pipeline
-from batch_serving.db_utils import SCOPES
 from gmail_api.gmail_service import GmailService
 from utils.configuration import Config
+
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 
 def create_service():
