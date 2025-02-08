@@ -4,34 +4,8 @@ from typing import Callable
 
 import openai
 import pandas as pd
-import yaml
 
 from gmail_api.mail import Mail
-
-
-def map_category(classification_type: str, english_label: str) -> str:
-    """
-    영문 카테고리 명을 한글 명으로 변경합니다.
-
-    Args:
-        english_label (_type_): 영문 카테고리 명
-
-    Returns:
-        str: 한글 카테고리 명
-    """
-    yaml_file_path = f"prompt/template/classification/{classification_type}.yaml"
-
-    try:
-        with open(yaml_file_path, "r", encoding="utf-8") as file:
-            categories: dict = yaml.safe_load(file)
-            for category in categories:
-                if category["name"] == english_label:
-                    return category["korean"]
-    except FileNotFoundError:
-        raise FileNotFoundError(f"카테고리 파일 {yaml_file_path}이(가) 존재하지 않습니다.")
-    except yaml.YAMLError as e:
-        raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
-    return
 
 
 def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, dict[str, Mail]]:

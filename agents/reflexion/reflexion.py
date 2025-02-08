@@ -1,7 +1,6 @@
 from agents.reflexion.evaluator import ReflexionEvaluator
 from agents.reflexion.self_reflection import ReflexionSelfReflection
 from agents.summary.summary_agent import SummaryAgent
-from utils.utils import map_category
 
 
 class ReflexionFramework:
@@ -10,18 +9,6 @@ class ReflexionFramework:
         self.evaluator = ReflexionEvaluator(task)
         self.self_reflection = ReflexionSelfReflection(task)
         self.config = config
-
-    def preprocess_actor_output(self, actor_output):
-        output_text = ""
-        for label, mail_reports in actor_output.items():
-            output_text += f"{map_category(label)}\n"
-            count_emails = 1
-            for mail_report in mail_reports:
-                output_text += f"{count_emails}. {mail_report['report']}\n"
-                count_emails += 1
-            output_text += "\n\n"
-
-        return output_text
 
     def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
         """
