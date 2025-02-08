@@ -21,8 +21,8 @@ class ClassificationEvaluationAgent(BaseAgent):
         self.human_evaluation = human_evaluation
         self.df_manager = DataFrameManager(inference)
 
-    def initialize_chat(self, model, temperature=None, seed=None):
-        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    def initialize_chat(self):
+        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # TODO: 유저 별로 OPENAI_API_KEY 사용하게 변경
 
     def generate_ground_truth(self, mail, classification_type: str) -> str:
         """
