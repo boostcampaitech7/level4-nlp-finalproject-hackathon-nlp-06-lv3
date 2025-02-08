@@ -1,14 +1,14 @@
 import openai
 from googleapiclient.errors import HttpError
 
-from agents.classify_single_mail import classify_single_mail
-from agents.embedding.cluster_mails import cluster_mails
-from agents.summary.make_report import make_report
-from agents.summary_single_mail import summary_single_mail
 from gmail_api.gmail_service import GmailService
 from gmail_api.mail import Mail
-from utils.checklist_builder import build_json_checklist
-from utils.utils import convert_mail_dict_to_df
+from pipelines.checklist_builder import build_json_checklist
+from pipelines.classify_single_mail import classify_single_mail
+from pipelines.cluster_mails import cluster_mails
+from pipelines.convert_mail_dict_to_df import convert_mail_dict_to_df
+from pipelines.make_report import make_report
+from pipelines.summary_single_mail import summary_single_mail
 
 
 def pipeline(gmail_service: GmailService):

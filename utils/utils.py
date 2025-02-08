@@ -3,7 +3,6 @@ from functools import wraps
 from typing import Callable
 
 import openai
-import pandas as pd
 
 from gmail_api.mail import Mail
 
@@ -46,29 +45,6 @@ def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, di
             grouped_df[mail.label_category][mail_id] = mail
 
     return grouped_df
-
-
-def convert_mail_dict_to_df(mail_dict: dict[str, Mail]) -> pd.DataFrame:
-    indices: list[str] = []
-    data: list[dict[str, str]] = []
-
-    for mail_id, mail in mail_dict.items():
-        indices.append(mail_id)
-        data.append(
-            {
-                "message_id": mail.message_id,
-                "subject": mail.subject,
-                "summary": mail.summary,
-                "label_category": mail.label_category,
-                "label_action": mail.label_action,
-                "similar_mails": mail.similar_mails,
-            }
-        )
-
-    df = pd.DataFrame(data=data, index=indices)
-    df.index.name = "id"
-
-    return df
 
 
 def retry_with_exponential_backoff(max_retry: int = 9, base_wait: int = 1):

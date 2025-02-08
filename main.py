@@ -6,8 +6,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from agents.pipeline import pipeline
 from gmail_api.gmail_service import GmailService
+from pipelines.pipeline import pipeline
 from utils.configuration import Config
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]

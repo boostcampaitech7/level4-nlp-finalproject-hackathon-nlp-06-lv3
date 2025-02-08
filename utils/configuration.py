@@ -6,6 +6,7 @@ import yaml
 class Config:
     config: dict = {}
     user_upstage_api_key: str = ""
+
     @classmethod
     def load(
         cls,
