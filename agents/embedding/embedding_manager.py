@@ -6,7 +6,6 @@ from agents.embedding.bge_m3_embedding import Bgem3EmbeddingAgent
 from agents.embedding.typing import SimilarityDict
 from agents.embedding.upstage_embedding import UpstageEmbeddingAgent
 from gmail_api.mail import Mail
-from utils.utils import group_mail_dict_2_classification
 
 
 def _compute_dot_product_similarity(embedding_vectors: dict[str, np.ndarray]) -> SimilarityDict:
@@ -78,8 +77,7 @@ class EmbeddingManager:
         self.threshold = similarity_threshold
         self.is_save_results = is_save_results
 
-    def run(self, mail_dict: dict[str, Mail]) -> dict[str, Mail]:
-        grouped_dict = group_mail_dict_2_classification(mail_dict)
+    def run(self, grouped_dict: dict[str, dict[str, Mail]]) -> dict[str, list[str]]:
 
         clustered_dict: dict[str, dict[str, list[str]]] = {}
         for category, grouped_mail_dict in grouped_dict.items():
@@ -95,9 +93,11 @@ class EmbeddingManager:
             # TODO: prefix를 붙여서 2가지 분류 기준을 구분할 것
             clustered_dict.update({category: self._process_similar_mails(similar_dict)})
 
-        for similar_mail_dict in clustered_dict.values():
-            for mail_id, similar_mail_list in similar_mail_dict.items():
-                mail_dict[mail_id].similar_mails = similar_mail_list
+        return {
+            mail_id: similar_mail_list
+            for similar_mail_dict in clustered_dict.values()
+            for mail_id, similar_mail_list in similar_mail_dict.items()
+        }
 
     # built-in functions
     def _save_top_match(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
@@ -106,12 +106,12 @@ class EmbeddingManager:
         with open(filename, "w", encoding="utf-8") as f:
             for mail_id, similar_list in similar_dict.items():
                 f.write(f"Email ID: {mail_id}\n")
-                f.write(f"Summary: {mail_dict[mail_id].summary}\n")
+                f.write(f"Data: {mail_dict[mail_id].subject}\n")
                 f.write("Similar Emails:\n")
                 if similar_list:
                     top_match_id, top_match_score = similar_list[0]
                     f.write(f"  - Top Match: {top_match_id} (Score: {top_match_score:.4f})\n")
-                    f.write(f"    Top Match Summary: {mail_dict[top_match_id].summary}\n")
+                    f.write(f"    Top Match Data: {mail_dict[top_match_id].subject}\n")
                 else:
                     f.write("  - No similar emails found.\n")
                 f.write("\n" + "=" * 80 + "\n\n")
@@ -121,7 +121,7 @@ class EmbeddingManager:
         filename = f"{self.model_name}_{category}_{self.compute_similarity.__name__}_similarities.txt"
 
         txt_content = "\n\n".join(
-            f"Email ID: {mail_id}\nSummary: {mail_dict[mail_id].summary}\nSimilar Emails:\n"
+            f"Email ID: {mail_id}\nData: {mail_dict[mail_id].subject}\nSimilar Emails:\n"
             + "\n".join(f"  - {sim_id}: {sim_score:.4f}" for sim_id, sim_score in similar_dict[mail_id])
             for mail_id in similar_dict.keys()
         )

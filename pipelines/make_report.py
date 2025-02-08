@@ -1,10 +1,9 @@
 from agents.reflexion.reflexion import ReflexionFramework
 from agents.summary.summary_agent import SummaryAgent
-from gmail_api.mail import Mail
 from utils.configuration import Config
 
 
-def make_report(mail_dict: dict[str, Mail]):
+def make_report(summary_dict: dict[str, str]):
     summary_agent = SummaryAgent(
         model_name="solar-pro",
         summary_type="final",
@@ -12,9 +11,7 @@ def make_report(mail_dict: dict[str, Mail]):
         seed=Config.config["seed"],
     )
 
-    origin_mail = ""
-    for _, mail in mail_dict.items():
-        origin_mail += mail.summary + "\n"
+    origin_mail = "\n".join(summary_dict.values())
 
     self_reflection_agent = ReflexionFramework("final")
 

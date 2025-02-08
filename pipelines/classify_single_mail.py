@@ -5,7 +5,7 @@ from gmail_api.mail import Mail
 from utils.configuration import Config
 
 
-def classify_single_mail(mail_dict: dict[str, Mail]):
+def classify_single_mail(mail_dict: dict[str, Mail], summary_dict: dict[str, str]) -> tuple[dict, dict]:
     temperature: int = Config.config["temperature"]["summary"]
     seed: int = Config.config["seed"]
     do_class_eval: bool = Config.config["evaluation"]["classification_eval"]
@@ -18,12 +18,22 @@ def classify_single_mail(mail_dict: dict[str, Mail]):
             inference=Config.config["classification"]["inference"],
         )
 
+    category_dict = {}
+    action_dict = {}
+
     for mail_id, mail in mail_dict.items():
         if do_class_eval:
-            category = class_eval_agent.process(mail, classification_agent, ClassificationType.CATEGORY)
-            action = class_eval_agent.process(mail, classification_agent, ClassificationType.ACTION)
+            category = class_eval_agent.process(
+                mail, summary_dict[mail_id], classification_agent, ClassificationType.CATEGORY
+            )
+            action = class_eval_agent.process(
+                mail, summary_dict[mail_id], classification_agent, ClassificationType.ACTION
+            )
         else:
-            category = classification_agent.process(mail, ClassificationType.CATEGORY)
-            action = classification_agent.process(mail, ClassificationType.ACTION)
-        mail_dict[mail_id].label_category = category
-        mail_dict[mail_id].label_action = action
+            category = classification_agent.process(summary_dict[mail_id], ClassificationType.CATEGORY)
+            action = classification_agent.process(summary_dict[mail_id], ClassificationType.ACTION)
+
+        category_dict[mail_id] = category
+        action_dict[mail_id] = action
+
+    return category_dict, action_dict

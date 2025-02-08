@@ -37,7 +37,7 @@ class SummaryAgent:
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict[str, str]:
+    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> str:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -99,4 +99,4 @@ class SummaryAgent:
             if groundness == "grounded":
                 break
 
-        return summarized_content
+        return result

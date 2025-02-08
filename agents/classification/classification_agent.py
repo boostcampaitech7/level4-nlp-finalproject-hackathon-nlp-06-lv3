@@ -1,7 +1,6 @@
 from openai import OpenAI
 
 from agents.utils import build_messages, load_categories_from_yaml
-from gmail_api.mail import Mail
 from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
@@ -29,7 +28,7 @@ class ClassificationAgent:
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def process(self, mail: Mail, classification_type: str) -> str:
+    def process(self, summary: str, classification_type: str) -> str:
         """
         주어진 메일(또는 메일 리스트)을 분류하여 해당 레이블 문자열을 반환합니다.
 
@@ -51,7 +50,7 @@ class ClassificationAgent:
                 template_type="classification",
                 target_range="single",
                 action="classification",
-                mail=mail.summary,
+                mail=summary,
                 categories=categories_text,
             ),
             temperature=self.temperature,

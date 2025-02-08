@@ -24,8 +24,7 @@ class ReflexionFramework:
 
         scores = []
         outputs = []
-        initail_content = summary_agent.process(origin_mail, 3, ["start"])
-        output_text = initail_content["summary"]
+        output_text = summary_agent.process(origin_mail, 3, ["start"])
         print("\n\nINITIATE REFLEXION\n")
         for i in range(Config.config["self_reflection"]["max_iteration"]):
             # 평가하기
@@ -47,7 +46,7 @@ class ReflexionFramework:
 
             eval_average = round(aspect_score / aspect_len, 1)
             scores.append(eval_average)
-            outputs.append(output_text["summary"])
+            outputs.append(output_text)
             previous_reflections_msg = "\n".join(previous_reflections)
             print(
                 f"{'=' * 25}\n"
@@ -57,7 +56,7 @@ class ReflexionFramework:
                 f"{'-' * 25}\n"
                 f"Reflection 메모리:\n{previous_reflections_msg}\n\n"
                 f"{'-' * 25}\n"
-                f"성찰 후 재생성된 텍스트:\n{output_text['summary']}"
+                f"성찰 후 재생성된 텍스트:\n{output_text}"
             )
 
             if (threshold_type == "all" and all(value > threshold for value in scores)) or (

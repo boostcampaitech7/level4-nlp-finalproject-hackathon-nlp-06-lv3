@@ -14,14 +14,14 @@ def pipeline(gmail_service: GmailService):
     try:
         mail_dict: dict[str, Mail] = gmail_service.fetch_mails()
 
-        summary_single_mail(mail_dict)
-        classify_single_mail(mail_dict)
+        summary_dict = summary_single_mail(mail_dict)
+        category_dict, action_dict = classify_single_mail(mail_dict, summary_dict)
 
-        cluster_mails(mail_dict)
+        similar_mails_dict = cluster_mails(mail_dict, category_dict)
 
-        report = make_report(mail_dict)
+        report = make_report(summary_dict)
 
-        json_checklist = build_json_checklist(mail_dict)
+        json_checklist = build_json_checklist(summary_dict, category_dict, action_dict, similar_mails_dict)
         print(json_checklist)
 
         return json_checklist, report

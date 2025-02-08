@@ -30,12 +30,11 @@ class SelfRefineAgent:
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def feedback(self, mail: Mail) -> ChatCompletion:
-        with open("prompt/template/self_refine/feedback_system.txt", "r") as file:
+    def feedback(self, mail: Mail, summary: str) -> ChatCompletion:
+        with open("prompt/template/self_refine/feedback_system.txt", "r", encoding="utf-8") as file:
             system_prompt = file.read().strip()
-        with open("prompt/template/self_refine/feedback_user.txt", "r") as file:
-            user_prompt = file.read().strip().format(mail=str(mail), summary=mail.summary)
-
+        with open("prompt/template/self_refine/feedback_user.txt", "r", encoding="utf-8") as file:
+            user_prompt = file.read().strip().format(mail=str(mail), summary=summary)
         return self.client.chat.completions.create(
             model=self.model_name,
             messages=[
@@ -48,11 +47,11 @@ class SelfRefineAgent:
         )
 
     @retry_with_exponential_backoff()
-    def refine(self, mail: Mail, feedback: str) -> ChatCompletion:
-        with open("prompt/template/self_refine/refine_system.txt", "r") as file:
+    def refine(self, mail: Mail, summary: str, feedback: str) -> ChatCompletion:
+        with open("prompt/template/self_refine/refine_system.txt", "r", encoding="utf-8") as file:
             system_prompt = file.read().strip()
-        with open("prompt/template/self_refine/refine_user.txt", "r") as file:
-            user_prompt = file.read().strip().format(mail=str(mail), summary=mail.summary, feedback=feedback)
+        with open("prompt/template/self_refine/refine_user.txt", "r", encoding="utf-8") as file:
+            user_prompt = file.read().strip().format(mail=str(mail), summary=summary, feedback=feedback)
 
         return self.client.chat.completions.create(
             model=self.model_name,
@@ -65,7 +64,7 @@ class SelfRefineAgent:
         )
 
     @retry_with_exponential_backoff()
-    def process(self, mail: Mail, max_iteration: int = 3):
+    def process(self, mail: Mail, summary: str, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 
@@ -81,12 +80,12 @@ class SelfRefineAgent:
         for i in range(max_iteration):
             groundness = check_groundness(
                 str(mail),
-                mail.summary,
+                summary,
                 self.__class__.__name__,
             )
             print(f"Self-refine {i + 1} 회차")
 
-            feedback_response: ChatCompletion = self.feedback(mail)
+            feedback_response: ChatCompletion = self.feedback(mail, summary)
             TokenUsageCounter.add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
 
             feedback = json.loads(feedback_response.choices[0].message.content)
@@ -95,10 +94,8 @@ class SelfRefineAgent:
                 print(f"Self-refine {i + 1} 회차에서 종료")
                 break
 
-            revision_response: ChatCompletion = self.refine(mail, feedback["issues"])
-            revision_content = revision_response.choices[0].message.content
+            revision_response: ChatCompletion = self.refine(mail, summary, feedback["issues"])
+            summary = revision_response.choices[0].message.content
             TokenUsageCounter.add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
 
-            mail.summary = revision_content
-
-        return mail.summary
+        return summary
