@@ -76,7 +76,6 @@ class SelfRefineAgent:
         Return:
             str: Self-refine을 거친 최종 결과물.
         """
-        print("Self-refine 중...")
         for i in range(max_iteration):
             groundness = check_groundness(
                 str(mail),

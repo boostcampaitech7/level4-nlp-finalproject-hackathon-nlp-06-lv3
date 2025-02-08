@@ -5,23 +5,23 @@ MAIL_PROPERTIES = {
 }
 
 # 상수 정의
-SUMMARY_FORMAT = {
-    "type": "json_schema",
-    "json_schema": {
-        "name": "email_summary",
-        "strict": True,
-        "schema": {
-            "type": "object",
-            "properties": {
-                "summary": {
-                    "type": "string",
-                    "description": "메일 내용의 요약문입니다.",
-                }
-            },
-            "required": ["summary"],
-        },
-    },
-}
+# SUMMARY_FORMAT = {
+#     "type": "json_schema",
+#     "json_schema": {
+#         "name": "email_summary",
+#         "strict": True,
+#         "schema": {
+#             "type": "object",
+#             "properties": {
+#                 "summary": {
+#                     "type": "string",
+#                     "description": "메일 내용의 요약문입니다.",
+#                 }
+#             },
+#             "required": ["summary"],
+#         },
+#     },
+# }
 
 """ 최종 report refine 적용하지 않게 되며 불필요해진 부분 일부 주석처리
 REPORT_FORMAT = {

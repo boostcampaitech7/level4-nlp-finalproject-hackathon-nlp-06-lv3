@@ -1,8 +1,5 @@
-import json
-
 from openai import OpenAI
 
-from agents.self_refine.json_formats import SUMMARY_FORMAT
 from agents.utils.groundness_check import check_groundness
 from agents.utils.utils import build_messages
 from utils.configuration import Config
@@ -76,23 +73,18 @@ class SummaryAgent:
                 model=self.model_name,
                 # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
                 messages=messages,
-                response_format=SUMMARY_FORMAT,
                 temperature=self.temperature,
                 seed=self.seed,
             )
-            summarized_content: dict = json.loads(response.choices[0].message.content)
 
             TokenUsageCounter.add_usage(
                 self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens
             )
 
-            # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
-            result = summarized_content["summary"]
-
             # Groundness Check
             groundness = check_groundness(
                 mail,
-                result,
+                response.choices[0].message.content,
                 self.__class__.__name__,
             )
 
@@ -100,4 +92,4 @@ class SummaryAgent:
             if groundness == "grounded":
                 break
 
-        return result
+        return response.choices[0].message.content
