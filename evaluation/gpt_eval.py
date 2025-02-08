@@ -1,3 +1,5 @@
+import os
+
 from openai import OpenAI
 
 from utils.configuration import Config
@@ -13,11 +15,15 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     Args:
         g_eval_config (dict): g-eval 관련 설정만 포함된 딕셔너리
     """
-    client = OpenAI()
 
     prompt_files: dict[str, str] = Config.config[eval_type]["g_eval"]["prompts"]
     model_name: str = Config.config[eval_type]["g_eval"]["openai_model"]
     is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
+
+    if model_name == "solar-pro":
+        client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+    else:
+        client = OpenAI()
 
     # 평가할 기준 (기본 4개 + 추가 옵션 포함 시 7개)
     aspects = ["consistency", "coherence", "fluency", "relevance"]
