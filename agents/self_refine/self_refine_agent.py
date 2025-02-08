@@ -7,8 +7,8 @@ from agents.self_refine.json_formats import FEEDBACK_FORMAT
 from agents.utils.groundness_check import check_groundness
 from gmail_api.mail import Mail
 from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
-from utils.utils import retry_with_exponential_backoff
 
 
 class SelfRefineAgent:

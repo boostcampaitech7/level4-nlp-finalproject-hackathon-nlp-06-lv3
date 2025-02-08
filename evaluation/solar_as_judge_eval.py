@@ -3,8 +3,8 @@ import ast
 from openai import OpenAI
 
 from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
-from utils.utils import retry_with_exponential_backoff
 
 
 # TODO: 현재 사용되지 않는 함수(개선 및 반영 혹은, 삭제 필요)

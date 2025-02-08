@@ -1,8 +1,8 @@
 from openai import OpenAI
 
 from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
-from utils.utils import retry_with_exponential_backoff
 
 
 @retry_with_exponential_backoff()

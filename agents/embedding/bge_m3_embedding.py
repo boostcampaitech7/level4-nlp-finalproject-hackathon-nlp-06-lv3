@@ -2,7 +2,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from agents.embedding.sentence_splitter import split_sentences
-from utils.utils import retry_with_exponential_backoff
+from utils.decorators import retry_with_exponential_backoff
 
 
 class Bgem3EmbeddingAgent:

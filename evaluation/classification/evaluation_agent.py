@@ -7,7 +7,7 @@ from agents.classification.classification_agent import ClassificationAgent
 from agents.utils.utils import build_messages, load_categories_from_yaml
 from evaluation.classification.dataframe_manager import DataFrameManager
 from gmail_api.mail import Mail
-from utils.utils import retry_with_exponential_backoff
+from utils.decorators import retry_with_exponential_backoff
 
 
 class ClassificationEvaluationAgent:
