@@ -1,7 +1,7 @@
 from agents import SelfRefineAgent, SummaryAgent
 from batch_serving import Mail
 from evaluation import print_evaluation_results, summary_evaluation_data
-from evaluator import evaluate_summary
+from evaluation.evaluation_summary import evaluate_summary
 from utils.configuration import Config
 
 
