@@ -1,3 +1,5 @@
+import re
+
 from openai import OpenAI
 
 from utils.configuration import Config
@@ -56,9 +58,16 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
                 )
 
                 # GPT가 준 output을 float로 변환
-                gpt_text = response.choices[0].message.content.strip()[-1]
+                gpt_text = response.choices[0].message.content.strip()
+
+                # 정규표현식으로 숫자만 추출, 예: "abc123def" -> numbers = ['1','2','3']
+                numbers = re.findall(r"(\d*.?\d+)", gpt_text)
+
+                # 숫자 중 마지막으로 출력된 점수를 Score Value 로
+                score_value = float(numbers[-1])
+
                 total_token_usage += response.usage.total_tokens
-                score_value = float(gpt_text)
+
                 aspect_scores[aspect] = score_value
 
             except (FileNotFoundError, ValueError) as e:
