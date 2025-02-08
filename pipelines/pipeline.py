@@ -5,8 +5,8 @@ from gmail_api.gmail_service import GmailService
 from gmail_api.mail import Mail
 from pipelines.checklist_builder import build_json_checklist
 from pipelines.classify_single_mail import classify_single_mail
+from pipelines.cluster_mails import cluster_mails
 from pipelines.make_report import make_report
-from pipelines.similar_mail import get_similar_mail_dict, group_by_category, save_results
 from pipelines.summary_single_mail import summary_single_mail
 
 
@@ -16,15 +16,11 @@ def pipeline(gmail_service: GmailService):
 
         summary_dict = summary_single_mail(mail_dict)
         category_dict, action_dict = classify_single_mail(mail_dict, summary_dict)
-        grouped_mail_dict = group_by_category(mail_dict, category_dict)
 
-        similar_mails_dict = {}
-        for category, one_mail_dict in grouped_mail_dict.items():
-            one_similar_mails_dict = get_similar_mail_dict(one_mail_dict)
-            similar_mails_dict.update(one_similar_mails_dict)
-            save_results(category, mail_dict, one_similar_mails_dict)
+        similar_mails_dict = cluster_mails(mail_dict, category_dict)
 
         report = make_report(summary_dict)
+
         json_checklist = build_json_checklist(summary_dict, category_dict, action_dict, similar_mails_dict)
         print(json_checklist)
 

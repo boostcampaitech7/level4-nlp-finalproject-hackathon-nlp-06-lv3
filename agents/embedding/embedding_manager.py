@@ -63,6 +63,7 @@ class EmbeddingManager:
         embedding_model_name: str,
         similarity_metric: str,
         similarity_threshold: float = 0.51,
+        is_save_results: bool = False,
     ):
         self.model_name = embedding_model_name
 
@@ -81,13 +82,59 @@ class EmbeddingManager:
             raise ValueError(f"{similarity_metric}은 유효한 유사도 메트릭이 아닙니다.")
 
         self.threshold = similarity_threshold
+        self.is_save_results = is_save_results
 
-    def run(self, mail_dict: dict[str, Mail]) -> list[str]:
-        embedding_vectors = {mail_id: self.embedding_model.process(mail.subject) for mail_id, mail in mail_dict.items()}
-        similar_dict = self.compute_similarity(embedding_vectors)
+    def run(self, grouped_dict: dict[str, dict[str, Mail]]) -> dict[str, list[str]]:
 
-        # TODO: prefix를 붙여서 2가지 분류 기준을 구분할 것
-        return self._process_similar_mails(similar_dict)
+        clustered_dict: dict[str, dict[str, list[str]]] = {}
+        for category, grouped_mail_dict in grouped_dict.items():
+            embedding_vectors = {
+                mail_id: self.embedding_model.process(mail.subject) for mail_id, mail in grouped_mail_dict.items()
+            }
+            similar_dict = self.compute_similarity(embedding_vectors)
+
+            if self.is_save_results:
+                self._save_top_match(category, grouped_mail_dict, similar_dict)
+                self._save_similar_emails(category, grouped_mail_dict, similar_dict)
+
+            # TODO: prefix를 붙여서 2가지 분류 기준을 구분할 것
+            clustered_dict.update({category: self._process_similar_mails(similar_dict)})
+
+        return {
+            mail_id: similar_mail_list
+            for similar_mail_dict in clustered_dict.values()
+            for mail_id, similar_mail_list in similar_mail_dict.items()
+        }
+
+    # built-in functions
+    def _save_top_match(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
+        filename = f"{self.model_name}_{category}_top_match.txt"
+
+        with open(filename, "w", encoding="utf-8") as f:
+            for mail_id, similar_list in similar_dict.items():
+                f.write(f"Email ID: {mail_id}\n")
+                f.write(f"Data: {mail_dict[mail_id].subject}\n")
+                f.write("Similar Emails:\n")
+                if similar_list:
+                    top_match_id, top_match_score = similar_list[0]
+                    f.write(f"  - Top Match: {top_match_id} (Score: {top_match_score:.4f})\n")
+                    f.write(f"    Top Match Data: {mail_dict[top_match_id].subject}\n")
+                else:
+                    f.write("  - No similar emails found.\n")
+                f.write("\n" + "=" * 80 + "\n\n")
+        print(f"Saved similar emails to {filename}")
+
+    def _save_similar_emails(self, category: str, mail_dict: dict[str, Mail], similar_dict: SimilarityDict):
+        filename = f"{self.model_name}_{category}_{self.compute_similarity.__name__}_similarities.txt"
+
+        txt_content = "\n\n".join(
+            f"Email ID: {mail_id}\nData: {mail_dict[mail_id].subject}\nSimilar Emails:\n"
+            + "\n".join(f"  - {sim_id}: {sim_score:.4f}" for sim_id, sim_score in similar_dict[mail_id])
+            for mail_id in similar_dict.keys()
+        )
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(txt_content)
+        print(f"Saved similar emails to {filename}")
 
     def _process_similar_mails(self, similar_dict: SimilarityDict) -> dict[str, list[str]]:
         filtered_dict: dict[str, list[str]] = {
