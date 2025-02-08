@@ -1,10 +1,17 @@
+from dotenv import load_dotenv
+
 from agents.pipeline import pipeline
 from batch_serving import GmailService, authenticate_gmail, fetch_users, insert_report
+from utils.configuration import Config
 
 
 def main():
+    load_dotenv()
+
     # 유저 테이블 불러오기
     users = fetch_users()
+
+    Config.load()
 
     # access token, refresh token 가져와서 service 객체 선언하기
     for user in users:

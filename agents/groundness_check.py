@@ -1,7 +1,9 @@
 from openai import OpenAI
 
+from utils.token_usage_counter import TokenUsageCounter
 
-def check_groundness(context: str, answer: str, api_key) -> str:
+
+def check_groundness(context: str, answer: str, api_key, agent_name: str = "") -> str:
     client = OpenAI(api_key=api_key, base_url="https://api.upstage.ai/v1/solar")
     response = client.chat.completions.create(
         model="groundedness-check",
@@ -15,5 +17,5 @@ def check_groundness(context: str, answer: str, api_key) -> str:
     )
 
     groundness = response.choices[0].message.content
-    token_usage = response.usage.total_tokens
-    return groundness, token_usage
+    TokenUsageCounter.add_usage(agent_name, "groundness_check", response.usage.total_tokens)
+    return groundness

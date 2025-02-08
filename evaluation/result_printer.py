@@ -1,3 +1,6 @@
+from utils.configuration import Config
+
+
 def print_individual_scores(results, eval_type, additional):
     """
     개별 샘플의 점수를 출력하는 함수
@@ -160,12 +163,13 @@ def print_average_scores(results: dict, eval_type: str, n_items: int, additional
             )
 
 
-def print_evaluation_results(results, eval_type, additional=False):
+def print_evaluation_results(results: dict, eval_type: str):
     """
     Summary 또는 Report 평가 결과를 보기 좋게 출력하는 메인 함수
     """
     print(f"\n===== {eval_type.upper()} Evaluation Results =====")
 
+    additional = Config.config[eval_type]["g_eval"]["additional"]
     # 개별 샘플 점수 출력
     print_individual_scores(results, eval_type, additional)
 

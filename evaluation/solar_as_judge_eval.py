@@ -5,6 +5,8 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from utils.token_usage_counter import TokenUsageCounter
+
 # from utils.utils import run_with_retry
 
 load_dotenv()
@@ -44,7 +46,8 @@ def run_solar_as_judge(
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
             seed=42,
-        )
+        )  # TODO: 토큰 사용량 기록 필요
+        TokenUsageCounter.add_usage("solar_as_judge", "solar_as_judge", response.usage.total_tokens)
         response_message = response.choices[0].message.content
         try:
             scores = ast.literal_eval(response_message)

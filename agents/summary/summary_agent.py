@@ -3,6 +3,7 @@ import json
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
+from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 from ..utils import SUMMARY_FORMAT, build_messages
@@ -26,7 +27,7 @@ class SummaryAgent(BaseAgent):
 
     def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
         self.api_key = api_key
-        super().__init__(model=model_name, temperature=temperature, seed=seed)
+        super().__init__(model_name, temperature, seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
         if summary_type != "single" and summary_type != "final":
@@ -39,14 +40,9 @@ class SummaryAgent(BaseAgent):
         self.temperature = temperature
         self.seed = seed
 
-    def initialize_chat(self, model: str, temperature=None, seed=None):
+    def initialize_chat(self):
         """
         요약을 위해 OpenAI 모델 객체를 초기화합니다.
-
-        Args:
-            model (str): 사용할 모델 이름.
-            temperature (float, optional): 생성 다양성을 조정하는 파라미터.
-            seed (int, optional): 결과 재현성을 위한 시드 값.
 
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
@@ -54,7 +50,7 @@ class SummaryAgent(BaseAgent):
         return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> tuple[dict[str, str], int]:
+    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict[str, str]:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -65,7 +61,6 @@ class SummaryAgent(BaseAgent):
 
         Returns:
             dict: 요약된 결과 JSON.
-            token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
 
         # 출력 포맷 지정
@@ -91,7 +86,6 @@ class SummaryAgent(BaseAgent):
                 template_type="summary", target_range=self.summary_type, action="summary", mail=mail
             )
 
-        token_usage = 0
         # max_iteration 번 Groundness Check 수행
         for i in range(max_iteration):
             response = self.client.chat.completions.create(
@@ -104,19 +98,18 @@ class SummaryAgent(BaseAgent):
             )
             summarized_content: dict = json.loads(response.choices[0].message.content)
 
-            super().add_usage(self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens)
-            token_usage += response.usage.total_tokens
+            TokenUsageCounter.add_usage(
+                self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens
+            )
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
             result = summarized_content["summary"]
 
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(context=mail, answer=result, api_key=self.api_key)
-            super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
-            token_usage += groundness_token_usage
+            groundness = check_groundness(mail, result, self.api_key, self.__class__.__name__)
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
 
-        return summarized_content, token_usage
+        return summarized_content

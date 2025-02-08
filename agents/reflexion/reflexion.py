@@ -1,5 +1,4 @@
 from utils import map_category
-from utils.utils import retry_with_exponential_backoff
 
 from ..summary import SummaryAgent
 from .evaluator import ReflexionEvaluator
@@ -25,8 +24,7 @@ class ReflexionFramework:
 
         return output_text
 
-    @retry_with_exponential_backoff()
-    def process(self, origin_mail, summary_agent: SummaryAgent) -> tuple[str, int]:
+    def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
         """
         Reflexion을 실행합니다.
 
@@ -42,13 +40,12 @@ class ReflexionFramework:
 
         scores = []
         outputs = []
-        initail_content, _ = summary_agent.process(origin_mail, 3, ["start"])
+        initail_content = summary_agent.process(origin_mail, 3, ["start"])
         output_text = initail_content["summary"]
-        total_token_usage = 0
         print("\n\nINITIATE REFLEXION\n")
         for i in range(self.config["self_reflection"]["max_iteration"]):
             # 평가하기
-            eval_result_list, eval_token_usage = self.evaluator.get_geval_scores(origin_mail, output_text)
+            eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)
             eval_result_str = ""
             aspect_score = 0
             for eval_result in eval_result_list:
@@ -56,18 +53,13 @@ class ReflexionFramework:
                 for aspect, score in eval_result.items():
                     eval_result_str += f"항목: {aspect} 점수: {score}\n"
                     aspect_score += score
-            total_token_usage += eval_token_usage
 
             # 성찰하기
-            _, reflection_token_usage = self.self_reflection.generate_reflection(
-                origin_mail, output_text, eval_result_str
-            )
-            total_token_usage += reflection_token_usage
+            self.self_reflection.generate_reflection(origin_mail, output_text, eval_result_str)
 
             # 출력문 다시 생성하기
             previous_reflections = self.self_reflection.reflection_memory
-            output_text, token_usage = summary_agent.process(origin_mail, 3, previous_reflections)
-            total_token_usage += token_usage
+            output_text = summary_agent.process(origin_mail, 3, previous_reflections)
 
             eval_average = round(aspect_score / aspect_len, 1)
             scores.append(eval_average)
@@ -97,67 +89,4 @@ class ReflexionFramework:
         final = outputs[scores.index(max(scores))]
         print(f"{final}")
 
-        return final, total_token_usage
-
-    def process_with_solar_as_judge(self, mail, summary_agent: SummaryAgent, config: dict):
-        source_text_str = str(mail)
-        check_results = []
-        scores = []
-        outputs = []
-        output_text, _ = summary_agent.process(mail)
-        total_token_usage = 0
-        print("\n\nINITIATE REFLEXION w/ Solar as Judge\n")
-        for i in range(config["self_reflection"]["max_iteration"]):
-            # 평가하기
-            solar_as_judge_result = self.evaluator.get_solar_as_judge_result(source_text_str, output_text)
-            items_failed = []
-            for key, value in solar_as_judge_result.items():
-                if value == 0:
-                    items_failed.append(key)
-            check_results.append(solar_as_judge_result)
-            score = list(solar_as_judge_result.values()).count(1)
-            scores.append(score)
-
-            items_failed_str = "\n".join(items_failed)
-            # print(f"{type(source_text_str)}")
-            # print(f"{type(output_text)}")
-            # print(f"{type(items_failed_str)}")
-            # 성찰하기
-            _, reflection_token_usage = self.self_reflection.generate_reflection_solar_as_judge(
-                source_text_str, output_text, items_failed_str
-            )
-            total_token_usage += reflection_token_usage
-
-            # 출력문 다시 생성하기
-            previous_reflections = self.self_reflection.reflection_memory
-            output_text, token_usage = summary_agent.process(mail, 3, previous_reflections)
-            total_token_usage += token_usage
-
-            outputs.append(output_text)
-
-            previous_reflections_str = "\n".join(previous_reflections)
-
-            print(
-                f"{'=' * 25}\n"
-                f"{i + 1}회차\n"
-                f"{'-' * 25}\n"
-                f"통과 항목 {score}개\n"
-                f"탈락 항목:\n{items_failed_str}\n"
-                f"{'-' * 25}\n"
-                f"Reflection 메모리:\n{previous_reflections_str}\n\n"
-                f"{'-' * 25}\n"
-                f"성찰 후 재생성된 텍스트:\n{output_text}"
-            )
-
-            if score == len(solar_as_judge_result):
-                print(f"{'=' * 25}\n" "Evaluation 점수 만족, Reflexion 루프 종료\n" f"{'=' * 25}")
-                break
-
-        for i, score in enumerate(scores):
-            print(f"{i+1}회차 평균 {score}점")
-
-        print(f"\n최종 출력문 ({scores.index(max(scores)) + 1}회차, 평균: {max(scores)}점)")
-        final = outputs[scores.index(max(scores))]
-        print(f"{final}")
-
-        return final, total_token_usage
+        return final

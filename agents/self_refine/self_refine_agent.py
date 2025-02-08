@@ -5,6 +5,7 @@ from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
 from utils import retry_with_exponential_backoff
+from utils.token_usage_counter import TokenUsageCounter
 
 from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
 
@@ -23,7 +24,7 @@ class SelfRefineAgent(BaseAgent):
 
     def __init__(self, model_name: str, target_range: str, api_key: str, temperature=None, seed=None):
         self.api_key = api_key
-        super().__init__(model=model_name, temperature=temperature, seed=seed)
+        super().__init__(model_name, temperature, seed)
         if target_range != "single" and target_range != "final":
             raise ValueError(
                 f'target_range: {target_range}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
@@ -32,14 +33,9 @@ class SelfRefineAgent(BaseAgent):
         self.temperature = temperature
         self.seed = seed
 
-    def initialize_chat(self, model: str, temperature=None, seed=None):
+    def initialize_chat(self):
         """
         ChatUpstage 모델을 초기화합니다.
-
-        Args:
-            model (str): 사용할 모델 이름.
-            temperature (float, optional): 생성 다양성을 조정하는 파라미터.
-            seed (int, optional): 결과 재현성을 위한 시드 값.
 
         Returns:
             ChatUpstage: 초기화된 ChatUpstage 객체.
@@ -85,12 +81,9 @@ class SelfRefineAgent(BaseAgent):
 
         Return:
             str: Self-refine을 거친 최종 결과물.
-            token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
         # 초기 요약 및 로그 생성
-        token_usage = 0
-        summarization, summary_token_usage = model.process(str(data))
-        token_usage += summary_token_usage
+        summarization = model.process(str(data))
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
         logging_file_prefix = self.target_range
         logging_file_prefix += "_".join(data.id.split("/")) if self.target_range == "single" else ""
@@ -109,11 +102,9 @@ class SelfRefineAgent(BaseAgent):
         # Self Refine 반복
         for i in range(max_iteration):
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(
-                context=input_mail_data, answer=generate_plain_text_report(refine_target), api_key=self.api_key
+            groundness = check_groundness(
+                input_mail_data, generate_plain_text_report(refine_target), self.api_key, self.__class__.__name__
             )
-            super().add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
-            token_usage += groundness_token_usage
 
             # Feedback
             feedback_messages = build_messages(
@@ -125,8 +116,7 @@ class SelfRefineAgent(BaseAgent):
             )
             feedback_response = self.feedback(feedback_messages)
             feedback = feedback_response.choices[0].message.content
-            super().add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
-            token_usage += feedback_response.usage.total_tokens
+            TokenUsageCounter.add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
 
             self.logging(
                 f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_feedback.txt",
@@ -149,11 +139,10 @@ class SelfRefineAgent(BaseAgent):
             )
             revision_response = self.refine(refine_messages)
             revision_content = revision_response.choices[0].message.content
-            super().add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
-            token_usage += revision_response.usage.total_tokens
+            TokenUsageCounter.add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
 
             # 요약문 혹은 리포트 업데이트 및 로깅
             refine_target = json.loads(revision_content) if self.target_range == "final" else revision_content
             self.logging(f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_refine.txt", revision_content)
 
-        return refine_target, token_usage
+        return refine_target
