@@ -5,8 +5,6 @@ import yaml
 
 class Config:
     config: dict = {}
-    action_config: dict = {}
-    category_config: dict = {}
     user_upstage_api_key: str = ""  # TODO: 사용자 별로 API_KEY 변경하는 로직 추가하기
 
     @classmethod

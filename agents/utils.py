@@ -4,7 +4,7 @@ from prompt.prompt import load_template, load_template_with_variables
 
 
 # YAML 파일에서 카테고리 정보 로드
-def load_categories_from_yaml(classification_type: str, is_prompt: bool = False) -> list:
+def load_categories_from_yaml(classification_type: str, is_prompt: bool = False) -> list[dict[str, str]]:
     """
     YAML 파일에서 카테고리 정보를 로드합니다.
 
