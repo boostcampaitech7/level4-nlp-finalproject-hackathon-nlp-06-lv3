@@ -60,6 +60,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
                 aspect_scores[aspect] = score_value
 
             except (FileNotFoundError, ValueError) as e:
+                # TODO: 숫자 변환 실패 could not convert string to float: 해결해야함(프롬프트적인 문제)
                 print(f"[Error] eval_type={eval_type}, aspect={aspect}, error={e}")
                 aspect_scores[aspect] = 0.0
 

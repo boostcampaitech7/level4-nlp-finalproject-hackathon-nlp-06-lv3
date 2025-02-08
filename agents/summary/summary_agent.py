@@ -50,7 +50,7 @@ class SummaryAgent(BaseAgent):
         return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> tuple[dict[str, str], int]:
+    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict[str, str]:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -61,7 +61,6 @@ class SummaryAgent(BaseAgent):
 
         Returns:
             dict: 요약된 결과 JSON.
-            token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
 
         # 출력 포맷 지정
