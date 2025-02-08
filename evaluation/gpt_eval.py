@@ -52,7 +52,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
                 )
 
                 # GPT가 준 output을 float로 변환
-                gpt_text = response.choices[0].message.content.strip()
+                gpt_text = response.choices[0].message.content.strip()[-1]
                 total_token_usage += response.usage.total_tokens
                 score_value = float(gpt_text)
                 aspect_scores[aspect] = score_value
