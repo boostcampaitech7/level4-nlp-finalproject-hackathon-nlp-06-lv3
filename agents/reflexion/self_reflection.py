@@ -3,8 +3,8 @@ import os
 from openai import OpenAI
 
 from agents.base_agent import BaseAgent
-from utils import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
+from utils.utils import retry_with_exponential_backoff
 
 
 class ReflexionSelfReflection(BaseAgent):

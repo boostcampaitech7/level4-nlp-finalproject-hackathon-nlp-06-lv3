@@ -1,43 +1,15 @@
 import openai
 from googleapiclient.errors import HttpError
 
-from agents import EmbeddingManager, ReflexionFramework, SummaryAgent
 from agents.classify_single_mail import classify_single_mail
+from agents.embedding.cluster_mails import cluster_mails
+from agents.summary.make_report import make_report
 from agents.summary_single_mail import summary_single_mail
-from batch_serving import GmailService, Mail
-from utils import convert_mail_dict_to_df
+from gmail_api.gmail_service import GmailService
+from gmail_api.mail import Mail
 from utils.checklist_builder import build_json_checklist
 from utils.configuration import Config
-
-
-def cluster_mails(mail_dict: dict[str, Mail], config: dict):
-    embedding_manager = EmbeddingManager(
-        embedding_model_name=config["embedding"]["model_name"],
-        similarity_metric=config["embedding"]["similarity_metric"],
-        similarity_threshold=config["embedding"]["similarity_threshold"],
-        is_save_results=config["embedding"]["save_results"],
-    )
-    embedding_manager.run(mail_dict)
-
-
-def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
-    summary_agent = SummaryAgent(
-        model_name="solar-pro",
-        summary_type="final",
-        api_key=api_key,
-        temperature=config["temperature"]["summary"],
-        seed=config["seed"],
-    )
-
-    origin_mail = ""
-    for _, mail in mail_dict.items():
-        origin_mail += mail.summary + "\n"
-
-    self_reflection_agent = ReflexionFramework("solar_pro", "final", config)
-
-    reflexion_summary = self_reflection_agent.process(origin_mail, summary_agent)
-
-    return reflexion_summary
+from utils.utils import convert_mail_dict_to_df
 
 
 def pipeline(gmail_service: GmailService, api_key: str):
@@ -47,7 +19,7 @@ def pipeline(gmail_service: GmailService, api_key: str):
         summary_single_mail(mail_dict, api_key)
         classify_single_mail(mail_dict, Config.config, api_key)
 
-        cluster_mails(mail_dict, Config.config)
+        cluster_mails(mail_dict)
 
         report = make_report(mail_dict, api_key, Config.config)
 

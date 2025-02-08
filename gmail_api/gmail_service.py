@@ -2,8 +2,8 @@ from collections import deque
 
 from tqdm import tqdm
 
-from batch_serving.mail import Mail
-from batch_serving.other_utils.other_utils import (
+from gmail_api.mail import Mail
+from gmail_api.utils import (
     decode_base64,
     delete_file,
     parse_document,

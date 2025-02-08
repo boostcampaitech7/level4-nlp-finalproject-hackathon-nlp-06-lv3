@@ -1,7 +1,8 @@
 from dotenv import load_dotenv
 
 from agents.pipeline import pipeline
-from batch_serving import GmailService, authenticate_gmail, fetch_users, insert_report
+from batch_serving.db_utils import authenticate_gmail, fetch_users, insert_report
+from gmail_api.gmail_service import GmailService
 from utils.configuration import Config
 
 

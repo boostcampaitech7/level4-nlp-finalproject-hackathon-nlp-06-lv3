@@ -7,8 +7,6 @@ from openai import OpenAI
 
 from utils.token_usage_counter import TokenUsageCounter
 
-# from utils.utils import run_with_retry
-
 load_dotenv()
 client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 

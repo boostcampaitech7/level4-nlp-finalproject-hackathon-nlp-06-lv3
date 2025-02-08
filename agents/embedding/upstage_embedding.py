@@ -3,9 +3,8 @@ import os
 import numpy as np
 from openai import OpenAI
 
-from agents import BaseAgent
-
-from .sentence_splitter import split_sentences
+from agents.base_agent import BaseAgent
+from agents.embedding.sentence_splitter import split_sentences
 
 
 class UpstageEmbeddingAgent(BaseAgent):

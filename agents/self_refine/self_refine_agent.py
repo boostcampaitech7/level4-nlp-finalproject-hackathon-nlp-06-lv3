@@ -3,11 +3,11 @@ import os
 
 from openai import OpenAI
 
-from agents import BaseAgent, check_groundness
-from utils import retry_with_exponential_backoff
+from agents.base_agent import BaseAgent
+from agents.groundness_check import check_groundness
+from agents.utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
 from utils.token_usage_counter import TokenUsageCounter
-
-from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
+from utils.utils import retry_with_exponential_backoff
 
 
 class SelfRefineAgent(BaseAgent):

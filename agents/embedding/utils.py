@@ -1,6 +1,6 @@
 import numpy as np
 
-from gmail_api import Mail
+from gmail_api.mail import Mail
 
 
 def compute_similarity(embedding_vectors: dict[str, np.ndarray]) -> dict[str, tuple[str, float]]:

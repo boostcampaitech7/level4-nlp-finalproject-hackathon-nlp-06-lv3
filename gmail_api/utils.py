@@ -3,40 +3,41 @@ import logging
 import os
 import re
 from collections import deque
-from datetime import datetime
 from typing import Optional
 
-import pytz
 import requests
-
-from .document_parse import parse_document
+from langchain_upstage import UpstageDocumentParseLoader
 
 logging.basicConfig(level=logging.WARNING, filename="gmail_api/gmail_error.log")
 
 
-def decode_base64(data: str) -> bytes:
-    """
-    base64로 인코딩된 메시지 부분을 디코딩합니다.
+def is_supported_format(file_path: str) -> bool:
+    supported_formats = ["jpeg", "png", "bmp", "pdf", "tiff", "heic", "docx", "pptx", "xlsx"]
+    file_name = os.path.basename(file_path)
+    file_extension = os.path.splitext(file_name)[1][1:].lower()
+    return file_extension in supported_formats
 
-    인자:
-        data (str): base64로 인코딩된 문자열.
-    반환값:
-        bytes: 디코드 결과 바이트 스트림.
-    """
+
+def parse_document(file_path) -> str:
+    if is_supported_format(file_path):
+        loader = UpstageDocumentParseLoader(file_path)
+        pages = loader.load()
+
+        parsed_document = ""
+        for page in pages:
+            parsed_document += page.page_content
+        return parsed_document
+    else:
+        # 지원되지 않는 형식일 경우 파일명만 반환
+        return f"{os.path.basename(file_path)}"
+
+
+def decode_base64(data: str) -> bytes:
     data = data.replace("-", "+").replace("_", "/")
     return base64.b64decode(data)
 
 
 def save_file(file_data: bytes, file_name: str, save_dir: str = "downloaded_files") -> Optional[str]:
-    """
-    파일 데이터를 정해진 경로에 저장합니다.
-
-    인자:
-        file_data (str): 저장할 파일 정보.
-        file_path (str): 저장할 파일 이름.
-    반환값:
-        Optional[str]: 파일을 저장 성공시 저장 경로, 실패 시 None.
-    """
     try:
         os.makedirs(save_dir, exist_ok=True)
         file_path = os.path.join(save_dir, file_name)
@@ -49,14 +50,6 @@ def save_file(file_data: bytes, file_name: str, save_dir: str = "downloaded_file
 
 
 def delete_file(saved_file_path: str) -> bool:
-    """
-    파일 경로에 저장된 데이터를 삭제합니다.
-
-    인자:
-        saved_file_path (str): 삭제할 파일의 경로.
-    반환값:
-        bool: 파일 삭제 성공 여부.
-    """
     try:
         if os.path.exists(saved_file_path):
             os.remove(saved_file_path)
@@ -69,39 +62,7 @@ def delete_file(saved_file_path: str) -> bool:
         return False
 
 
-def replace_image_pattern_with(plain_text: str, files: deque) -> str:
-    """
-    `[image: ]` 패턴을 deque에서 가져온 값으로 대체합니다.
-
-    Args:
-        plain_text (str): 패턴을 대체할 텍스트.
-        files (deque): 대체할 파일 내용이 저장된 deque.
-
-    Returns:
-        str: 패턴이 대체된 텍스트.
-    """
-
-    def replacement(match):
-        # files에서 첫 번째 요소를 반환하거나, files가 비어있을 경우 원문을 그대로 반환
-        return files.popleft() if files else match.group(0)
-
-    updated_text = re.sub(r"\[image: (.+?)\]", replacement, plain_text)
-    return updated_text, files
-
-
 def replace_pattern_with(parsed_items: dict, text: str, pattern: str) -> str:
-    """
-    텍스트에서 주어진 패턴을 찾아, 매칭된 항목을 파싱된 값으로 대체합니다.
-
-    인자:
-        parsed_items (dict): 패턴 매칭값과 대체값의 매핑 딕셔너리.
-        text (str): 패턴을 대체할 텍스트.
-        pattern (str): 대체할 패턴.
-
-    반환값:
-        str: 대체가 완료된 텍스트.
-    """
-
     def replacement(match):
         key = match.group(1)
         return parsed_items.get(key, match.group(0))  # 매칭된 키가 없으면 원본 유지
@@ -113,17 +74,8 @@ def remove_http_brackets(text):
     return re.sub(r"<[^>]*http[^>]*>", "", text)
 
 
-def replace_url_pattern_from(plain_text):
-    """
-    텍스트에서 URL 패턴을 추출하고 이미지를 다운로드하여 저장한 뒤,
-    URL 패턴을 대체된 값으로 업데이트합니다.
+def replace_url_pattern_from(plain_text: str) -> str:
 
-    인자:
-        plain_text (str): URL을 포함한 텍스트.
-        save_dir (str): 이미지를 저장할 디렉토리 경로.
-    반환값:
-        str: URL 패턴이 대체된 텍스트.
-    """
     clean_text = remove_http_brackets(plain_text)
     url_pattern = r"\[([^\]]+)\]"
     urls = re.findall(url_pattern, clean_text)
@@ -131,7 +83,6 @@ def replace_url_pattern_from(plain_text):
 
     for url in urls:
         try:
-            # URL에 요청을 보내 해당 content의 타입을 확인
             response = requests.get(url, stream=True, timeout=10)
             content_type = response.headers.get("Content-Type", "")
 
@@ -149,47 +100,16 @@ def replace_url_pattern_from(plain_text):
                     parsed_image = parse_document(file_path)
                     url_to_parsed_image[url] = parsed_image
                     delete_file(file_path)
-
-                clean_text.replace("url", "")
-
+            clean_text.replace("url", "")
         except Exception as e:
             logging.warning(f"Failed to process {url}: {e}")
 
     return replace_pattern_with(url_to_parsed_image, clean_text, url_pattern)
 
 
-TIMEZONE_MAP = {
-    "KST": "Asia/Seoul",
-    "JST": "Asia/Tokyo",
-    "PST": "America/Los_Angeles",
-    "EST": "America/New_York",
-    "CET": "Europe/Berlin",
-    "BST": "Europe/London",
-    "AEST": "Australia/Sydney",
-    "IST": "Asia/Kolkata",
-}
+def replace_image_pattern_with(plain_text: str, files: deque):
+    def replacement(match):
+        return files.popleft() if files else match.group(0)
 
-
-def convert_to_seoul_time(date_str):
-    try:
-        # case 1️: UTC 오프셋이 포함된 경우
-        if any(char in date_str for char in ["+", "-"]) and "GMT" not in date_str:
-            dt = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
-
-        # case 2️: GMT가 포함된 경우
-        elif "GMT" in date_str:
-            date_str = date_str.replace("GMT", "").strip()
-            dt = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S")
-            dt = dt.replace(tzinfo=pytz.utc)
-
-        else:
-            raise ValueError(date_str)
-
-        # 서울 시간으로 변환
-        seoul_tz = pytz.timezone("Asia/Seoul")
-        dt_seoul = dt.astimezone(seoul_tz)
-
-        return dt_seoul.strftime("%a, %d %b %Y %H:%M:%S %z")  # 최종 결과 반환
-
-    except Exception as e:
-        return f"지원하지 않는 날짜 형식입니다.: {e}"
+    updated_text = re.sub(r"\[image: (.+?)\]", replacement, plain_text)
+    return updated_text, files

@@ -1,10 +1,9 @@
 from openai import OpenAI
 
+from agents.base_agent import BaseAgent
+from agents.utils import build_messages, load_categories_from_yaml
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
-
-from ..base_agent import BaseAgent
-from ..utils import build_messages, load_categories_from_yaml
 
 
 class ClassificationAgent(BaseAgent):

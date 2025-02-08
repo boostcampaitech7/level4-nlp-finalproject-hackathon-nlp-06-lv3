@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from .metric_calculator import MetricCalculator
+from evaluation.classification.metric_calculator import MetricCalculator
 
 
 class DataFrameManager:

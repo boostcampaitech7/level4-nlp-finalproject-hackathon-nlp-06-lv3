@@ -1,12 +1,8 @@
-from dotenv import load_dotenv
 from openai import OpenAI
 
 from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
-
-load_dotenv()
-client = OpenAI()
 
 
 @retry_with_exponential_backoff()
@@ -17,6 +13,8 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     Args:
         g_eval_config (dict): g-eval 관련 설정만 포함된 딕셔너리
     """
+    client = OpenAI()
+
     prompt_files: dict[str, str] = Config.config[eval_type]["g_eval"]["prompts"]
     model_name: str = Config.config[eval_type]["g_eval"]["openai_model"]
     is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
