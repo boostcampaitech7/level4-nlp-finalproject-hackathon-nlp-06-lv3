@@ -19,7 +19,7 @@ def pipeline(gmail_service: GmailService, api_key: str):
         summary_single_mail(mail_dict, api_key)
         classify_single_mail(mail_dict, Config.config, api_key)
 
-        cluster_mails(mail_dict, Config.config)
+        cluster_mails(mail_dict)
 
         report = make_report(mail_dict, api_key, Config.config)
 

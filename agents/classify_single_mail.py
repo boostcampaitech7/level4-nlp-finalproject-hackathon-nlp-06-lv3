@@ -2,12 +2,13 @@ from agents import ClassificationAgent
 from agents.classification.classification_type import ClassificationType
 from evaluation import ClassificationEvaluationAgent
 from gmail_api.mail import Mail
+from utils.configuration import Config
 
 
 def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):
-    temperature: int = config["temperature"]["summary"]
-    seed: int = config["seed"]
-    do_class_eval: bool = config["evaluation"]["classification_eval"]
+    temperature: int = Config.config["temperature"]["summary"]
+    seed: int = Config.config["seed"]
+    do_class_eval: bool = Config.config["evaluation"]["classification_eval"]
 
     classification_agent = ClassificationAgent("solar-pro", api_key, temperature, seed)
     if do_class_eval:
