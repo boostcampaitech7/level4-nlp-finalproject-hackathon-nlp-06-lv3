@@ -21,13 +21,13 @@ self_reflection:
     threshold: 4.5
 
 common_prompts: &common_prompts
-  consistency: "prompt/template/g_eval/con_{type}.txt"
-  coherence: "prompt/template/g_eval/coh_{type}.txt"
-  fluency: "prompt/template/g_eval/flu_{type}.txt"
-  relevance: "prompt/template/g_eval/rel_{type}.txt"
-  readability: "prompt/template/g_eval/rdb_{type}.txt"
-  clearance: "prompt/template/g_eval/clr_{type}.txt"
-  practicality: "prompt/template/g_eval/prc_{type}.txt"
+  consistency: "prompt/template/g_eval/con_{eval_type}.txt"
+  coherence: "prompt/template/g_eval/coh_{eval_type}.txt"
+  fluency: "prompt/template/g_eval/flu_{eval_type}.txt"
+  relevance: "prompt/template/g_eval/rel_{eval_type}.txt"
+  readability: "prompt/template/g_eval/rdb_{eval_type}.txt"
+  clearance: "prompt/template/g_eval/clr_{eval_type}.txt"
+  practicality: "prompt/template/g_eval/prc_{eval_type}.txt"
 
 summary: # Summary 평가 관련 설정
   metrics:
@@ -42,7 +42,6 @@ summary: # Summary 평가 관련 설정
     additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
     prompts:
       <<: *common_prompts
-      type: "summary"
 
 # Report 평가 관련 설정
 report:
@@ -54,7 +53,6 @@ report:
     additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
     prompts:
       <<: *common_prompts
-      type: "report"
 
 classification:
   do_manual_filter: False
