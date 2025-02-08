@@ -1,30 +1,12 @@
 import time
-from datetime import datetime, timedelta
 from functools import wraps
 from typing import Callable
 
 import openai
 import pandas as pd
-import pytz
 import yaml
-from tqdm import tqdm
 
-from agents.classification.classification_type import ClassificationType
-from gmail_api import Mail
-from gmail_api.gmail_process import gmail
-from utils.token_usage_counter import TokenUsageCounter
-
-
-def load_config(config_path="config.yml"):
-    with open(config_path, "r", encoding="utf-8") as file:
-        config = yaml.safe_load(file)
-
-    config["gmail"]["start_date"] = "2025/01/10" if not config["gmail"]["start_date"] else config["gmail"]["start_date"]
-    config["gmail"]["end_date"] = (
-        datetime.now().strftime("%Y/%m/%d") if not config["gmail"]["end_date"] else config["gmail"]["end_date"]
-    )
-
-    return config
+from gmail_api.mail import Mail
 
 
 def map_category(classification_type: str, english_label: str) -> str:
@@ -50,80 +32,6 @@ def map_category(classification_type: str, english_label: str) -> str:
     except yaml.YAMLError as e:
         raise ValueError(f"YAML 파일 파싱 중 오류 발생: {e}")
     return
-
-
-def print_result(start_time: str, mail_dict: dict[str, Mail]):
-    print("=============FINAL_REPORT================")
-
-    elapsed_time = time.time() - start_time
-    if elapsed_time > 0:
-        tpm = (TokenUsageCounter.get_total_token_cost() / elapsed_time) * 60
-    else:
-        tpm = 0  # 실행 시간이 0이면 0으로 처리
-
-    print(
-        f"실행 시간: {elapsed_time:.2f}초"
-        "평가 배제 토큰 사용 정보"
-        f"최종 토큰 사용량: {TokenUsageCounter.get_total_token_cost()}"
-        f"Tokens Per Minute (TPM): {tpm:.2f}\n"
-    )
-
-    for mail_id, mail in mail_dict.items():
-        sim_mails_str = "\n".join(
-            [
-                f"\t{i + 1}번째 유사 메일\n"
-                f"\tID: {sim_mail_id}\n"
-                f"\t제목: {mail_dict[sim_mail_id].subject}\n"
-                f"\t요약: {mail_dict[sim_mail_id].summary}\n"
-                for i, sim_mail_id in enumerate(mail.similar_mails)
-            ]
-        )
-
-        print(
-            f"ID: {mail_id}\n"
-            f"분류 1: {map_category(ClassificationType.CATEGORY,mail.label_category)}\n"
-            f"분류 2: {map_category(ClassificationType.ACTION,mail.label_action)}\n"
-            f"제목: {mail.subject}\n"
-            f"요약: {mail.summary}\n"
-            f"{sim_mails_str}\n"
-            f"{'=' * 40}\n\n"
-        )
-
-
-def get_yesterday_9am() -> datetime:
-    # 서울 시간 기준, 전일의 오전 9시 datetime객체를 반환합니다.
-    seoul_tz = pytz.timezone("Asia/Seoul")
-    now = datetime.now(seoul_tz)
-    yesterday = now - timedelta(days=1)
-    return datetime(yesterday.year, yesterday.month, yesterday.day, 9, 0, 0, tzinfo=seoul_tz)
-
-
-def is_before_yesterday_9am(date_str: str, yesterday_9am: datetime) -> bool:
-    # 인자의 날짜가 전일 9시 이전이면 True, 이후이면 False를 반환합니다.
-    date = datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z")
-    seoul_tz = pytz.timezone("Asia/Seoul")
-    date_in_seoul = date.astimezone(seoul_tz)
-    return date_in_seoul < yesterday_9am
-
-
-def fetch_mails(start_date: str, end_date: str, n: int) -> dict[str, Mail]:
-    messages = gmail.get_today_n_messages(start_date, n)
-    mail_dict: dict[str, Mail] = {}
-    yesterday_9am = get_yesterday_9am()
-
-    for idx, message_metadata in enumerate(tqdm(messages, desc="Processing Emails")):
-        # 신규 mail_id 정의: 받은 시간 순 오름차순
-        mail_id = f"{end_date}/{len(messages)-idx:04d}"
-        mail = Mail(message_metadata["id"], mail_id)
-        if is_before_yesterday_9am(mail.date, yesterday_9am):
-            pass  # break 실제 실행 시에는 break 하여 더 이상 메일을 처리하지 않음
-
-        # TODO: 룰베이스 분류 강화
-        if "(광고)" not in mail.subject:
-            mail_dict[message_metadata["id"]] = mail
-
-    print(f"🕊️  전일 오전 9시 이후 수신한 메일 {len(mail_dict)}개를 저장하였습니다.")
-    return mail_dict
 
 
 def group_mail_dict_2_classification(mail_dict: dict[str, Mail]) -> dict[str, dict[str, Mail]]:

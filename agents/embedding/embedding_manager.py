@@ -3,7 +3,7 @@ from typing import Callable
 import numpy as np
 
 from agents.embedding.typing import SimilarityDict
-from gmail_api import Mail
+from gmail_api.mail import Mail
 from utils.utils import group_mail_dict_2_classification
 
 from .bge_m3_embedding import Bgem3EmbeddingAgent

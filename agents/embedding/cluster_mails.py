@@ -1,5 +1,5 @@
 from agents import EmbeddingManager
-from batch_serving import Mail
+from gmail_api.mail import Mail
 
 
 def cluster_mails(mail_dict: dict[str, Mail], config: dict):

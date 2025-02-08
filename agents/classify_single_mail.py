@@ -1,7 +1,7 @@
 from agents import ClassificationAgent
 from agents.classification.classification_type import ClassificationType
-from batch_serving import Mail
 from evaluation import ClassificationEvaluationAgent
+from gmail_api.mail import Mail
 
 
 def classify_single_mail(mail_dict: dict[str, Mail], config: dict, api_key: str):

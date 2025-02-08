@@ -5,7 +5,8 @@ from agents.classify_single_mail import classify_single_mail
 from agents.embedding.cluster_mails import cluster_mails
 from agents.summary.make_report import make_report
 from agents.summary_single_mail import summary_single_mail
-from batch_serving import GmailService, Mail
+from gmail_api.gmail_service import GmailService
+from gmail_api.mail import Mail
 from utils import convert_mail_dict_to_df
 from utils.checklist_builder import build_json_checklist
 from utils.configuration import Config

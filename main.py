@@ -7,8 +7,8 @@ from googleapiclient.discovery import build
 from h11 import Request
 
 from agents.pipeline import pipeline
-from batch_serving import GmailService
 from batch_serving.db_utils import SCOPES
+from gmail_api.gmail_service import GmailService
 from utils.configuration import Config
 
 

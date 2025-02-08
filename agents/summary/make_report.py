@@ -1,5 +1,5 @@
 from agents import ReflexionFramework, SummaryAgent
-from batch_serving import Mail
+from gmail_api.mail import Mail
 
 
 def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
