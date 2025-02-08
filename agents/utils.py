@@ -1,6 +1,6 @@
 import yaml
 
-from prompt import load_template, load_template_with_variables
+from prompt.prompt import load_template, load_template_with_variables
 
 
 # YAML 파일에서 카테고리 정보 로드

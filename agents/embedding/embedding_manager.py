@@ -2,12 +2,11 @@ from typing import Callable
 
 import numpy as np
 
+from agents.embedding.bge_m3_embedding import Bgem3EmbeddingAgent
 from agents.embedding.typing import SimilarityDict
+from agents.embedding.upstage_embedding import UpstageEmbeddingAgent
 from gmail_api.mail import Mail
 from utils.utils import group_mail_dict_2_classification
-
-from .bge_m3_embedding import Bgem3EmbeddingAgent
-from .upstage_embedding import UpstageEmbeddingAgent
 
 
 def _compute_dot_product_similarity(embedding_vectors: dict[str, np.ndarray]) -> SimilarityDict:

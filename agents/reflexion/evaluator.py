@@ -1,4 +1,5 @@
-from evaluation import calculate_g_eval, run_solar_as_judge
+from evaluation.gpt_eval import calculate_g_eval
+from evaluation.solar_as_judge_eval import run_solar_as_judge
 from utils.utils import retry_with_exponential_backoff
 
 

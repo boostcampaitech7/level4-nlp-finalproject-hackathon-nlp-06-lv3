@@ -3,10 +3,11 @@ from collections import Counter
 
 from openai import OpenAI
 
-from agents import BaseAgent, ClassificationAgent, build_messages, load_categories_from_yaml
+from agents.base_agent import BaseAgent
+from agents.classification.classification_agent import ClassificationAgent
+from agents.utils import build_messages, load_categories_from_yaml
+from evaluation.classification.dataframe_manager import DataFrameManager
 from utils.utils import retry_with_exponential_backoff
-
-from .dataframe_manager import DataFrameManager
 
 
 class ClassificationEvaluationAgent(BaseAgent):

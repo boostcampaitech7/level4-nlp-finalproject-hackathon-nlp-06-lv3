@@ -1,8 +1,7 @@
-from utils import map_category
-
-from ..summary import SummaryAgent
-from .evaluator import ReflexionEvaluator
-from .self_reflection import ReflexionSelfReflection
+from agents.reflexion.evaluator import ReflexionEvaluator
+from agents.reflexion.self_reflection import ReflexionSelfReflection
+from agents.summary.summary_agent import SummaryAgent
+from utils.utils import map_category
 
 
 class ReflexionFramework:

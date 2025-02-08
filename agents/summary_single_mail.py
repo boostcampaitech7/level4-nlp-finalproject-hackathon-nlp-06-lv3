@@ -1,6 +1,8 @@
-from agents import SelfRefineAgent, SummaryAgent
-from evaluation import print_evaluation_results, summary_evaluation_data
+from agents.self_refine.self_refine_agent import SelfRefineAgent
+from agents.summary.summary_agent import SummaryAgent
+from evaluation.evaluation_data import summary_evaluation_data
 from evaluation.evaluation_summary import evaluate_summary
+from evaluation.result_printer import print_evaluation_results
 from gmail_api.mail import Mail
 from utils.configuration import Config
 

@@ -1,6 +1,6 @@
-from agents import ClassificationAgent
+from agents.classification.classification_agent import ClassificationAgent
 from agents.classification.classification_type import ClassificationType
-from evaluation import ClassificationEvaluationAgent
+from evaluation.classification.evaluation_agent import ClassificationEvaluationAgent
 from gmail_api.mail import Mail
 from utils.configuration import Config
 

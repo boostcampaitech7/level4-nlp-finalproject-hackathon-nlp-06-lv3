@@ -1,4 +1,4 @@
-from agents import EmbeddingManager
+from agents.embedding.embedding_manager import EmbeddingManager
 from gmail_api.mail import Mail
 from utils.configuration import Config
 

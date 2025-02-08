@@ -7,9 +7,9 @@ from agents.summary.make_report import make_report
 from agents.summary_single_mail import summary_single_mail
 from gmail_api.gmail_service import GmailService
 from gmail_api.mail import Mail
-from utils import convert_mail_dict_to_df
 from utils.checklist_builder import build_json_checklist
 from utils.configuration import Config
+from utils.utils import convert_mail_dict_to_df
 
 
 def pipeline(gmail_service: GmailService, api_key: str):

@@ -1,4 +1,5 @@
-from evaluation import calculate_bert, calculate_g_eval, calculate_rouge
+from evaluation.gpt_eval import calculate_g_eval
+from evaluation.quantitative_eval import calculate_bert, calculate_rouge
 from utils.configuration import Config
 
 

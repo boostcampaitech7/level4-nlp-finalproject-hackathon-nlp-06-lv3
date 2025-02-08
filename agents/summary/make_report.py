@@ -1,4 +1,5 @@
-from agents import ReflexionFramework, SummaryAgent
+from agents.reflexion.reflexion import ReflexionFramework
+from agents.summary.summary_agent import SummaryAgent
 from gmail_api.mail import Mail
 
 
