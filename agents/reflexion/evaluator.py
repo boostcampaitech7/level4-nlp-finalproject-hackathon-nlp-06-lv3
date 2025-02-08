@@ -1,11 +1,11 @@
 from agents.base_agent import BaseAgent
 from evaluation import calculate_g_eval, run_solar_as_judge
-from utils.utils import load_config, retry_with_exponential_backoff
+from utils.utils import retry_with_exponential_backoff
 
 
 class ReflexionEvaluator(BaseAgent):
-    def __init__(self, task: str):
-        self.config = load_config()
+    def __init__(self, task: str, config: dict):
+        self.config = config
         self.task = task
 
     def initialize_chat(self, model, temperature=None, seed=None):

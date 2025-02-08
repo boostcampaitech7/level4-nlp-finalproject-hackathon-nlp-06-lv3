@@ -9,7 +9,7 @@ from .self_reflection import ReflexionSelfReflection
 class ReflexionFramework:
     def __init__(self, model_name: str, task: str, config: dict):
         self.task = task
-        self.evaluator = ReflexionEvaluator(task)
+        self.evaluator = ReflexionEvaluator(task, config)
         self.self_reflection = ReflexionSelfReflection(task)
         self.config = config
 
