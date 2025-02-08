@@ -1,5 +1,4 @@
 import openai
-from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
 from agents import EmbeddingManager, ReflexionFramework, SummaryAgent
@@ -41,9 +40,6 @@ def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
 
 
 def pipeline(gmail_service: GmailService, api_key: str):
-    load_dotenv()
-
-    # YAML 파일 로드
     config = load_config()
 
     try:

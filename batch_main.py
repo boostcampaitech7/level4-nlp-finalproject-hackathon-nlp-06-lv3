@@ -1,8 +1,12 @@
+from dotenv import load_dotenv
+
 from agents.pipeline import pipeline
 from batch_serving import GmailService, authenticate_gmail, fetch_users, insert_report
 
 
 def main():
+    load_dotenv()
+
     # 유저 테이블 불러오기
     users = fetch_users()
 

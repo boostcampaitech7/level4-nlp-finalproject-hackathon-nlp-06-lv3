@@ -1,114 +1,43 @@
 import os
-import time
 
-import openai
 from dotenv import load_dotenv
-from googleapiclient.errors import HttpError
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from h11 import Request
 
-from agents import ClassificationAgent, EmbeddingManager, SelfRefineAgent, SummaryAgent
-from agents.classification.classification_type import ClassificationType
-from checklist_builder import build_json_checklist
-from evaluation import ClassificationEvaluationAgent, print_evaluation_results, summary_evaluation_data
-from evaluator import evaluate_summary
-from gmail_api import Mail
-from utils import convert_mail_dict_to_df, fetch_mails, load_config, print_result
-from utils.token_usage_counter import TokenUsageCounter
+from agents.pipeline import pipeline
+from batch_serving import GmailService
+from batch_serving.db_utils import SCOPES
 
 
-def summary_and_classify(mail_dict: dict[str, Mail], config: dict, api_key):
-    # 개별 메일 요약, 분류
-    summary_agent = SummaryAgent("solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"])
-    self_refine_agent = SelfRefineAgent(
-        "solar-pro", "single", api_key, config["temperature"]["summary"], config["seed"]
-    )  # TODO: reflexion으로 변경 실험
-    classification_agent = ClassificationAgent(
-        "solar-pro", api_key, config["temperature"]["classification"], config["seed"]
-    )
-    if config["evaluation"]["classification_eval"]:
-        class_eval_agent = ClassificationEvaluationAgent(
-            model="gpt-4o",
-            human_evaluation=config["classification"]["do_manual_filter"],
-            inference=config["classification"]["inference"],
-        )
+def create_service():
+    if os.path.exists("token.json"):
+        creds = Credentials.from_authorized_user_file("token.json", SCOPES)
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
+        creds = flow.run_local_server(port=8080, prompt="consent", access_type="offline")
 
-    for mail_id, mail in mail_dict.items():
-        summary, token_usage = self_refine_agent.process(mail, summary_agent)  # TODO: token_usage 미사용
-        mail_dict[mail_id].summary = summary
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
 
-        if config["evaluation"]["classification_eval"]:
-            category = class_eval_agent.process, mail(classification_agent, ClassificationType.CATEGORY)
-            action = class_eval_agent.process(mail, classification_agent, ClassificationType.ACTION)
-        else:
-            category = classification_agent.process(mail, ClassificationType.CATEGORY)
-            action = classification_agent.process(mail, ClassificationType.ACTION)
-        mail_dict[mail_id].label_category = category
-        mail_dict[mail_id].label_action = action
+    with open("token.json", "w") as token:
+        token.write(creds.to_json())
 
-        print(f"{mail_id}\ncategory label: {category}\naction label: {action}\n{summary}\n{'=' * 40}")
-
-        if config["evaluation"]["summary_eval"]:
-            summary_evaluation_data.source_texts.append(mail.body)
-            summary_evaluation_data.summarized_texts.append(summary)
-            summary_evaluation_data.reference_texts.append(mail.subject)
-
-    # Summary Evaluation
-    if config["evaluation"]["summary_eval"]:
-        summary_results = evaluate_summary(
-            config,
-            summary_evaluation_data.source_texts,
-            summary_evaluation_data.summarized_texts,
-            summary_evaluation_data.reference_texts,
-        )
-        print_evaluation_results(
-            summary_results, eval_type="summary", additional=config.get("g_eval_additional", False)
-        )
-
-
-def generate_report(mail_dict: dict[str, Mail], config: dict):
-    embedding_manager = EmbeddingManager(
-        embedding_model_name=config["embedding"]["model_name"],
-        similarity_metric=config["embedding"]["similarity_metric"],
-        similarity_threshold=config["embedding"]["similarity_threshold"],
-        is_save_results=config["embedding"]["save_results"],
-    )
-    embedding_manager.run(mail_dict)
+    return build("gmail", "v1", credentials=creds)
 
 
 def main():
     load_dotenv()
-    api_key = os.getenv("UPSTAGE_API_KEY")
-    # YAML 파일 로드
-    config = load_config()
 
-    try:
-        mail_dict: dict[str, Mail] = fetch_mails(
-            start_date=config["gmail"]["start_date"],
-            end_date=config["gmail"]["end_date"],
-            n=config["gmail"]["max_mails"],
-        )
+    # TODO: config 대체
+    gmail_service = GmailService(create_service())
 
-        start_time = time.time()
+    _, report = pipeline(gmail_service, os.getenv("UPSTAGE_API_KEY"))
 
-        summary_and_classify(mail_dict, config, api_key)
-
-        generate_report(mail_dict, config)
-
-        print_result(start_time, mail_dict)
-
-        df = convert_mail_dict_to_df(mail_dict)
-
-        json_checklist = build_json_checklist(df)
-        print(json_checklist)
-        return json_checklist
-
-    except HttpError as error:
-        print(f"An error occurred: {error}")
-    except openai.RateLimitError as rate_err:
-        print("[RateLimitError] API 한도가 초과되었습니다. 현재까지의 토큰 사용량만 보고합니다.")
-        print(f"에러 메세지: {rate_err}")
-    finally:
-        if config["token_tracking"]:
-            TokenUsageCounter.plot_token_cost()
+    print("============ FINAL REPORT=============")
+    print(report)
+    print("=======================================================")
 
 
 if __name__ == "__main__":
