@@ -16,7 +16,9 @@ def main():
     # access token, refresh token 가져와서 service 객체 선언하기
     for user in users:
         try:
-            # if user["id"] == 9:
+            if user["id"] != 9:
+                continue
+
             service = authenticate_gmail(user)
             Config.user_upstage_api_key = user["upstage_api_key"]
             # GmailService 인스턴스 생성
