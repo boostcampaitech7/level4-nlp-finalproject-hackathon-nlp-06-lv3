@@ -13,7 +13,7 @@ def summary_single_mail(mail_dict: dict[str, Mail], api_key: str):
     summary_agent = SummaryAgent("solar-pro", "single", api_key, temperature, seed)
     self_refine_agent = SelfRefineAgent("solar-pro", "single", api_key, temperature, seed)
     for mail_id, mail in mail_dict.items():
-        summary, token_usage = self_refine_agent.process(mail, summary_agent)  # TODO: token_usage 미사용
+        summary = self_refine_agent.process(mail, summary_agent)
         mail_dict[mail_id].summary = summary
 
         if do_sum_eval:

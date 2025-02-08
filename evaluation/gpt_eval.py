@@ -2,11 +2,14 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from utils.configuration import Config
+from utils.token_usage_counter import TokenUsageCounter
+from utils.utils import retry_with_exponential_backoff
 
 load_dotenv()
 client = OpenAI()
 
 
+@retry_with_exponential_backoff()
 def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_type: str):
     """
     Summary / Report 평가 타입에 따라 G-EVAL 실행.
@@ -62,4 +65,6 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
 
         results_list.append(aspect_scores)
 
-    return results_list, total_token_usage
+    TokenUsageCounter.add_usage("reflexion", "evaluator", total_token_usage)
+
+    return results_list

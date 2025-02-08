@@ -1,5 +1,4 @@
 from evaluation import calculate_g_eval, run_solar_as_judge
-from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 
@@ -7,7 +6,6 @@ class ReflexionEvaluator:
     def __init__(self, task: str):
         self.task = task
 
-    @retry_with_exponential_backoff()
     def get_geval_scores(self, source_text: str, output_text: str):
         """참조한 텍스트와 생성한 텍스트를 입력으로 받고 점수를 매긴다.
 
@@ -21,15 +19,11 @@ class ReflexionEvaluator:
         """
         eval_type = "summary" if self.task == "single" else "report"
 
-        eval_list, token_usage = calculate_g_eval(
+        return calculate_g_eval(
             source_texts=[source_text],
             generated_texts=[output_text],
             eval_type=eval_type,
         )
-
-        TokenUsageCounter.add_usage("reflexion", "evaluator", token_usage)
-
-        return eval_list, token_usage  # TODO: token_usage 지우기
 
     @retry_with_exponential_backoff()
     def get_solar_as_judge_result(self, source_text: str, output_text: str):

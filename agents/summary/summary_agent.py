@@ -87,7 +87,6 @@ class SummaryAgent(BaseAgent):
                 template_type="summary", target_range=self.summary_type, action="summary", mail=mail
             )
 
-        token_usage = 0
         # max_iteration 번 Groundness Check 수행
         for i in range(max_iteration):
             response = self.client.chat.completions.create(
@@ -103,20 +102,15 @@ class SummaryAgent(BaseAgent):
             TokenUsageCounter.add_usage(
                 self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens
             )
-            token_usage += response.usage.total_tokens
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
             result = summarized_content["summary"]
 
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(context=mail, answer=result, api_key=self.api_key)
-            TokenUsageCounter.add_usage(
-                self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage
-            )
-            token_usage += groundness_token_usage
+            groundness = check_groundness(mail, result, self.api_key, self.__class__.__name__)
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
 
-        return summarized_content, token_usage  # TODO: token 사용량 지우기
+        return summarized_content

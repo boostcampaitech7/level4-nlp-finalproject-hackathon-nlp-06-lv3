@@ -81,12 +81,9 @@ class SelfRefineAgent(BaseAgent):
 
         Return:
             str: Self-refine을 거친 최종 결과물.
-            token_usage (int): process 함수 실행 중 발생한 토큰 이용량.
         """
         # 초기 요약 및 로그 생성
-        token_usage = 0
-        summarization, summary_token_usage = model.process(str(data))
-        token_usage += summary_token_usage
+        summarization = model.process(str(data))
         refine_target: dict = summarization["summary"] if self.target_range == "single" else summarization
         logging_file_prefix = self.target_range
         logging_file_prefix += "_".join(data.id.split("/")) if self.target_range == "single" else ""
@@ -105,11 +102,9 @@ class SelfRefineAgent(BaseAgent):
         # Self Refine 반복
         for i in range(max_iteration):
             # Groundness Check
-            groundness, groundness_token_usage = check_groundness(
-                context=input_mail_data, answer=generate_plain_text_report(refine_target), api_key=self.api_key
+            groundness = check_groundness(
+                input_mail_data, generate_plain_text_report(refine_target), self.api_key, self.__class__.__name__
             )
-            TokenUsageCounter.add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
-            token_usage += groundness_token_usage
 
             # Feedback
             feedback_messages = build_messages(
@@ -122,7 +117,6 @@ class SelfRefineAgent(BaseAgent):
             feedback_response = self.feedback(feedback_messages)
             feedback = feedback_response.choices[0].message.content
             TokenUsageCounter.add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
-            token_usage += feedback_response.usage.total_tokens
 
             self.logging(
                 f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_feedback.txt",
@@ -146,10 +140,9 @@ class SelfRefineAgent(BaseAgent):
             revision_response = self.refine(refine_messages)
             revision_content = revision_response.choices[0].message.content
             TokenUsageCounter.add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
-            token_usage += revision_response.usage.total_tokens
 
             # 요약문 혹은 리포트 업데이트 및 로깅
             refine_target = json.loads(revision_content) if self.target_range == "final" else revision_content
             self.logging(f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_refine.txt", revision_content)
 
-        return refine_target, token_usage  # TODO: token 사용량 지우기
+        return refine_target
