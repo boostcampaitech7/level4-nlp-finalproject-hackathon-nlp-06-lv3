@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 
-from batch_serving.db_utils import authenticate_gmail, fetch_users, insert_report
 from gmail_api.gmail_service import GmailService
 from pipelines.pipeline import pipeline
 from utils.configuration import Config
+from utils.db_utils import authenticate_gmail, fetch_users, insert_report
 
 
 def main():
