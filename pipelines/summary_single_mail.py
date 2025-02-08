@@ -13,9 +13,10 @@ def summary_single_mail(mail_dict: dict[str, Mail]):
     do_sum_eval: bool = Config.config["evaluation"]["summary_eval"]
 
     summary_agent = SummaryAgent("solar-pro", "single", temperature, seed)
-    self_refine_agent = SelfRefineAgent("solar-pro", "single", temperature, seed)
+    self_refine_agent = SelfRefineAgent("solar-pro", temperature, seed)
     for mail_id, mail in mail_dict.items():
-        summary = self_refine_agent.process(mail, summary_agent)
+        mail.summary = summary_agent.process(str(mail))["summary"]
+        summary = self_refine_agent.process(mail)
         mail_dict[mail_id].summary = summary
 
         if do_sum_eval:

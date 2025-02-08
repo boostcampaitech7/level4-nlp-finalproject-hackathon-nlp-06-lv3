@@ -1,31 +1,20 @@
 from openai import OpenAI
 
-from agents.base_agent import BaseAgent
 from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 
-class ReflexionSelfReflection(BaseAgent):
+class ReflexionSelfReflection:
     def __init__(self, task):
-        super().__init__("solar-pro", 0.7, 42)
-        # Reflection을 담을 리스트를 선언해준다
+        self.model_name = "solar-pro"
+        self.temperature = 0.7
+        self.seed = 42
         self.reflection_memory = []
         self.reflection_template = None
         self.aspects_description = None
         self.task = task
-
-    def initialize_chat(self):
-        """
-        요약을 위해 OpenAI 모델 객체를 초기화합니다.
-
-        Returns:
-            OpenAI: 초기화된 Solar 모델 객체.
-        """
-        return OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
-
-    def process(self, data, model=None):
-        pass
+        self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def save_reflection(self, reflection_text):
         """reflection 메모리에 reflection을 저장한다.

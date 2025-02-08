@@ -3,29 +3,36 @@ from collections import Counter
 
 from openai import OpenAI
 
-from agents.base_agent import BaseAgent
 from agents.classification.classification_agent import ClassificationAgent
 from agents.utils import build_messages, load_categories_from_yaml
 from evaluation.classification.dataframe_manager import DataFrameManager
+from gmail_api.mail import Mail
 from utils.utils import retry_with_exponential_backoff
 
 
-class ClassificationEvaluationAgent(BaseAgent):
+class ClassificationEvaluationAgent:
     """
     AI 모델을 통해 분류(추론)하고, Ground Truth 생성 및 (옵션) 사람 검수 후
     DataFrameManager에 결과를 전달하는 역할.
     """
 
-    def __init__(self, model: str, human_evaluation: bool, inference: int, temperature: int = None, seed: int = None):
-        super().__init__(model, temperature, seed)
-        self.inference_iteration = inference
+    def __init__(
+        self,
+        model_name: str,
+        human_evaluation: bool,
+        inference_iteration: int,
+        temperature: int = None,
+        seed: int = None,
+    ):
+        self.model_name = model_name
         self.human_evaluation = human_evaluation
-        self.df_manager = DataFrameManager(inference)
+        self.inference_iteration = inference_iteration
+        self.temperature = temperature
+        self.seed = seed
+        self.df_manager = DataFrameManager(inference_iteration)
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    def initialize_chat(self):
-        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # TODO: SOLAR 모델 사용하도록 변경
-
-    def generate_ground_truth(self, mail, classification_type: str) -> str:
+    def generate_ground_truth(self, mail: Mail, classification_type: str) -> str:
         """
         1) YAML로부터 카테고리 정보를 로드,
         2) GPT 모델로부터 Ground Truth 추론,
@@ -47,7 +54,7 @@ class ClassificationEvaluationAgent(BaseAgent):
         return response.choices[0].message.content.strip()
 
     @retry_with_exponential_backoff()
-    def process(self, mail, classifier: ClassificationAgent, classification_type: str):
+    def process(self, mail: Mail, classifier: ClassificationAgent, classification_type: str):
         """
         1) Ground Truth를 GPT로 생성.
         2) 사람이 검수(human_evaluation) 옵션이 True면 콘솔에서 수정 가능.
@@ -65,13 +72,10 @@ class ClassificationEvaluationAgent(BaseAgent):
             )
             ground_truth = user_input.strip() if user_input else ground_truth
 
-        # 동일 메일에 대해 여러 번 분류
         results = [classifier.process(mail, classification_type) for _ in range(self.inference_iteration)]
 
-        # CSV에 저장 (메일 단위로 Entropy 등 기록)
         self.df_manager.update_eval_df(mail.id, results, ground_truth)
 
-        # 여기서는 majority vote 등으로 최종값 return (예: 가장 많이 나온 라벨)
         label_counter = Counter(results)
         return label_counter.most_common(1)[0][0]
 
