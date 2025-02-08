@@ -14,5 +14,6 @@ exclude =
     data,
     # Do not include the virtual environment
     .venv,
+    chrome-extension,
 max-complexity = 10
 statistics = true

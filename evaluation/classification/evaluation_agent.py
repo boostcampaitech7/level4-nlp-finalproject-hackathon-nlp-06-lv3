@@ -4,6 +4,7 @@ from collections import Counter
 from openai import OpenAI
 
 from agents import BaseAgent, ClassificationAgent, build_messages, load_categories_from_yaml
+from utils.utils import retry_with_exponential_backoff
 
 from .dataframe_manager import DataFrameManager
 
@@ -44,6 +45,7 @@ class ClassificationEvaluationAgent(BaseAgent):
         )
         return response.choices[0].message.content.strip()
 
+    @retry_with_exponential_backoff()
     def process(self, mail, classifier: ClassificationAgent, classification_type: str):
         """
         1) Ground Truth를 GPT로 생성.

@@ -3,6 +3,7 @@ import json
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
+from utils.utils import retry_with_exponential_backoff
 
 from ..utils import SUMMARY_FORMAT, build_messages
 
@@ -52,6 +53,7 @@ class SummaryAgent(BaseAgent):
         """
         return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
 
+    @retry_with_exponential_backoff()
     def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> tuple[dict[str, str], int]:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.

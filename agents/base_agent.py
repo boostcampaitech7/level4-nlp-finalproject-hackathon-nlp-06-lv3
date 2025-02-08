@@ -11,8 +11,6 @@ import numpy as np
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
-from utils.utils import retry_with_exponential_backoff
-
 
 class BaseAgent(ABC):
     """
@@ -47,7 +45,6 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    @retry_with_exponential_backoff()
     def process(self, data, model=None):
         """
         데이터를 처리하는 메서드입니다. 하위 클래스에서 구현해야 합니다.

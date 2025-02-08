@@ -1,4 +1,5 @@
 from utils import map_category
+from utils.utils import retry_with_exponential_backoff
 
 from ..summary import SummaryAgent
 from .evaluator import ReflexionEvaluator
@@ -24,6 +25,7 @@ class ReflexionFramework:
 
         return output_text
 
+    @retry_with_exponential_backoff()
     def process(self, origin_mail, summary_agent: SummaryAgent) -> tuple[str, int]:
         """
         Reflexion을 실행합니다.

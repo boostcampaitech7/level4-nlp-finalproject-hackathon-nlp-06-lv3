@@ -2,6 +2,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 from agents import BaseAgent
+from utils.utils import retry_with_exponential_backoff
 
 from .sentence_splitter import split_sentences
 
@@ -13,6 +14,7 @@ class Bgem3EmbeddingAgent(BaseAgent):
     def initialize_chat(self, model, temperature=None, seed=None):
         return SentenceTransformer("upskyy/bge-m3-korean")
 
+    @retry_with_exponential_backoff()
     def process(self, summary: str, model=None):
         splitted_sentences = split_sentences(summary)
 

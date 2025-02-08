@@ -73,6 +73,7 @@ class SelfRefineAgent(BaseAgent):
             seed=self.seed,
         )
 
+    @retry_with_exponential_backoff()
     def process(self, data, model: BaseAgent, max_iteration: int = 3):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
