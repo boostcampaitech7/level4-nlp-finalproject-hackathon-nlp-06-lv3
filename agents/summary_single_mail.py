@@ -7,13 +7,13 @@ from gmail_api.mail import Mail
 from utils.configuration import Config
 
 
-def summary_single_mail(mail_dict: dict[str, Mail], api_key: str):
+def summary_single_mail(mail_dict: dict[str, Mail]):
     temperature: int = Config.config["temperature"]["summary"]
     seed: int = Config.config["seed"]
     do_sum_eval: bool = Config.config["evaluation"]["summary_eval"]
 
-    summary_agent = SummaryAgent("solar-pro", "single", api_key, temperature, seed)
-    self_refine_agent = SelfRefineAgent("solar-pro", "single", api_key, temperature, seed)
+    summary_agent = SummaryAgent("solar-pro", "single", temperature, seed)
+    self_refine_agent = SelfRefineAgent("solar-pro", "single", temperature, seed)
     for mail_id, mail in mail_dict.items():
         summary = self_refine_agent.process(mail, summary_agent)
         mail_dict[mail_id].summary = summary

@@ -23,7 +23,7 @@ class ClassificationEvaluationAgent(BaseAgent):
         self.df_manager = DataFrameManager(inference)
 
     def initialize_chat(self):
-        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # TODO: 유저 별로 OPENAI_API_KEY 사용하게 변경
+        return OpenAI(api_key=os.getenv("OPENAI_API_KEY"))  # TODO: SOLAR 모델 사용하도록 변경
 
     def generate_ground_truth(self, mail, classification_type: str) -> str:
         """

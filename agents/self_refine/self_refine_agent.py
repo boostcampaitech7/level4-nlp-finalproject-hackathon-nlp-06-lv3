@@ -6,6 +6,7 @@ from openai import OpenAI
 from agents.base_agent import BaseAgent
 from agents.groundness_check import check_groundness
 from agents.utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
+from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
@@ -22,8 +23,7 @@ class SelfRefineAgent(BaseAgent):
         seed (int, optional): 결과 재현성을 위한 시드 값.
     """
 
-    def __init__(self, model_name: str, target_range: str, api_key: str, temperature=None, seed=None):
-        self.api_key = api_key
+    def __init__(self, model_name: str, target_range: str, temperature=None, seed=None):
         super().__init__(model_name, temperature, seed)
         if target_range != "single" and target_range != "final":
             raise ValueError(
@@ -40,7 +40,7 @@ class SelfRefineAgent(BaseAgent):
         Returns:
             ChatUpstage: 초기화된 ChatUpstage 객체.
         """
-        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def logging(self, path, content):
         diretory = os.path.dirname(path)
@@ -103,7 +103,9 @@ class SelfRefineAgent(BaseAgent):
         for i in range(max_iteration):
             # Groundness Check
             groundness = check_groundness(
-                input_mail_data, generate_plain_text_report(refine_target), self.api_key, self.__class__.__name__
+                input_mail_data,
+                generate_plain_text_report(refine_target),
+                self.__class__.__name__,
             )
 
             # Feedback

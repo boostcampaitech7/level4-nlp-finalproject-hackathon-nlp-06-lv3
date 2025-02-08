@@ -11,16 +11,16 @@ from utils.checklist_builder import build_json_checklist
 from utils.utils import convert_mail_dict_to_df
 
 
-def pipeline(gmail_service: GmailService, api_key: str):
+def pipeline(gmail_service: GmailService):
     try:
         mail_dict: dict[str, Mail] = gmail_service.fetch_mails()
 
-        summary_single_mail(mail_dict, api_key)
-        classify_single_mail(mail_dict, api_key)
+        summary_single_mail(mail_dict)
+        classify_single_mail(mail_dict)
 
         cluster_mails(mail_dict)
 
-        report = make_report(mail_dict, api_key)
+        report = make_report(mail_dict)
 
         df = convert_mail_dict_to_df(mail_dict)
 

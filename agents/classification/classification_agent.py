@@ -3,6 +3,7 @@ from openai import OpenAI
 from agents.base_agent import BaseAgent
 from agents.utils import build_messages, load_categories_from_yaml
 from gmail_api.mail import Mail
+from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
@@ -22,8 +23,7 @@ class ClassificationAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, api_key: str, temperature=None, seed=None):
-        self.api_key = api_key
+    def __init__(self, model_name: str, temperature=None, seed=None):
         super().__init__(model_name, temperature, seed)
 
     def initialize_chat(self):
@@ -33,7 +33,7 @@ class ClassificationAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
     def process(self, mail: Mail, classification_type: str) -> str:

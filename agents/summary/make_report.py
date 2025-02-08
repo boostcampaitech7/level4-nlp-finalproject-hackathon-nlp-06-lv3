@@ -4,11 +4,10 @@ from gmail_api.mail import Mail
 from utils.configuration import Config
 
 
-def make_report(mail_dict: dict[str, Mail], api_key: str):
+def make_report(mail_dict: dict[str, Mail]):
     summary_agent = SummaryAgent(
         model_name="solar-pro",
         summary_type="final",
-        api_key=api_key,
         temperature=Config.config["temperature"]["summary"],
         seed=Config.config["seed"],
     )

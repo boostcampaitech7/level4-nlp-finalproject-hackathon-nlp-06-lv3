@@ -8,21 +8,21 @@ from utils.configuration import Config
 
 def main():
     load_dotenv()
+    Config.load()
 
     # 유저 테이블 불러오기
     users = fetch_users()
-
-    Config.load()
 
     # access token, refresh token 가져와서 service 객체 선언하기
     for user in users:
         try:
             # if user["id"] == 9:
             service = authenticate_gmail(user)
+            Config.user_upstage_api_key = user["upstage_api_key"]
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
-            json_checklist, report = pipeline(gmail_service, user["upstage_api_key"])
+            json_checklist, report = pipeline(gmail_service)
             print(f"============ FINAL REPORT of {user['id']} =============")
             print(report)
             print("=======================================================")

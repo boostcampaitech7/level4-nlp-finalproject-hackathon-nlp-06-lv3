@@ -5,6 +5,7 @@ from openai import OpenAI
 from agents.base_agent import BaseAgent
 from agents.groundness_check import check_groundness
 from agents.utils import SUMMARY_FORMAT, build_messages
+from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
@@ -25,8 +26,7 @@ class SummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
-        self.api_key = api_key
+    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
         super().__init__(model_name, temperature, seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
@@ -47,7 +47,7 @@ class SummaryAgent(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
+        return OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
     def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict[str, str]:
@@ -106,7 +106,11 @@ class SummaryAgent(BaseAgent):
             result = summarized_content["summary"]
 
             # Groundness Check
-            groundness = check_groundness(mail, result, self.api_key, self.__class__.__name__)
+            groundness = check_groundness(
+                mail,
+                result,
+                self.__class__.__name__,
+            )
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":

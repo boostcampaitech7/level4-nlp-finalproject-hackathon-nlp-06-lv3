@@ -1,8 +1,7 @@
-import os
-
 from openai import OpenAI
 
 from agents.base_agent import BaseAgent
+from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
@@ -23,9 +22,7 @@ class ReflexionSelfReflection(BaseAgent):
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.
         """
-        return OpenAI(
-            api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar"
-        )  # TODO: UPSTAGE_API_KEY user 별로 사용하게 변경
+        return OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def process(self, data, model=None):
         pass

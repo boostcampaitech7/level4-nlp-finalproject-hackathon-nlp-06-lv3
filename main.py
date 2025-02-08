@@ -31,13 +31,13 @@ def create_service():
 
 def main():
     load_dotenv()
-
-    # TODO: config 대체
     Config.load()
+
+    Config.user_upstage_api_key = os.getenv("UPSTAGE_API_KEY")
 
     gmail_service = GmailService(create_service())
 
-    _, report = pipeline(gmail_service, os.getenv("UPSTAGE_API_KEY"))
+    _, report = pipeline(gmail_service)
 
     print("============ FINAL REPORT=============")
     print(report)

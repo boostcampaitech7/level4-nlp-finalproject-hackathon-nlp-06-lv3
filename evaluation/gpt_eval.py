@@ -1,5 +1,3 @@
-import os
-
 from openai import OpenAI
 
 from utils.configuration import Config
@@ -21,7 +19,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
 
     if model_name == "solar-pro":
-        client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        client = OpenAI(Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
     else:
         client = OpenAI()
 
