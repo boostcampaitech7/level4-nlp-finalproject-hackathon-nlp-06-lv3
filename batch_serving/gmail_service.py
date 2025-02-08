@@ -3,7 +3,7 @@ from collections import deque
 from tqdm import tqdm
 
 from batch_serving.mail import Mail
-from batch_serving.other_utils.other_utils import (
+from batch_serving.utils.utils import (
     decode_base64,
     delete_file,
     parse_document,
