@@ -1,22 +1,15 @@
-import os
-
 import numpy as np
 from openai import OpenAI
 
-from agents.base_agent import BaseAgent
 from agents.embedding.sentence_splitter import split_sentences
+from utils.configuration import Config
 
 
-class UpstageEmbeddingAgent(BaseAgent):
-    def __init__(self, model_name: str | None = None, temperature: int | None = None, seed: int | None = None):
-        super().__init__(model_name, temperature, seed)
+class UpstageEmbeddingAgent:
+    def __init__(self):
+        self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    def initialize_chat(self):
-        return OpenAI(
-            api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar"
-        )  # TODO: 유저 별로 UPSTAGE_API_KEY 사용하게 변경
-
-    def process(self, summary: str, model=None) -> np.ndarray:
+    def process(self, summary: str) -> np.ndarray:
         splitted_sentences = split_sentences(summary)
 
         response = self.client.embeddings.create(input=splitted_sentences, model="embedding-passage").data

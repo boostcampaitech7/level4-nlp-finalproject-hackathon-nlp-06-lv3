@@ -1,10 +1,8 @@
-import os
-
 from openai import OpenAI
 
 from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
-from utils.utils import retry_with_exponential_backoff
 
 
 @retry_with_exponential_backoff()
@@ -21,7 +19,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
 
     if model_name == "solar-pro":
-        client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
+        client = OpenAI(Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
     else:
         client = OpenAI()
 
@@ -36,7 +34,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
         aspect_scores = {}
 
         for aspect in aspects:
-            prompt_path: str = prompt_files[aspect]
+            prompt_path: str = prompt_files[aspect].format(eval_type=eval_type)
             if not prompt_path:
                 aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
                 continue

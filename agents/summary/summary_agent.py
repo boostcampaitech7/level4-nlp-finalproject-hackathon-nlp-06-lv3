@@ -2,14 +2,15 @@ import json
 
 from openai import OpenAI
 
-from agents.base_agent import BaseAgent
-from agents.groundness_check import check_groundness
-from agents.utils import SUMMARY_FORMAT, build_messages
+from agents.self_refine.json_formats import SUMMARY_FORMAT
+from agents.utils.groundness_check import check_groundness
+from agents.utils.utils import build_messages
+from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
-from utils.utils import retry_with_exponential_backoff
 
 
-class SummaryAgent(BaseAgent):
+class SummaryAgent:
     """
     SummaryAgent는 이메일과 같은 텍스트 데이터를 요약하기 위한 에이전트 클래스입니다.
     내부적으로 Upstage 플랫폼의 ChatUpstage 모델을 사용하여 요약 작업을 수행합니다.
@@ -25,32 +26,19 @@ class SummaryAgent(BaseAgent):
         summary_type (str): 요약 유형을 나타내는 문자열입니다.
     """
 
-    def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
-        self.api_key = api_key
-        super().__init__(model_name, temperature, seed)
-
-        # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
+    def __init__(self, model_name: str, summary_type: str, temperature=None, seed=None):
         if summary_type != "single" and summary_type != "final":
             raise ValueError(
                 f'summary_type: {summary_type}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
             )
-
-        # 추후 프롬프트 템플릿 로드 동작을 위해 string으로 받아 attribute로 저장합니다.
+        self.model_name = model_name
         self.summary_type = summary_type
         self.temperature = temperature
         self.seed = seed
-
-    def initialize_chat(self):
-        """
-        요약을 위해 OpenAI 모델 객체를 초기화합니다.
-
-        Returns:
-            OpenAI: 초기화된 Solar 모델 객체.
-        """
-        return OpenAI(api_key=self.api_key, base_url="https://api.upstage.ai/v1/solar")
+        self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
-    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> dict[str, str]:
+    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> str:
         """
         주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
         내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
@@ -62,10 +50,6 @@ class SummaryAgent(BaseAgent):
         Returns:
             dict: 요약된 결과 JSON.
         """
-
-        # 출력 포맷 지정
-        response_format = SUMMARY_FORMAT
-
         if reflections:
             input_reflections = "제공된 피드백 없음" if reflections[0] == "start" else "\n".join(reflections)
 
@@ -92,7 +76,7 @@ class SummaryAgent(BaseAgent):
                 model=self.model_name,
                 # ./prompt/template/summary/{self.summary_type}_summary_system(혹은 user).txt 템플릿에서 프롬프트 생성
                 messages=messages,
-                response_format=response_format,
+                response_format=SUMMARY_FORMAT,
                 temperature=self.temperature,
                 seed=self.seed,
             )
@@ -106,10 +90,14 @@ class SummaryAgent(BaseAgent):
             result = summarized_content["summary"]
 
             # Groundness Check
-            groundness = check_groundness(mail, result, self.api_key, self.__class__.__name__)
+            groundness = check_groundness(
+                mail,
+                result,
+                self.__class__.__name__,
+            )
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
 
-        return summarized_content
+        return result

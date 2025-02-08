@@ -1,6 +1,3 @@
-from typing import Optional
-
-
 class Mail:
     def __init__(
         self,
@@ -9,8 +6,6 @@ class Mail:
         body: str,
         attachments: list[str],
         headers: dict[str, str],
-        summary: Optional[str] = None,
-        label: Optional[str] = None,
     ):
         """
         Args:
@@ -19,7 +14,7 @@ class Mail:
             mail_id (str): 우리 서비스 내에서 매길 임의 id
         """
         self.message_id = message_id
-        self._id = mail_id
+        self.id = mail_id
         self.sender = headers["sender"]
         self.recipients = [headers["recipients"]]
         self.subject = headers["subject"]
@@ -27,10 +22,6 @@ class Mail:
         self.cc = [headers["cc"]] if headers["cc"] is not None else []
         self.attachments = attachments if attachments is not None else []
         self.date = headers["date"]
-        self._summary = summary
-        self._label_category = label
-        self._label_action = label
-        self._similar_mails = []
 
     def __str__(self) -> str:
         attachments_text = ""
@@ -46,47 +37,3 @@ class Mail:
             f"본문:\n{self.body}\n"
             f"{attachments_text}"
         )
-
-    @property
-    def id(self) -> str:
-        return self._id
-
-    @property
-    def summary(self) -> Optional[str]:
-        return self._summary
-
-    @summary.setter
-    def summary(self, value: str) -> None:
-        if not value:
-            raise ValueError("Summary cannot be empty.")
-        self._summary = value
-
-    @property
-    def label_category(self) -> Optional[str]:
-        return self._label_category
-
-    @label_category.setter
-    def label_category(self, value: str) -> None:
-        if not value:
-            raise ValueError("Label cannot be empty.")
-        self._label_category = value
-
-    @property
-    def label_action(self) -> Optional[str]:
-        return self._label_action
-
-    @label_action.setter
-    def label_action(self, value: str) -> None:
-        if not value:
-            raise ValueError("Label cannot be empty.")
-        self._label_action = value
-
-    @property
-    def similar_mails(self) -> Optional[list[str]]:
-        return self._similar_mails
-
-    @similar_mails.setter
-    def similar_mails(self, value: list[str]) -> None:
-        if not isinstance(value, list) and not value:
-            raise ValueError("Similar Mails cannot be empty.")
-        self._similar_mails = value

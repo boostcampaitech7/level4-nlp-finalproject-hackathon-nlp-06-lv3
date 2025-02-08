@@ -1,21 +1,20 @@
 import ast
-import os
 
-# import yaml
-from dotenv import load_dotenv
 from openai import OpenAI
 
+from utils.configuration import Config
+from utils.decorators import retry_with_exponential_backoff
 from utils.token_usage_counter import TokenUsageCounter
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 
-
+# TODO: 현재 사용되지 않는 함수(개선 및 반영 혹은, 삭제 필요)
+@retry_with_exponential_backoff()
 def run_solar_as_judge(
     source_texts: str,
     generated_texts: str,
     solar_as_judge_config: dict,
 ) -> dict:
+    client = OpenAI(Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
     prompt_template_file_path = solar_as_judge_config.get("prompt_path", {})
 
     with open(prompt_template_file_path, "r", encoding="utf-8") as file:
@@ -44,7 +43,7 @@ def run_solar_as_judge(
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
             seed=42,
-        )  # TODO: 토큰 사용량 기록 필요
+        )
         TokenUsageCounter.add_usage("solar_as_judge", "solar_as_judge", response.usage.total_tokens)
         response_message = response.choices[0].message.content
         try:

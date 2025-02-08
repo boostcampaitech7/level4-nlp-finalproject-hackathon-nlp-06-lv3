@@ -6,8 +6,8 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from agents.pipeline import pipeline
 from gmail_api.gmail_service import GmailService
+from pipelines.pipeline import pipeline
 from utils.configuration import Config
 
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -31,17 +31,17 @@ def create_service():
 
 def main():
     load_dotenv()
-
-    # TODO: config 대체
     Config.load()
+
+    Config.user_upstage_api_key = os.getenv("UPSTAGE_API_KEY")
 
     gmail_service = GmailService(create_service())
 
-    _, report = pipeline(gmail_service, os.getenv("UPSTAGE_API_KEY"))
+    _, report = pipeline(gmail_service)
 
     print("============ FINAL REPORT=============")
     print(report)
-    print("=======================================================")
+    print("======================================")
 
 
 if __name__ == "__main__":
