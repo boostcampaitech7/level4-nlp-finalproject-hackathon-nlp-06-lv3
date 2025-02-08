@@ -1,19 +1,16 @@
 from agents.pipeline import pipeline
-from batch_serving import GmailService, authenticate_gmail, fetch_users, get_connection, insert_report
+from batch_serving import GmailService, authenticate_gmail, fetch_users, insert_report
 
 
 def main():
-    # MaeilMail DB 접속
-    connection = get_connection()
-
     # 유저 테이블 불러오기
-    users = fetch_users(connection)
+    users = fetch_users()
 
     # access token, refresh token 가져와서 service 객체 선언하기
     for user in users:
         try:
             # if user["id"] == 9:
-            service = authenticate_gmail(connection, user)
+            service = authenticate_gmail(user)
             # GmailService 인스턴스 생성
             gmail_service = GmailService(service)
 
@@ -22,13 +19,10 @@ def main():
             print(report)
             print("=======================================================")
 
-            insert_report(connection, user["id"], report, json_checklist)
+            insert_report(user["id"], report, json_checklist)
 
         except Exception as e:
             print(e)
-
-    connection.close()
-    print("MySQL connection is closed")
 
 
 if __name__ == "__main__":

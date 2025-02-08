@@ -1,12 +1,13 @@
 import os
+from contextlib import contextmanager
 from datetime import datetime, timezone
+from functools import wraps
 
 import mysql.connector
 from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from mysql.connector.abstracts import MySQLConnectionAbstract
 
 load_dotenv()
 
@@ -26,7 +27,8 @@ SCOPES = [
 ]
 
 
-def get_connection():
+@contextmanager
+def db_cursor():
     connection = mysql.connector.connect(
         host=DB_HOST,
         user=DB_USER,
@@ -34,16 +36,42 @@ def get_connection():
         database=DB_NAME,
         port=DB_PORT,
     )
-    if connection.is_connected():
-        print("Connected to MySQL Server")
-    return connection
-
-
-def fetch_users(connection: MySQLConnectionAbstract):
     cursor = connection.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM user_tb")
-    users = cursor.fetchall()
-    cursor.close()
+    try:
+        yield cursor
+        connection.commit()
+    finally:
+        cursor.close()
+        connection.close()
+
+
+def with_cursor(func):
+    """자동으로 데이터베이스 연결과 커서를 관리하는 데코레이터"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        connection = mysql.connector.connect(
+            host=DB_HOST,
+            user=DB_USER,
+            password=DB_PASS,
+            database=DB_NAME,
+            port=DB_PORT,
+        )
+        cursor = connection.cursor(dictionary=True)
+        try:
+            return func(cursor, *args, **kwargs)  # 커서를 함수 인자로 전달
+        finally:
+            connection.commit()
+            cursor.close()
+            connection.close()
+
+    return wrapper
+
+
+def fetch_users():
+    with db_cursor() as cursor:
+        cursor.execute("SELECT * FROM user_tb")
+        users = cursor.fetchall()
     return users
 
 
@@ -55,7 +83,7 @@ def is_expired(expiry_time: datetime) -> bool:
     return utc_current_time >= expiry_time
 
 
-def refresh_access_token(connection: MySQLConnectionAbstract, user_id: int, refresh_token: str) -> Credentials:
+def refresh_access_token(user_id: int, refresh_token: str) -> Credentials:
     credentials = Credentials(
         None,
         refresh_token=refresh_token,
@@ -65,22 +93,19 @@ def refresh_access_token(connection: MySQLConnectionAbstract, user_id: int, refr
         scopes=SCOPES,
     )
     credentials.refresh(Request())
-
-    cursor = connection.cursor()
-    query = "UPDATE user_tb SET access_token = %s, expiry = %s WHERE id = %s"
-    cursor.execute(query, (credentials.token, credentials.expiry, user_id))
-    connection.commit()
-    cursor.close()
+    with db_cursor() as cursor:
+        query = "UPDATE user_tb SET access_token = %s, expiry = %s WHERE id = %s"
+        cursor.execute(query, (credentials.token, credentials.expiry, user_id))
 
     return credentials
 
 
-def authenticate_gmail(connection: MySQLConnectionAbstract, user: dict):
+def authenticate_gmail(user: dict):
     refresh_token = user["refresh_token"]
 
     if is_expired(user["expiry"]):
         print(f"🔄 사용자 {user['id']} 토큰 만료. 새로 갱신 중...")
-        creds = refresh_access_token(connection, user["id"], refresh_token)
+        creds = refresh_access_token(user["id"], refresh_token)
     else:
         creds = Credentials(
             token=user["access_token"],
@@ -95,13 +120,11 @@ def authenticate_gmail(connection: MySQLConnectionAbstract, user: dict):
     return build("gmail", "v1", credentials=creds)
 
 
-def insert_report(connection: MySQLConnectionAbstract, user_id, report, json_checklist):
-    cursor = connection.cursor()
+def insert_report(user_id, report, json_checklist):
     current_datetime = datetime.now()
 
-    sql = "INSERT INTO report_temp_tb (user_id, content, report, date, refresh_time) VALUES (%s, %s, %s, %s, %s)"
-    cursor.execute(sql, (user_id, json_checklist, report, current_datetime.date(), current_datetime))
-    connection.commit()
-    cursor.close()
+    with db_cursor() as cursor:
+        sql = "INSERT INTO report_temp_tb (user_id, content, report, date, refresh_time) VALUES (%s, %s, %s, %s, %s)"
+        cursor.execute(sql, (user_id, json_checklist, report, current_datetime.date(), current_datetime))
 
     print("새로운 레포트가 등록되었습니다.")
