@@ -1,7 +1,7 @@
 gmail:
   start_date: # gmail에서 불러올 시작 날짜 (값이 없는 경우 2025/01/10)
   end_date: # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
-  max_mails: 3 # gmail에서 불러올 메일 최대 개수 TODO: 10으로 원상복구
+  max_mails: 10 # gmail에서 불러올 메일 최대 개수 TODO: 10으로 원상복구
 
 evaluation: # 평가 설정
   summary_eval: false # Summary 평가 수행 여부
@@ -15,7 +15,7 @@ temperature:
 
 self_reflection:
   type: self-refine # self-refine | reflexion 변경 가능
-  max_iteration: 1 # TODO: 3으로 원상복구
+  max_iteration: 3 # TODO: 3으로 원상복구
   reflexion:
     threshold_type: "average"
     threshold: 4.5
