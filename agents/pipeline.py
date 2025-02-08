@@ -5,8 +5,9 @@ from agents import EmbeddingManager, ReflexionFramework, SummaryAgent
 from agents.classify_single_mail import classify_single_mail
 from agents.summary_single_mail import summary_single_mail
 from batch_serving import GmailService, Mail
-from checklist_builder import build_json_checklist
-from utils import convert_mail_dict_to_df, load_config
+from utils import convert_mail_dict_to_df
+from utils.checklist_builder import build_json_checklist
+from utils.configuration import Config
 
 
 def cluster_mails(mail_dict: dict[str, Mail], config: dict):
@@ -40,23 +41,20 @@ def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
 
 
 def pipeline(gmail_service: GmailService, api_key: str):
-    config = load_config()
-
     try:
-        mail_dict: dict[str, Mail] = gmail_service.fetch_mails(
-            start_date=config["gmail"]["start_date"],
-            end_date=config["gmail"]["end_date"],
-            n=config["gmail"]["max_mails"],
-        )
+        mail_dict: dict[str, Mail] = gmail_service.fetch_mails()
 
-        summary_single_mail(mail_dict, config, api_key)
-        classify_single_mail(mail_dict, config, api_key)
+        summary_single_mail(mail_dict, api_key)
+        classify_single_mail(mail_dict, Config.config, api_key)
 
-        cluster_mails(mail_dict, config)
+        cluster_mails(mail_dict, Config.config)
 
-        report = make_report(mail_dict, api_key, config)
+        report = make_report(mail_dict, api_key, Config.config)
 
         df = convert_mail_dict_to_df(mail_dict)
+
+        print("======================DATAFRAME=========================")
+        print(df)
 
         json_checklist = build_json_checklist(df)
 

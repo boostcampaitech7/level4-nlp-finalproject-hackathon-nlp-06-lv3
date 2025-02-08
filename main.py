@@ -9,6 +9,7 @@ from h11 import Request
 from agents.pipeline import pipeline
 from batch_serving import GmailService
 from batch_serving.db_utils import SCOPES
+from utils.configuration import Config
 
 
 def create_service():
@@ -31,6 +32,8 @@ def main():
     load_dotenv()
 
     # TODO: config 대체
+    Config.load()
+
     gmail_service = GmailService(create_service())
 
     _, report = pipeline(gmail_service, os.getenv("UPSTAGE_API_KEY"))

@@ -4,8 +4,7 @@ from utils.utils import retry_with_exponential_backoff
 
 
 class ReflexionEvaluator:
-    def __init__(self, task: str, config: dict):
-        self.config = config
+    def __init__(self, task: str):
         self.task = task
 
     @retry_with_exponential_backoff()
@@ -20,11 +19,12 @@ class ReflexionEvaluator:
             (dict, str)
             0번째는 dict, 1번째는 한 줄의 str 형식으로 aspect 별 점수를 return한다.
         """
+        eval_type = "summary" if self.task == "single" else "report"
+
         eval_list, token_usage = calculate_g_eval(
             source_texts=[source_text],
             generated_texts=[output_text],
-            g_eval_config=self.config["summary"]["g_eval"],
-            eval_type=self.task,
+            eval_type=eval_type,
         )
 
         TokenUsageCounter.add_usage("reflexion", "evaluator", token_usage)

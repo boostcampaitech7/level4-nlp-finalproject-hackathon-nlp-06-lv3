@@ -11,6 +11,7 @@ from batch_serving.other_utils.other_utils import (
     replace_url_pattern_from,
     save_file,
 )
+from utils.configuration import Config
 
 
 class GmailService:
@@ -25,7 +26,11 @@ class GmailService:
         results = self.service.users().messages().list(userId="me", maxResults=max_results).execute()
         return results.get("messages", [])
 
-    def fetch_mails(self, start_date: str, end_date: str, n: int):
+    def fetch_mails(self):
+        start_date = Config.config["gmail"]["start_date"]
+        end_date = Config.config["gmail"]["end_date"]
+        n = Config.config["gmail"]["max_mails"]
+
         messages = self.get_today_n_messages(start_date, n)
         mail_dict = {}
         for idx, msg_meta in enumerate(tqdm(messages, desc="Processing Emails")):

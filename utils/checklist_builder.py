@@ -1,4 +1,3 @@
-import ast
 import json
 
 import pandas as pd
@@ -48,9 +47,3 @@ def build_json_checklist(df: pd.DataFrame) -> str:
     json_output = json.dumps(result, indent=4, ensure_ascii=False)
 
     return json_output
-
-
-if __name__ == "__main__":
-    df = pd.read_csv("test_mail_10.csv", index_col=0)
-    df["similar_mails"] = df["similar_mails"].apply(ast.literal_eval)
-    print(build_json_checklist(df))
