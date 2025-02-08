@@ -22,8 +22,6 @@ class ReflexionFramework:
         threshold_type = self.config["self_reflection"]["reflexion"]["threshold_type"]
         threshold = self.config["self_reflection"]["reflexion"]["threshold"]
 
-        self.self_reflection.load_setup_texts()
-
         scores = []
         outputs = []
         initail_content = summary_agent.process(origin_mail, 3, ["start"])
