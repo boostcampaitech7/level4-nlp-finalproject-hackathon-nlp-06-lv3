@@ -3,16 +3,10 @@ from evaluation import calculate_g_eval, run_solar_as_judge
 from utils.utils import retry_with_exponential_backoff
 
 
-class ReflexionEvaluator(BaseAgent):
+class ReflexionEvaluator:
     def __init__(self, task: str, config: dict):
         self.config = config
         self.task = task
-
-    def initialize_chat(self, model, temperature=None, seed=None):
-        pass
-
-    def process(self, data, model=None):
-        pass
 
     @retry_with_exponential_backoff()
     def get_geval_scores(self, source_text: str, output_text: str):
@@ -33,7 +27,7 @@ class ReflexionEvaluator(BaseAgent):
             eval_type=self.task,
         )
 
-        super().add_usage("reflexion", "evaluator", token_usage)
+        BaseAgent.add_usage("reflexion", "evaluator", token_usage)
 
         return eval_list, token_usage
 

@@ -8,12 +8,23 @@ from utils import retry_with_exponential_backoff
 
 class ReflexionSelfReflection(BaseAgent):
     def __init__(self, task):
+        super().__init__("solar-pro", 0.7, 42)
         # Reflection을 담을 리스트를 선언해준다
         self.reflection_memory = []
         self.reflection_template = None
         self.aspects_description = None
         self.task = task
-        self.client = self.initialize_chat(model="solar-pro", temperature=0.7, seed=42)
+
+    def initialize_chat(self):
+        """
+        요약을 위해 OpenAI 모델 객체를 초기화합니다.
+
+        Returns:
+            OpenAI: 초기화된 Solar 모델 객체.
+        """
+        return OpenAI(
+            api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar"
+        )  # TODO: UPSTAGE_API_KEY user 별로 사용하게 변경
 
     def process(self, data, model=None):
         pass
@@ -38,23 +49,6 @@ class ReflexionSelfReflection(BaseAgent):
             reflection_text (str)
         """
         self.reflection_memory.append(reflection_text)
-
-    def initialize_chat(self, model: str, temperature=None, seed=None):
-        """
-        요약을 위해 OpenAI 모델 객체를 초기화합니다.
-
-        Args:
-            model (str): 사용할 모델 이름.
-            temperature (float, optional): 생성 다양성을 조정하는 파라미터.
-            seed (int, optional): 결과 재현성을 위한 시드 값.
-
-        Returns:
-            OpenAI: 초기화된 Solar 모델 객체.
-        """
-        self.model_name = model
-        self.temperature = temperature
-        self.seed = seed
-        return OpenAI(api_key=os.getenv("UPSTAGE_API_KEY"), base_url="https://api.upstage.ai/v1/solar")
 
     @retry_with_exponential_backoff()
     def generate_reflection(self, source_text, output_text, eval_result):

@@ -26,7 +26,7 @@ class SummaryAgent(BaseAgent):
 
     def __init__(self, model_name: str, summary_type: str, api_key: str, temperature=None, seed=None):
         self.api_key = api_key
-        super().__init__(model=model_name, temperature=temperature, seed=seed)
+        super().__init__(model_name, temperature, seed)
 
         # SummaryAgent 객체 선언 시 summary_type을 single|final로 강제합니다.
         if summary_type != "single" and summary_type != "final":
@@ -39,14 +39,9 @@ class SummaryAgent(BaseAgent):
         self.temperature = temperature
         self.seed = seed
 
-    def initialize_chat(self, model: str, temperature=None, seed=None):
+    def initialize_chat(self):
         """
         요약을 위해 OpenAI 모델 객체를 초기화합니다.
-
-        Args:
-            model (str): 사용할 모델 이름.
-            temperature (float, optional): 생성 다양성을 조정하는 파라미터.
-            seed (int, optional): 결과 재현성을 위한 시드 값.
 
         Returns:
             OpenAI: 초기화된 Solar 모델 객체.

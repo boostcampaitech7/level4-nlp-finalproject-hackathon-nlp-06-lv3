@@ -8,11 +8,13 @@ from .sentence_splitter import split_sentences
 
 
 class Bgem3EmbeddingAgent(BaseAgent):
-    def __init__(self, model: str | None = None, temperature: int | None = None, seed: int | None = None):
-        super().__init__(model, temperature, seed=seed)
+    def __init__(
+        self, model_name: str = "upskyy/bge-m3-korean", temperature: int | None = None, seed: int | None = None
+    ):
+        super().__init__(model_name, temperature, seed)
 
-    def initialize_chat(self, model, temperature=None, seed=None):
-        return SentenceTransformer("upskyy/bge-m3-korean")
+    def initialize_chat(self):
+        return SentenceTransformer(self.model_name)
 
     @retry_with_exponential_backoff()
     def process(self, summary: str, model=None):

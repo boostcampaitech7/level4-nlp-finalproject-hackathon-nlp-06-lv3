@@ -23,7 +23,7 @@ class SelfRefineAgent(BaseAgent):
 
     def __init__(self, model_name: str, target_range: str, api_key: str, temperature=None, seed=None):
         self.api_key = api_key
-        super().__init__(model=model_name, temperature=temperature, seed=seed)
+        super().__init__(model_name, temperature, seed)
         if target_range != "single" and target_range != "final":
             raise ValueError(
                 f'target_range: {target_range}는 허용되지 않는 인자입니다. "single" 혹은 "final"로 설정해주세요.'
@@ -32,14 +32,9 @@ class SelfRefineAgent(BaseAgent):
         self.temperature = temperature
         self.seed = seed
 
-    def initialize_chat(self, model: str, temperature=None, seed=None):
+    def initialize_chat(self):
         """
         ChatUpstage 모델을 초기화합니다.
-
-        Args:
-            model (str): 사용할 모델 이름.
-            temperature (float, optional): 생성 다양성을 조정하는 파라미터.
-            seed (int, optional): 결과 재현성을 위한 시드 값.
 
         Returns:
             ChatUpstage: 초기화된 ChatUpstage 객체.
