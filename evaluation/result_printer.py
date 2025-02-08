@@ -1,50 +1,6 @@
 from utils.configuration import Config
 
 
-def print_individual_scores(results, eval_type, additional):
-    """
-    개별 샘플의 점수를 출력하는 함수
-    """
-    n_items = len(next(iter(results.values())))  # 결과 리스트 길이 가져오기
-
-    for i in range(n_items):
-        print(f"\n--- {eval_type.capitalize()} Sample {i+1} ---")
-
-        # ROUGE 출력 (Summary만)
-        if eval_type == "summary" and "rouge" in results:
-            ritem = results["rouge"][i]
-            print(
-                f"[ROUGE] R1=(P:{ritem['rouge1'][0]:.4f},R:{ritem['rouge1'][1]:.4f},F:{ritem['rouge1'][2]:.4f}), "
-                f"R2=(P:{ritem['rouge2'][0]:.4f},R:{ritem['rouge2'][1]:.4f},F:{ritem['rouge2'][2]:.4f}), "
-                f"RL=(P:{ritem['rougeL'][0]:.4f},R:{ritem['rougeL'][1]:.4f},F:{ritem['rougeL'][2]:.4f})"
-            )
-
-        # BERT 출력 (Summary만)
-        if eval_type == "summary" and "bert" in results:
-            bp, br, bf = results["bert"][i]
-            print(f"[BERT] P:{bp:.4f}, R:{br:.4f}, F:{bf:.4f}")
-
-        # G-EVAL 출력 (Summary & Report 공통)
-        if "g-eval" in results:
-            gitem = results["g-eval"][i]
-            print(
-                "[G-EVAL] "
-                f"consistency={gitem['consistency']:.4f}, "
-                f"coherence={gitem['coherence']:.4f}, "
-                f"fluency={gitem['fluency']:.4f}, "
-                f"relevance={gitem['relevance']:.4f}"
-            )
-
-            # 추가 G-EVAL 항목 출력 (additional=True일 때)
-            if additional:
-                print(
-                    "[G-EVAL Additional] "
-                    f"readability={gitem['readability']:.4f}, "
-                    f"clearance={gitem['clearance']:.4f}, "
-                    f"practicality={gitem['practicality']:.4f}"
-                )
-
-
 def calculate_average_scores(results, eval_type: str, n_items: int, additional: bool) -> dict:
     """
     결과 데이터에서 평균 점수를 계산하는 함수.
@@ -103,16 +59,55 @@ def calculate_average_scores(results, eval_type: str, n_items: int, additional: 
     return avg_scores
 
 
-def print_average_scores(results: dict, eval_type: str, n_items: int, additional: bool) -> None:
+def print_evaluation_results(results: dict, eval_type: str):
     """
-    평가 결과의 평균 점수를 출력하는 함수.
+    Summary 또는 Report 평가 결과를 보기 좋게 출력하는 메인 함수
+    """
+    print(f"\n===== {eval_type.upper()} Evaluation Results =====")
 
-    Args:
-        results (dict): 평가 결과 데이터.
-        eval_type (str): 평가 유형 ("summary" 또는 "report").
-        n_items (int): 총 평가 개수.
-        additional (bool): 추가 평가 항목 포함 여부.
-    """
+    additional = Config.config[eval_type]["g_eval"]["additional"]
+
+    n_items = len(next(iter(results.values())))  # 결과 리스트 길이 가져오기
+
+    # 개별 샘플 점수 출력
+    for i in range(n_items):
+        print(f"\n--- {eval_type.capitalize()} Sample {i+1} ---")
+
+        # ROUGE 출력 (Summary만)
+        if eval_type == "summary" and "rouge" in results:
+            ritem = results["rouge"][i]
+            print(
+                f"[ROUGE] R1=(P:{ritem['rouge1'][0]:.4f},R:{ritem['rouge1'][1]:.4f},F:{ritem['rouge1'][2]:.4f}), "
+                f"R2=(P:{ritem['rouge2'][0]:.4f},R:{ritem['rouge2'][1]:.4f},F:{ritem['rouge2'][2]:.4f}), "
+                f"RL=(P:{ritem['rougeL'][0]:.4f},R:{ritem['rougeL'][1]:.4f},F:{ritem['rougeL'][2]:.4f})"
+            )
+
+        # BERT 출력 (Summary만)
+        if eval_type == "summary" and "bert" in results:
+            bp, br, bf = results["bert"][i]
+            print(f"[BERT] P:{bp:.4f}, R:{br:.4f}, F:{bf:.4f}")
+
+        # G-EVAL 출력 (Summary & Report 공통)
+        if "g-eval" in results:
+            gitem = results["g-eval"][i]
+            print(
+                "[G-EVAL] "
+                f"consistency={gitem['consistency']:.4f}, "
+                f"coherence={gitem['coherence']:.4f}, "
+                f"fluency={gitem['fluency']:.4f}, "
+                f"relevance={gitem['relevance']:.4f}"
+            )
+
+            # 추가 G-EVAL 항목 출력 (additional=True일 때)
+            if additional:
+                print(
+                    "[G-EVAL Additional] "
+                    f"readability={gitem['readability']:.4f}, "
+                    f"clearance={gitem['clearance']:.4f}, "
+                    f"practicality={gitem['practicality']:.4f}"
+                )
+
+    # 평균 점수 출력
     print("\n===== Averages =====")
 
     avg_scores = calculate_average_scores(results, eval_type, n_items, additional)
@@ -161,18 +156,3 @@ def print_average_scores(results: dict, eval_type: str, n_items: int, additional
                 f"clearance={avg_scores['g-eval']['clearance']:.4f}, "
                 f"practicality={avg_scores['g-eval']['practicality']:.4f}"
             )
-
-
-def print_evaluation_results(results: dict, eval_type: str):
-    """
-    Summary 또는 Report 평가 결과를 보기 좋게 출력하는 메인 함수
-    """
-    print(f"\n===== {eval_type.upper()} Evaluation Results =====")
-
-    additional = Config.config[eval_type]["g_eval"]["additional"]
-    # 개별 샘플 점수 출력
-    print_individual_scores(results, eval_type, additional)
-
-    # 평균 점수 출력
-    n_items = len(next(iter(results.values())))  # 결과 리스트 길이 가져오기
-    print_average_scores(results, eval_type, n_items, additional)
