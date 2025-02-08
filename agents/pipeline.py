@@ -35,7 +35,7 @@ def make_report(mail_dict: dict[str, Mail], api_key: str, config: dict):
 
     self_reflection_agent = ReflexionFramework("solar_pro", "final", config)
 
-    reflexion_summary, token_usage = self_reflection_agent.process(origin_mail, summary_agent)
+    reflexion_summary = self_reflection_agent.process(origin_mail, summary_agent)
 
     return reflexion_summary
 
@@ -52,9 +52,6 @@ def pipeline(gmail_service: GmailService, api_key: str):
         report = make_report(mail_dict, api_key, Config.config)
 
         df = convert_mail_dict_to_df(mail_dict)
-
-        print("======================DATAFRAME=========================")
-        print(df)
 
         json_checklist = build_json_checklist(df)
 
