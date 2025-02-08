@@ -5,6 +5,7 @@ from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
 from utils import retry_with_exponential_backoff
+from utils.token_usage_counter import TokenUsageCounter
 
 from ..utils import FEEDBACK_FORMAT, build_messages, generate_plain_text_report
 
@@ -107,7 +108,7 @@ class SelfRefineAgent(BaseAgent):
             groundness, groundness_token_usage = check_groundness(
                 context=input_mail_data, answer=generate_plain_text_report(refine_target), api_key=self.api_key
             )
-            super().add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
+            TokenUsageCounter.add_usage(self.__class__.__name__, "groundness_check", groundness_token_usage)
             token_usage += groundness_token_usage
 
             # Feedback
@@ -120,7 +121,7 @@ class SelfRefineAgent(BaseAgent):
             )
             feedback_response = self.feedback(feedback_messages)
             feedback = feedback_response.choices[0].message.content
-            super().add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
+            TokenUsageCounter.add_usage(self.__class__.__name__, "feedback", feedback_response.usage.total_tokens)
             token_usage += feedback_response.usage.total_tokens
 
             self.logging(
@@ -144,11 +145,11 @@ class SelfRefineAgent(BaseAgent):
             )
             revision_response = self.refine(refine_messages)
             revision_content = revision_response.choices[0].message.content
-            super().add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
+            TokenUsageCounter.add_usage(self.__class__.__name__, "refine", revision_response.usage.total_tokens)
             token_usage += revision_response.usage.total_tokens
 
             # 요약문 혹은 리포트 업데이트 및 로깅
             refine_target = json.loads(revision_content) if self.target_range == "final" else revision_content
             self.logging(f"./agents/self_refine/log/{logging_file_prefix}_self_refine_{i}_refine.txt", revision_content)
 
-        return refine_target, token_usage
+        return refine_target, token_usage  # TODO: token 사용량 지우기

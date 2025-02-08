@@ -1,5 +1,6 @@
 from openai import OpenAI
 
+from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 from ..base_agent import BaseAgent
@@ -64,7 +65,7 @@ class ClassificationAgent(BaseAgent):
             seed=self.seed,
         )
 
-        super().add_usage(self.__class__.__name__, "classification", response.usage.total_tokens)
+        TokenUsageCounter.add_usage(self.__class__.__name__, "classification", response.usage.total_tokens)
 
         label: str = response.choices[0].message.content
 

@@ -12,10 +12,7 @@ from tqdm import tqdm
 from agents.classification.classification_type import ClassificationType
 from gmail_api import Mail
 from gmail_api.gmail_process import gmail
-
-
-class TokenManager:
-    total_token_usage = 0
+from utils.token_usage_counter import TokenUsageCounter
 
 
 def load_config(config_path="config.yml"):
@@ -60,14 +57,14 @@ def print_result(start_time: str, mail_dict: dict[str, Mail]):
 
     elapsed_time = time.time() - start_time
     if elapsed_time > 0:
-        tpm = (TokenManager.total_token_usage / elapsed_time) * 60
+        tpm = (TokenUsageCounter.get_total_token_cost() / elapsed_time) * 60
     else:
         tpm = 0  # 실행 시간이 0이면 0으로 처리
 
     print(
         f"실행 시간: {elapsed_time:.2f}초"
         "평가 배제 토큰 사용 정보"
-        f"최종 토큰 사용량: {TokenManager.total_token_usage}"
+        f"최종 토큰 사용량: {TokenUsageCounter.get_total_token_cost()}"
         f"Tokens Per Minute (TPM): {tpm:.2f}\n"
     )
 

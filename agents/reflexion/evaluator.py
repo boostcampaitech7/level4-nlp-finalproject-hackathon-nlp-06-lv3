@@ -1,5 +1,5 @@
-from agents.base_agent import BaseAgent
 from evaluation import calculate_g_eval, run_solar_as_judge
+from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 
@@ -27,9 +27,9 @@ class ReflexionEvaluator:
             eval_type=self.task,
         )
 
-        BaseAgent.add_usage("reflexion", "evaluator", token_usage)
+        TokenUsageCounter.add_usage("reflexion", "evaluator", token_usage)
 
-        return eval_list, token_usage
+        return eval_list, token_usage  # TODO: token_usage 지우기
 
     @retry_with_exponential_backoff()
     def get_solar_as_judge_result(self, source_text: str, output_text: str):
@@ -40,10 +40,7 @@ class ReflexionEvaluator:
             output_text (str): 생성한 텍스트
 
         Returns:
-            dict: 생성 텍스트가 각 질문에서 1 또는 0의 결과를 받았는지 return 해준다
-
-        super().add_usage("reflexion", "evaluator", token_usage)
-
+            dict: 생성 텍스트가 각 질문에서 1 또는 0의 결과를 받았는지 return 해준다.
         """
 
         result = run_solar_as_judge(

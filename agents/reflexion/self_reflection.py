@@ -4,6 +4,7 @@ from openai import OpenAI
 
 from agents.base_agent import BaseAgent
 from utils import retry_with_exponential_backoff
+from utils.token_usage_counter import TokenUsageCounter
 
 
 class ReflexionSelfReflection(BaseAgent):
@@ -88,10 +89,10 @@ class ReflexionSelfReflection(BaseAgent):
         # 리플렉션 결과를 메모리에 추가
         self.save_reflection(reflection_text)
 
-        super().add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
+        TokenUsageCounter.add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
 
         # 최종 리플렉션 결과 반환
-        return reflection_text, reflection_response.usage.total_tokens
+        return reflection_text, reflection_response.usage.total_tokens  # TODO: token 사용량 지우기
 
     @retry_with_exponential_backoff()
     def generate_reflection_solar_as_judge(self, source_text, output_text, items_failed):
@@ -136,7 +137,7 @@ class ReflexionSelfReflection(BaseAgent):
         # 리플렉션 결과를 메모리에 추가
         self.save_reflection(reflection_text)
 
-        super().add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
+        TokenUsageCounter.add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
 
         # 최종 리플렉션 결과 반환
-        return reflection_text, reflection_response.usage.total_tokens
+        return reflection_text, reflection_response.usage.total_tokens  # TODO: token 사용량 지우기

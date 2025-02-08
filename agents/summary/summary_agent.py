@@ -3,6 +3,7 @@ import json
 from openai import OpenAI
 
 from agents import BaseAgent, check_groundness
+from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff
 
 from ..utils import SUMMARY_FORMAT, build_messages
@@ -99,7 +100,9 @@ class SummaryAgent(BaseAgent):
             )
             summarized_content: dict = json.loads(response.choices[0].message.content)
 
-            super().add_usage(self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens)
+            TokenUsageCounter.add_usage(
+                self.__class__.__name__, f"{self.summary_type}_summary", response.usage.total_tokens
+            )
             token_usage += response.usage.total_tokens
 
             # Groundness Check를 위해 JSON 결과에서 문자열 정보 추출
@@ -107,11 +110,13 @@ class SummaryAgent(BaseAgent):
 
             # Groundness Check
             groundness, groundness_token_usage = check_groundness(context=mail, answer=result, api_key=self.api_key)
-            super().add_usage(self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage)
+            TokenUsageCounter.add_usage(
+                self.__class__.__name__, f"{self.summary_type}_groundness_check", groundness_token_usage
+            )
             token_usage += groundness_token_usage
 
             print(f"{i + 1}번째 사실 확인: {groundness}")
             if groundness == "grounded":
                 break
 
-        return summarized_content, token_usage
+        return summarized_content, token_usage  # TODO: token 사용량 지우기

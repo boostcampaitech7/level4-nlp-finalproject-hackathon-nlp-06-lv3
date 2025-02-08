@@ -44,7 +44,7 @@ def run_solar_as_judge(
             messages=[{"role": "user", "content": prompt}],
             temperature=0,
             seed=42,
-        )
+        )  # TODO: 토큰 사용량 기록 필요
         response_message = response.choices[0].message.content
         try:
             scores = ast.literal_eval(response_message)
