@@ -9,7 +9,7 @@ class UpstageEmbeddingAgent:
     def __init__(self):
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    def process(self, summary: str, model=None) -> np.ndarray:
+    def process(self, summary: str) -> np.ndarray:
         splitted_sentences = split_sentences(summary)
 
         response = self.client.embeddings.create(input=splitted_sentences, model="embedding-passage").data

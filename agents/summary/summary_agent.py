@@ -2,8 +2,9 @@ import json
 
 from openai import OpenAI
 
-from agents.groundness_check import check_groundness
-from agents.utils import SUMMARY_FORMAT, build_messages
+from agents.self_refine.json_formats import SUMMARY_FORMAT
+from agents.utils.groundness_check import check_groundness
+from agents.utils.utils import build_messages
 from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
 from utils.utils import retry_with_exponential_backoff

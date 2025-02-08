@@ -4,7 +4,7 @@ from collections import Counter
 from openai import OpenAI
 
 from agents.classification.classification_agent import ClassificationAgent
-from agents.utils import build_messages, load_categories_from_yaml
+from agents.utils.utils import build_messages, load_categories_from_yaml
 from evaluation.classification.dataframe_manager import DataFrameManager
 from gmail_api.mail import Mail
 from utils.utils import retry_with_exponential_backoff

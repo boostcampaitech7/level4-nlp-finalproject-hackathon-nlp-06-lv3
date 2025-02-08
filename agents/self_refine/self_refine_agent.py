@@ -3,8 +3,8 @@ import json
 from openai import OpenAI
 from openai.types.chat.chat_completion import ChatCompletion
 
-from agents.groundness_check import check_groundness
-from agents.utils import FEEDBACK_FORMAT
+from agents.self_refine.json_formats import FEEDBACK_FORMAT
+from agents.utils.groundness_check import check_groundness
 from gmail_api.mail import Mail
 from utils.configuration import Config
 from utils.token_usage_counter import TokenUsageCounter
