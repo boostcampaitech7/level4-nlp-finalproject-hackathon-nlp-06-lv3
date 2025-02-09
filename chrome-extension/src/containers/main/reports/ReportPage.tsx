@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { IoMdCheckboxOutline } from "react-icons/io"
 import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md"
 import Markdown from "react-markdown"
-import remarkGfm from "remark-gfm"
 import viewState from "@/states/viewState"
 import useOpenLink from "@/hooks/useOpenLink"
 import axiosInstance from "@/utils/axiosInstance"
@@ -59,7 +58,7 @@ export default function ReportPage() {
   return (
     <div className="flex flex-col w-full bg-white rounded-lg p-6 gap-4 min-h-[170px] border border-border-gray drop-shadow-small pb-10">
       <h2 className="text-2xl font-bold">{convertDateToTitle(report.date)}</h2>
-      <Markdown className="text-[#303030] break-words markdown-container" remarkPlugins={[remarkGfm]}>
+      <Markdown className="text-[#303030] break-words markdown-container">
         {report.report.replaceAll("\n", "\n\n")}
       </Markdown>
 
