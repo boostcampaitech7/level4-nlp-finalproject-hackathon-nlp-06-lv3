@@ -8,7 +8,7 @@ from utils.token_usage_counter import TokenUsageCounter
 
 
 @retry_with_exponential_backoff()
-def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_type: str):
+def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_type: str, model_name: str):
     """
     Summary / Report 평가 타입에 따라 G-EVAL 실행.
 
@@ -17,13 +17,14 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
     """
 
     prompt_files: dict[str, str] = Config.config[eval_type]["g_eval"]["prompts"]
-    model_name: str = Config.config[eval_type]["g_eval"]["openai_model"]
     is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
 
     if model_name == "solar-pro":
-        client = OpenAI(Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
+        client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
     else:
         client = OpenAI()
+
+    print(f"{'='*30}\ng-eval start with **{model_name}**\n")
 
     # 평가할 기준 (기본 4개 + 추가 옵션 포함 시 7개)
     aspects = ["consistency", "coherence", "fluency", "relevance"]

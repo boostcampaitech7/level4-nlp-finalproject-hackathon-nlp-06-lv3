@@ -22,6 +22,12 @@ def evaluate_summary(source_texts, report_texts, reference_texts):
 
     # G-EVAL 평가 (기본 4개 / 추가 옵션 포함 가능)
     if "g-eval" in metrics:
-        results["g-eval"] = calculate_g_eval(source_texts, report_texts, eval_type="summary")
+        model_name = Config.config["summary"]["g_eval"]["openai_model"]
+        results["g-eval"] = calculate_g_eval(
+            source_texts=source_texts,
+            generated_texts=report_texts,
+            eval_type="summary",
+            model_name=model_name,
+        )
 
     return results
