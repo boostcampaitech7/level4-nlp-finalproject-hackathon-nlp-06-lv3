@@ -1,5 +1,3 @@
-# classification_metrics.yaml
-
 - name: "academic"
   korean: "학술/연구"
   description: "논문, 학회, 프로젝트, 실험 등 연구 중심 메일"

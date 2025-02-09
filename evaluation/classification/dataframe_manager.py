@@ -1,5 +1,3 @@
-import os
-
 import pandas as pd
 
 from evaluation.classification.metric_calculator import MetricCalculator
@@ -11,17 +9,16 @@ class DataFrameManager:
     MetricCalculator를 호출해 평가 지표를 계산하는 책임.
     """
 
-    def __init__(self, inference_count: int):
+    def __init__(self, inference_count: int, classification_type: str):
         self.inference_count = inference_count
-        self.output_dir = "evaluation/classification"
-        os.makedirs(self.output_dir, exist_ok=True)
-        self.csv_file_path = os.path.join(self.output_dir, "labeled.csv")
+        self.classification_type = classification_type
 
         self.columns = (
             ["mail_id", "ground_truth"]
             + [f"inference_{i+1}" for i in range(inference_count)]
             + ["entropy", "diversity_index", "chi_square_p_value", "accuracy", "cramers_v"]
         )
+        self.ground_truth_df = pd.read_csv("evaluation/classification/ground_truth.csv", index_col="mail_id")
 
         self.eval_df = pd.DataFrame(columns=self.columns)
 
@@ -46,8 +43,11 @@ class DataFrameManager:
             [[mail_id, ground_truth] + results + [entropy_val, diversity_val, p_val, acc_val, c_v]],
             columns=self.columns,
         )
-        self.eval_df = pd.concat([self.eval_df, new_row], ignore_index=True)
-        self.eval_df.to_csv(self.csv_file_path, index=False)
+
+        if self.eval_df.empty:
+            self.eval_df = new_row.copy()
+        else:
+            self.eval_df = pd.concat([self.eval_df, new_row], ignore_index=True)
 
     def print_df(self):
         """
@@ -91,6 +91,7 @@ class DataFrameManager:
         print("Consistency")
         print("📊 Ground Truth 별 요약된 평가 메트릭")
         print(summary_df)
+        summary_df.to_csv(f"evaluation/classification/{self.classification_type}_consistency.csv")
 
     def _print_multiclass_confusion_matrix(self):
         """
