@@ -109,7 +109,7 @@ class MetricCalculator:
         plt.ylabel("Actual")
         plt.title(f"2x2 Confusion Matrix for '{category}'")
 
-        save_path = os.path.join(output_dir, f"{category}_confusion_matrix.png")
+        save_path = os.path.join(output_dir, f"{category.replace('/', '_')}_confusion_matrix.png")
         plt.savefig(save_path, bbox_inches="tight", dpi=300)
         plt.close()
 
