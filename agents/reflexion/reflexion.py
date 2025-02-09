@@ -26,6 +26,7 @@ class ReflexionFramework:
         outputs = []
         output_text = summary_agent.process(origin_mail, 3, ["start"])
         print("\n\nINITIATE REFLEXION\n")
+        print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
         for i in range(Config.config["self_reflection"]["max_iteration"]):
             # 평가하기
             eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)

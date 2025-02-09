@@ -65,9 +65,12 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
                 numbers = re.findall(r"\d", gpt_text)
 
                 # 숫자 중 마지막으로 출력된 점수를 Score Value 로
-                score_value = float(numbers[-1])
-                if score_value > 5:
-                    score_value = 1
+                if not numbers:
+                    score_value = 0.0
+                else:
+                    score_value = float(numbers[-1])
+                    if score_value > 5:
+                        score_value = 1.0
 
                 total_token_usage += response.usage.total_tokens
 

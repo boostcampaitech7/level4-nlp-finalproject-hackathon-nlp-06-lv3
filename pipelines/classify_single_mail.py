@@ -13,9 +13,9 @@ def classify_single_mail(mail_dict: dict[str, Mail], summary_dict: dict[str, str
     classification_agent = ClassificationAgent("solar-pro", temperature, seed)
     if do_class_eval:
         class_eval_agent = ClassificationEvaluationAgent(
-            model="gpt-4o",
+            model_name="gpt-4o",
             human_evaluation=Config.config["classification"]["do_manual_filter"],
-            inference=Config.config["classification"]["inference"],
+            inference_iteration=Config.config["classification"]["inference"],
         )
 
     category_dict = {}
