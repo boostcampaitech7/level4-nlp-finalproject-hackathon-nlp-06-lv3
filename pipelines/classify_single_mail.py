@@ -10,7 +10,7 @@ warnings.filterwarnings("ignore", message="A single label was found in 'y_true' 
 
 
 def classify_single_mail(mail_dict: dict[str, Mail], summary_dict: dict[str, str]) -> tuple[dict, dict]:
-    temperature: int = Config.config["temperature"]["summary"]
+    temperature: int = Config.config["temperature"]["classification"]
     seed: int = Config.config["seed"]
     do_class_eval: bool = Config.config["evaluation"]["classification_eval"]
 
