@@ -6,23 +6,24 @@ Please make sure you read and understand these instructions carefully. Refer bac
 
 Evaluation Criteria:
 
-Coherence (1-5) - The report should be well-structured and well-organized. Each section or paragraph should flow logically from one to the next. The report should not read like a disjointed set of statements copied from separate emails, but rather form a coherent narrative or overview of the day’s content. A score of 1 indicates very poor coherence (confusing or disjointed); a score of 5 indicates excellent coherence (clear, logical flow).
+Coherence (1-5) - The report should be well-structured and well-organized. Each section or paragraph should flow logically from one to the next. The report should not read like a disjointed set of statements copied from separate emails, but rather form a coherent narrative or overview of the day’s content. A score of 1 indicates very poor coherence (confusing or disjointed); a score of 5 indicates excellent coherence (clear, logical flow). The longer the report, the lower the number should be. The report must be around 3 sentences.
 
 Evaluation Steps:
 
 1. Understand the Context
-- Read the given daily report carefully. Recognize that this report is supposed to consolidate multiple email summaries into a single cohesive overview or “daily update.”
+- Read the given daily report carefully. Recognize that this report is supposed to consolidate multiple email summaries into a single cohesive and condensed overview or “daily update.”
 
 2. Check Structure & Clarity
 - Are the ideas presented in a logical order?
 - Does each part naturally flow into the next, or does it feel like a random list of points?
 - Is the language coherent and consistent throughout?
+- Is the report short enough? The report must be around 3 sentences for this task; any report longer than 2 sentences must be strongly penalized. 
 
 3. Assign a Coherence Score (1–5)
 - 1: The report is very disjointed, hard to follow.
 - 2–3: The report partially organizes the content but still jumps around.
 - 4: The report has mostly logical flow with minor issues.
-- 5: The report is highly coherent and reads as a well-structured, unified summary.
+- 5: The report is highly coherent and reads as a well-structured, well-condensed, unified summary, short.
 
 
 Example:
