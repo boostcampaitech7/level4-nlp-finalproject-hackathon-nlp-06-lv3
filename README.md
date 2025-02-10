@@ -1,39 +1,55 @@
-# Final Project
+# 매일메일(MaeilMail)
 
-하루 동안 온 메일을 한 눈에 보기 좋게 정리해주는 메일 업무 비서
-프로젝트 개요, 설치 방법 및 지침에 대한 안내 필수
+LLM Agent 기반 일별 메일 요약 비서 Chrome Extension입니다.
 
 ## 📌 프로젝트 개요
 
-주제선정 배경, 기대효과 등
 온 종일 쌓이는 메일을 핵심만 빠르게 파악하고, 놓치는 정보 없이 우선순위를 정해 효율적으로 업무를 처리할 수 있도록 돕자!
+
+> 프로젝트 진행 경황 및 자세한 실험 내역은 [노션 링크](https://www.notion.so/gamchan/Upstage-234368a08ffd4965aad55b1a93b3cc3d?pvs=4)에서 확인하실 수 있습니다.
 
 ## 🏅 최종 결과
 
 시연 영상 링크
 
-## System Structures
+## 🏛️ System Structures
 
-시스템 구조 사진
+![service_pipeline](./assets/service_pipeline.png)
 
-## 평가 지표 및 결과
+## 💯 평가 지표 및 결과
+
+- [프롬프트 버저닝](https://www.notion.so/gamchan/195815b39d3980078aa1c8e645bf435c?pvs=4)
+- [실험](https://www.notion.so/gamchan/18c815b39d39805e916ad56f39fa2c6b?pvs=4)
 
 ### 분류
 
+`정확도/토큰 사용량` 지표를 바탕으로 현재 프롬프트를 채택했습니다.
+
+- [목적 별 분류](prompt/template/classification/category.yaml)
+- [추가 행동 필요 여부 분류](prompt/template/classification/action.yaml)
+
 ### 메일 개별 요약
+
+ROUGE-1에서 300~400%, BERTScore에서 60~80%, G-Eval conciseness 항목에서(5점 만점) 11% 상승폭이 있었습니다.
 
 ### 메일 전체 요약
 
+5점 만점인 G-Eval 평가에서 평균 150% 상승폭이 있었습니다.
+
+- [G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
+- [전체 요약 시스템 프롬프트](prompt/template/summary/final_summary_system.txt)
+- [전체 요약 사용자 프롬프트](prompt/template/summary/final_summary_user.txt)
+
 ## ⚙️ Project Quick Setup
 
-### Git Clone
+### 1. Git Clone
 
 ```shell
 $ git clone git@github.com:boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-06-lv3.git
 $ cd level4-nlp-finalproject-hackathon-nlp-06-lv3
 ```
 
-### Create Virtual Environment
+### 2. Create Virtual Environment
 
 ```shell
 $ python -m venv .venv
@@ -41,31 +57,23 @@ $ source .venv/bin/activate
 (.venv) $
 ```
 
-### Install Packages
+### 3. Install Packages
 
 ```shell
 (.venv) $ pip install -r requirements.txt
 (.venv) $ sudo apt-get install build-essential
 ```
 
-### Setup Environment Variables
+### 4. Setup Environment Variables
 
-`.env`를 생성 후 환경 변수를 수정합니다.
+4.1. `.env`를 생성 후 환경 변수를 수정합니다.
 
 ```shell
 (.venv) $ cp .env.example .env
 ```
 
-- UPSTAGE_API_KEY=your_upstage_api_key
-- OPENAI_API_KEY=your_openai_api_key
-- GOOGLE_CLIENT_ID=1234567890.apps.googleusercontent.com
-- GOOGLE_CLIENT_SECRET=1234567890
-- SESSION_KEY=your_session_key
-- MYSQL_DATABASE=maeilmail_db
-- MYSQL_USER=maeilmail
-- MYSQL_PASSWORD=0000
-- MYSQL_HOST=localhost
-- MYSQL_PORT=3307
+- Upstage API Key는 [여기](https://console.upstage.ai/api-keys?api=chat)에서, Openai API Key는 [여기](https://platform.openai.com/welcome?step=create)에서 발급해주세요.
+- Google Client ID 및 Google Client Secret은 [다음 게시물](https://www.notion.so/gamchan/OAuth-179815b39d398017aeb8f6a8172e6e76?pvs=4)을 참고해주세요.
 
 ```shell
 # AI Service
@@ -75,90 +83,21 @@ OPENAI_API_KEY=your_openai_api_key
 # Google OAuth 2.0(with GMail)
 GOOGLE_CLIENT_ID=1234567890.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=1234567890
-
-# FastAPI Backend
-SESSION_KEY=your_session_key
-
-# MySQL Database
-MYSQL_DATABASE=maeilmail_db
-MYSQL_USER=maeilmail
-MYSQL_PASSWORD=0000
-MYSQL_HOST=localhost
-MYSQL_PORT=3307
 ```
 
-## 📜 Config.yml
+4.2. `main.py`를 실행하기 위해서 `client_secret_...usercontent.com.json` 파일 이름을 `credentials.json`으로 변경해주세요.
 
-`config.yml` 파일을 사용하여 원하는 환경에서 실행을 설정할 수 있습니다. 아래는 기본 설정 예시입니다:
+### 5. Execute pipeline
 
-```yaml
-gmail:
-  start_date: # gmail에서 불러올 시작 날짜 (값이 없는 경우 2025/01/10)
-  end_date: # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
-  max_mails: 15 # gmail에서 불러올 메일 최대 개수
+```shell
+(.venv) $ python main.py
+```
 
-evaluation: # 평가 설정
-  summary_eval: false # Summary 평가 수행 여부
-  classification_eval: false # Classification 평가 수행 여부
-  report_eval: false # Final Report 평가 수행 여부
+### (Optional) Execute with DB connection
 
-seed: 42
-temperature:
-  summary: 0
-  classification: 0
-
-self_reflection:
-  type: self-refine # self-refine | reflexion 변경 가능
-  max_iteration: 3 # TODO: 3으로 원상복구
-  reflexion:
-    threshold_type: "average"
-    threshold: 4.5
-
-common_prompts: &common_prompts
-  consistency: "prompt/template/g_eval/con_{eval_type}.txt"
-  coherence: "prompt/template/g_eval/coh_{eval_type}.txt"
-  fluency: "prompt/template/g_eval/flu_{eval_type}.txt"
-  relevance: "prompt/template/g_eval/rel_{eval_type}.txt"
-  readability: "prompt/template/g_eval/rdb_{eval_type}.txt"
-  clearance: "prompt/template/g_eval/clr_{eval_type}.txt"
-  practicality: "prompt/template/g_eval/prc_{eval_type}.txt"
-
-summary: # Summary 평가 관련 설정
-  metrics:
-    - rouge
-    - bert
-    - g-eval
-
-  bert_model: "distilbert-base-uncased"
-
-  g_eval:
-    openai_model: "gpt-4" # summary는 gpt-4가 아니면 정확한 답변 생성이 어려움
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
-
-# Report 평가 관련 설정
-report:
-  metrics:
-    - g-eval
-
-  g_eval:
-    openai_model: "gpt-4o" # report는 gpt-4o로도 가능
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
-
-classification:
-  do_manual_filter: False
-  inference: 1 # TODO: 5로 원상 복구, Consistency 평가 용 반복 추론 횟수 설정
-
-embedding:
-  model_name: "bge-m3" # 혹은 "upstage"
-  similarity_metric: "cosine-similarity" # 혹은 "dot-product"
-  similarity_threshold: 0.8
-  save_results: true
-
-token_tracking: true
+```shell
+(.venv) $ docker-compose -f server/docker-compose.yml up -d
+(.venv) $ python batch_main.py
 ```
 
 ## 🔬 References

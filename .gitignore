@@ -212,6 +212,7 @@ gold.txt
 generated.txt
 *.pkl
 *.png
+!assets/service_pipeline.png
 
 example_data.json
 example_data_2.json
