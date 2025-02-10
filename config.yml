@@ -22,7 +22,6 @@ embedding:
 # 최종 리포트 요약
 reflexion:
   max_iteration: 3
-  threshold_type: "average" # "average" | "all"
   threshold: 4.5
   g-eval:
     prompt_path: "prompt/template/reflexion/g_eval/"

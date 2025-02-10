@@ -34,7 +34,6 @@ class SummaryAgent:
         self.seed = seed
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    @retry_with_exponential_backoff()
     def process_with_reflection(self, mail: str, reflections: list = [], max_iteration: int = 3) -> str:
         input_reflections = "제공된 피드백 없음" if reflections else "\n".join(reflections)
 

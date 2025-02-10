@@ -8,7 +8,6 @@ class ReflexionFramework:
     def __init__(self):
         self.evaluator = ReflexionEvaluator()
         self.self_reflection = ReflexionSelfReflection()
-        self.threshold_type = Config.config["reflexion"]["threshold_type"]
         self.threshold = Config.config["reflexion"]["threshold"]
         self.max_iteration = Config.config["reflexion"]["max_iteration"]
 
@@ -24,49 +23,49 @@ class ReflexionFramework:
         scores = []
         outputs = []
 
-        output_text = summary_agent.process_with_reflection(origin_mail)
-        print("\n\nINITIATE REFLEXION\n")
-        print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
-
         for i in range(self.max_iteration):
+            # 출력문 재생성
+            output_text = summary_agent.process_with_reflection(origin_mail, self.self_reflection.reflection_memory)
+            outputs.append(output_text)
+
             # 평가하기
             eval_result: dict = self.evaluator.get_geval_scores(origin_mail, output_text)
-            eval_result_str = "\n".join([f"항목: {aspect} 점수: {score}" for aspect, score in eval_result.items()])
-            aspect_score = sum(eval_result.values())
+            scores.append(round(sum(eval_result.values()) / len(eval_result), 1))
 
-            # 성찰하기
-            self.self_reflection.generate_reflection(origin_mail, output_text, eval_result_str)
+            eval_average = round(sum(eval_result.values()) / len(eval_result), 1)
+            self._print_reflection_process(eval_result, output_text, eval_average)
 
-            # 출력문 다시 생성하기
-            previous_reflections = self.self_reflection.reflection_memory
-            output_text = summary_agent.process_with_reflection(origin_mail, 3, previous_reflections)
-
-            eval_average = round(aspect_score / len(eval_result), 1)
-            scores.append(eval_average)
-            outputs.append(output_text)
-            previous_reflections_msg = "\n".join(previous_reflections)
-            print(
-                f"{'=' * 25}\n"
-                f"{i + 1}회차\n"
-                f"{'-' * 25}\n"
-                f"{eval_result_str}, 평균 {eval_average}점\n"
-                f"{'-' * 25}\n"
-                f"Reflection 메모리:\n{previous_reflections_msg}\n\n"
-                f"{'-' * 25}\n"
-                f"성찰 후 재생성된 텍스트:\n{output_text}"
-            )
-
-            if (self.threshold_type == "all" and all(value > self.threshold for value in scores)) or (
-                self.threshold_type == "average" and eval_average >= self.threshold
-            ):
-                print(f"{'=' * 25}\n" "Evaluation 점수 만족, Reflexion 루프 종료\n" f"{'=' * 25}")
+            if eval_average >= self.threshold:
                 break
 
+            # 점수 도달 실패 시 이유 성찰
+            self.self_reflection.generate_reflection(
+                origin_mail, output_text, self._create_eval_result_str(eval_result)
+            )
+
+        self._print_result(scores, outputs)
+
+        _, final_output = max(zip(scores, outputs), key=lambda x: x[0])
+
+        return final_output
+
+    def _create_eval_result_str(self, eval_result: dict):
+        return "\n".join([f"항목: {aspect} 점수: {score}" for aspect, score in eval_result.items()])
+
+    def _print_reflection_process(self, eval_result: dict, output_text: str, score: float):
+        print(
+            f"{'=' * 25}\n"
+            f"Reflection 메모리:\n{self.self_reflection.get_reflection_memory_str()}\n\n"
+            f"{'-' * 25}\n"
+            f"생성된 텍스트:\n{output_text}"
+            f"{'-' * 25}\n"
+            f"{self._create_eval_result_str(eval_result)}, 평균 {score}점\n"
+        )
+
+    def _print_result(self, scores, outputs):
         for i, score in enumerate(scores):
             print(f"{i+1}회차 평균 {score}점")
-        print("=" * 25)
-        print(f"\n최종 출력문 ({scores.index(max(scores)) + 1}회차, 평균: {max(scores)}점)")
-        final = outputs[scores.index(max(scores))]
-        print(f"{final}")
-
-        return final
+        print(f"{'='*25}\n")
+        best_index = max(enumerate(scores), key=lambda x: x[1])[0]
+        print(f"최종 출력문 ({best_index + 1}회차, 평균: {scores[best_index]}점)")
+        print(outputs[best_index])

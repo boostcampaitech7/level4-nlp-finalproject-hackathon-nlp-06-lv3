@@ -70,3 +70,6 @@ class ReflexionSelfReflection:
         self.save_reflection(reflection_text)
 
         TokenUsageCounter.add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
+
+    def get_reflection_memory_str(self):
+        return "\n".join(self.reflection_memory)
