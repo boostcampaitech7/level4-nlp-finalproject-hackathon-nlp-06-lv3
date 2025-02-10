@@ -6,12 +6,18 @@ from utils.configuration import Config
 
 class ReflexionFramework:
     def __init__(self):
+        self.summary_agent = SummaryAgent(
+            model_name="solar-pro",
+            summary_type="final",
+            temperature=Config.config["temperature"]["summary"],
+            seed=Config.config["seed"],
+        )
         self.evaluator = ReflexionEvaluator()
         self.self_reflection = ReflexionSelfReflection()
         self.threshold = Config.config["reflexion"]["threshold"]
         self.max_iteration = Config.config["reflexion"]["max_iteration"]
 
-    def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
+    def process(self, origin_mail) -> str:
         """
         Reflexion을 실행합니다.
 
@@ -27,7 +33,9 @@ class ReflexionFramework:
 
         for i in range(self.max_iteration):
             # 출력문 재생성
-            output_text = summary_agent.process_with_reflection(origin_mail, self.self_reflection.reflection_memory)
+            output_text = self.summary_agent.process_with_reflection(
+                origin_mail, self.self_reflection.reflection_memory
+            )
             outputs.append(output_text)
 
             # 평가하기
