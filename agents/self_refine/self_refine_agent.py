@@ -64,18 +64,19 @@ class SelfRefineAgent:
         )
 
     @retry_with_exponential_backoff()
-    def process(self, mail: Mail, summary: str, max_iteration: int = 3):
+    def process(self, mail: Mail, summary: str):
         """
         Self-refine 하여 최종 결과물을 반환합니다.
 
         Args:
             data (Mail | dict[str, Mail]): 입력 데이터.
             model (BaseAgent): 데이터를 처리하는 모델(ex. SummaryAgent).
-            max_iteration (int): 최대 Self-refine 반복 횟수.
 
         Return:
             str: Self-refine을 거친 최종 결과물.
         """
+        max_iteration = Config.config["self_refine"]["max_iteration"]
+
         for i in range(max_iteration):
             groundness = check_groundness(
                 str(mail),

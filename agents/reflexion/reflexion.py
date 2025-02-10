@@ -19,15 +19,16 @@ class ReflexionFramework:
         Returns:
             모든 aspect 점수의 평균값이 제일 높은 text가 반환됩니다.
         """
-        threshold_type = Config.config["self_reflection"]["reflexion"]["threshold_type"]
-        threshold = Config.config["self_reflection"]["reflexion"]["threshold"]
+        threshold_type = Config.config["reflexion"]["threshold_type"]
+        threshold = Config.config["reflexion"]["threshold"]
+        max_iteration = Config.config["reflexion"]["max_iteration"]
 
         scores = []
         outputs = []
         output_text = summary_agent.process(origin_mail, 3, ["start"])
         print("\n\nINITIATE REFLEXION\n")
         print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
-        for i in range(Config.config["self_reflection"]["max_iteration"]):
+        for i in range(max_iteration):
             # 평가하기
             eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)
             eval_result_str = ""
