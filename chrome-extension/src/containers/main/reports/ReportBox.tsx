@@ -29,7 +29,7 @@ export default function ReportBox({ report }: { report: any }) {
   return (
     <button
       type="button"
-      className="flex flex-col w-full bg-white rounded-lg p-6 gap-2 h-[170px] border border-border-gray drop-shadow-small hover:bg-gray-100 hover:drop-shadow-main transition-all group justify-start"
+      className="text-left flex flex-col w-full bg-white rounded-lg p-6 gap-2 h-[170px] border border-border-gray drop-shadow-small hover:bg-gray-100 hover:drop-shadow-main transition-all group justify-start"
       onClick={() => setView({ type: "report", data: report })}
     >
       <h2 className={`text-2xl font-bold ${isCompleted ? "text-text-gray" : ""}`}>{convertDateToTitle(report.date)}</h2>
