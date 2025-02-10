@@ -10,7 +10,7 @@ class ReflexionSelfReflection:
         self.model_name = "solar-pro"
         self.temperature = 0.7
         self.seed = 42
-        self.reflection_memory = []
+        self.reflection_memory: list[str] = []
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
         # Reflexion 프롬프트 템플릿을 읽어온다
         with open("prompt/template/reflexion/reflexion_final.txt", "r", encoding="utf-8") as file:
@@ -28,9 +28,6 @@ class ReflexionSelfReflection:
             source_input (str): 생성할 때 참조된 텍스트
             summary_output (str): 생성된  텍스트
             eval_result (str): 평가 점수
-
-        Returns:
-            str: generated reflection
         """
         formatted_prompt = self.reflection_template.format(
             source_input=source_text,
@@ -62,7 +59,7 @@ class ReflexionSelfReflection:
             return "없음"
         return "\n".join(self.reflection_memory)
 
-    def save_reflection(self, reflection_text):
+    def save_reflection(self, reflection_text: str):
         """reflection 메모리에 reflection을 저장한다.
 
         Args:
