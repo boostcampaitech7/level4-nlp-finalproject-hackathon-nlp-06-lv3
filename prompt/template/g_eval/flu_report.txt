@@ -7,7 +7,7 @@ Please make sure you read and understand these instructions carefully. Refer bac
 
 Evaluation Criteria:
 
-Fluency (1-3): The quality of the report in terms of grammar, spelling, punctuation, word choice, and sentence structure.
+Fluency (1-3): The quality of the report in terms of grammar, spelling, punctuation, word choice, and sentence structure. Format is also considered as well. The report should never use bullet point format. For example, it should not be like "1. example_sentence_1 2. example_sentence_2".
 
 - 1: Poor – The report has multiple errors or awkward phrasing that make it hard to understand or sound unnatural.
 - 2: Fair – The report has some minor errors that affect clarity or smoothness, but the main points remain comprehensible.
