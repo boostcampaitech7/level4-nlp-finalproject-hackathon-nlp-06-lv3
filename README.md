@@ -1,6 +1,6 @@
-# 매일메일(MaeilMail)
+# 매일메일: 일간 메일 요약 비서
 
-LLM Agent 기반 일별 메일 요약 비서 Chrome Extension입니다.
+LLM Agent 기반 일별 메일 요약 비서 Chrome Extension 서비스입니다.
 
 ## 📌 프로젝트 개요
 
@@ -18,23 +18,48 @@ LLM Agent 기반 일별 메일 요약 비서 Chrome Extension입니다.
 
 ## 💯 평가 지표 및 결과
 
-- [프롬프트 버저닝](https://www.notion.so/gamchan/195815b39d3980078aa1c8e645bf435c?pvs=4)
-- [실험](https://www.notion.so/gamchan/18c815b39d39805e916ad56f39fa2c6b?pvs=4)
+- [결과 정리](https://www.notion.so/gamchan/195815b39d3980078aa1c8e645bf435c?pvs=4)
+- [실험 내용](https://www.notion.so/gamchan/18c815b39d39805e916ad56f39fa2c6b?pvs=4)
+- [프롬프트 버저닝](https://www.notion.so/gamchan/c77dbeb277fd476bbc08d3ecab3ce3a2?v=398efc762f394868a3f241dd62ec48e0&pvs=4)
+
+### 메일 개별 요약
+
+| Condition              | ROUGE-1 Recall | ROUGE-1 Precision | ROUGE-1 F1 | BERT Score Recall | BERT Score Precision | BERT Score F1 | G-EVAL Conciseness |
+| ---------------------- | -------------- | ----------------- | ---------- | ----------------- | -------------------- | ------------- | ------------------ |
+| Baseline               | 0.0667         | 0.0042            | 0.1678     | 0.8223            | 0.8789               | 0.8494        | 4.3958             |
+| + refine               | 0.2618         | 0.2049            | 0.4649     | 0.8740            | 0.9146               | 0.8932        | 4.8750             |
+| + one-shot             | 0.2288         | 0.2005            | 0.3661     | 0.8325            | 0.8905               | 0.8588        | 4.9375             |
+| **+ refine, one-shot** | **0.3062**     | **0.2691**        | **0.4690** | **0.8905**        | **0.9319**           | **0.0901**    | **4.9167**         |
+
+`ROUGE-1`에서 **24.0 ~ 30.1%p**, `BERTScore`에서 **5.3 ~ 6.8%p**, `G-Eval conciseness` 항목(5점 만점)에서 **0.52점** 상승폭이 있었습니다.
 
 ### 분류
+
+| Condition                | Accuracy   | Tokens     | Accuracy per Tokens |
+| ------------------------ | ---------- | ---------- | ------------------- |
+| Baseline                 | 0.8104     | 97,436     | 8.32e-6             |
+| **summary based**        | 0.7708     | **52,477** | **1.47e-5**         |
+| summary based + 1-shot   | 0.8021     | 63,599     | 1.27e-5             |
+| summary based + 5-shots  | 0.7708     | 86,878     | 8.87e-6             |
+| summary based + 10-shots | **0.8146** | 115,558    | 7.05e-6             |
 
 `정확도/토큰 사용량` 지표를 바탕으로 현재 프롬프트를 채택했습니다.
 
 - [목적 별 분류](prompt/template/classification/category.yaml)
 - [추가 행동 필요 여부 분류](prompt/template/classification/action.yaml)
 
-### 메일 개별 요약
-
-ROUGE-1에서 300~400%, BERTScore에서 60~80%, G-Eval conciseness 항목에서(5점 만점) 11% 상승폭이 있었습니다.
-
 ### 메일 전체 요약
 
-5점 만점인 G-Eval 평가에서 평균 150% 상승폭이 있었습니다.
+| Condition                                                 | G-eval score |
+| --------------------------------------------------------- | ------------ |
+| Baseline(Self-Refine)                                     | 3.75         |
+| Baseline(Reflexion)                                       | 4.00         |
+| Detailed Instructions(Self-Refine)                        | 3.50         |
+| Detailed Instructions(Reflexion)                          | 3.50         |
+| Detailed Instructions + Formatting Penalty(Self-Refine)   | 3.94         |
+| **Detailed Instructions + Formatting Penalty(Reflexion)** | **4.19**     |
+
+`G-Eval` 평가 평균 점수(5점 만점)에서 **0.44** 상승폭이 있었습니다.
 
 - [G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 - [전체 요약 시스템 프롬프트](prompt/template/summary/final_summary_system.txt)
