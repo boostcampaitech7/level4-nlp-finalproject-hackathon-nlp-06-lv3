@@ -13,6 +13,12 @@ temperature:
 self_refine:
   max_iteration: 3
 
+embedding:
+  model_name: "bge-m3" # "bge-m3" | "upstage"
+  similarity_metric: "cosine-similarity" # "cosine-similarity" | "dot-product"
+  similarity_threshold: 0.8
+  save_results: true
+
 # 최종 리포트 요약
 reflexion:
   max_iteration: 3
@@ -47,11 +53,4 @@ report:
     prompt_path: "prompt/template/reflexion/g_eval/"
 
 classification:
-  do_manual_filter: False
   inference: 1 # Consistency 평가 용 반복 추론 횟수 설정
-
-embedding:
-  model_name: "bge-m3" # "bge-m3" | "upstage"
-  similarity_metric: "cosine-similarity" # "cosine-similarity" | "dot-product"
-  similarity_threshold: 0.8
-  save_results: true
