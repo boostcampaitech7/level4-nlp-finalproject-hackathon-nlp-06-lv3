@@ -17,7 +17,7 @@ Evaluation Steps:
 - Are the ideas presented in a logical order?
 - Does each part naturally flow into the next, or does it feel like a random list of points?
 - Is the language coherent and consistent throughout?
-- Is the report short enough? The report must be around 3 sentences for this task; any report longer than 2 sentences must be strongly penalized. 
+- Is the report short enough? The report must be around 3 sentences for this task; any report longer than 3 sentences must be strongly penalized. 
 
 3. Assign a Coherence Score (1–5)
 - 1: The report is very disjointed, hard to follow.
