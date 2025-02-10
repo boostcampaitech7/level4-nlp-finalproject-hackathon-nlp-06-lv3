@@ -4,6 +4,7 @@ from gmail_api.gmail_service import GmailService
 from pipelines.pipeline import pipeline
 from utils.configuration import Config
 from utils.db_utils import authenticate_gmail, fetch_users, insert_report
+from utils.token_usage_counter import TokenUsageCounter
 
 
 def main():
@@ -28,6 +29,9 @@ def main():
             print(f"============ FINAL REPORT of {user['id']} =============")
             print(report)
             print("=======================================================")
+
+            if Config.config["token_tracking"]:
+                TokenUsageCounter.plot_token_cost()
 
             insert_report(user["id"], report, json_checklist)
 

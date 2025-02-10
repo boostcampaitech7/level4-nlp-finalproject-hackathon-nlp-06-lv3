@@ -26,10 +26,13 @@ class TokenUsageCounter:
         agents_set = set()
         usage_types_set = set()
 
+        print(f"{'=' * 20}TOKEN USAGE{'=' * 20}\n")
+
         for record in TokenUsageCounter.token_usage_records:
             agent_name = record["agent_name"]
             usage_type = record["usage_type"]
             tokens = record["tokens"]
+            print(f"Agent: {agent_name}\nType: {usage_type}\nUsage: {tokens}\n")
 
             usage_dict[(agent_name, usage_type)] += tokens
             agents_set.add(agent_name)
