@@ -21,30 +21,27 @@ class ReflexionFramework:
         Returns:
             모든 aspect 점수의 평균값이 제일 높은 text가 반환됩니다.
         """
-
         scores = []
         outputs = []
-        output_text = summary_agent.process(origin_mail, 3, ["start"])
+
+        output_text = summary_agent.process_with_reflection(origin_mail)
         print("\n\nINITIATE REFLEXION\n")
         print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
+
         for i in range(self.max_iteration):
             # 평가하기
-            eval_result = self.evaluator.get_geval_scores(origin_mail, output_text)
-            eval_result_str = ""
-            aspect_score = 0
-            aspect_len = len(eval_result)
-            for aspect, score in eval_result.items():
-                eval_result_str += f"항목: {aspect} 점수: {score}\n"
-                aspect_score += score
+            eval_result: dict = self.evaluator.get_geval_scores(origin_mail, output_text)
+            eval_result_str = "\n".join([f"항목: {aspect} 점수: {score}" for aspect, score in eval_result.items()])
+            aspect_score = sum(eval_result.values())
 
             # 성찰하기
             self.self_reflection.generate_reflection(origin_mail, output_text, eval_result_str)
 
             # 출력문 다시 생성하기
             previous_reflections = self.self_reflection.reflection_memory
-            output_text = summary_agent.process(origin_mail, 3, previous_reflections)
+            output_text = summary_agent.process_with_reflection(origin_mail, 3, previous_reflections)
 
-            eval_average = round(aspect_score / aspect_len, 1)
+            eval_average = round(aspect_score / len(eval_result), 1)
             scores.append(eval_average)
             outputs.append(output_text)
             previous_reflections_msg = "\n".join(previous_reflections)
