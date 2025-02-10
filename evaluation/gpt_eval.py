@@ -34,7 +34,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
         aspect_scores = {}
         print("=====================================================")
         for aspect in aspects:
-            prompt_path: str = prompt_files + aspects + ".txt"
+            prompt_path: str = prompt_files + aspect + ".txt"
             if not prompt_path:
                 aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
                 continue

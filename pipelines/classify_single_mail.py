@@ -5,13 +5,12 @@ import pandas as pd
 
 from agents.classification.classification_agent import ClassificationAgent
 from agents.classification.classification_type import ClassificationType
-from gmail_api.mail import Mail
 from utils.configuration import Config
 
 warnings.filterwarnings("ignore", message="A single label was found in 'y_true' and 'y_pred'.*")
 
 
-def classify_single_mail(mail_dict: dict[str, Mail], summary_dict: dict[str, str]) -> tuple[dict, dict]:
+def classify_single_mail(summary_dict: dict[str, str]) -> tuple[dict, dict]:
     temperature: int = Config.config["temperature"]["classification"]
     seed: int = Config.config["seed"]
 
@@ -22,23 +21,27 @@ def classify_single_mail(mail_dict: dict[str, Mail], summary_dict: dict[str, str
 
     iteration = Config.config["classification"]["inference"]
 
-    df = pd.DataFrame(columns=["categories", "actions"], index=list(mail_dict.keys()))
-    df.index.name = "id"
-
-    for mail_id, mail in mail_dict.items():
-        categories = [
-            classification_agent.process(summary_dict[mail_id], ClassificationType.CATEGORY) for i in range(iteration)
+    categories_dict = {
+        mail_id: [
+            classification_agent.process(summary_dict[mail_id], ClassificationType.CATEGORY) for _ in range(iteration)
         ]
-        actions = [
-            classification_agent.process(summary_dict[mail_id], ClassificationType.ACTION) for i in range(iteration)
+        for mail_id in summary_dict
+    }
+    actions_dict = {
+        mail_id: [
+            classification_agent.process(summary_dict[mail_id], ClassificationType.ACTION) for _ in range(iteration)
         ]
+        for mail_id in summary_dict
+    }
 
-        categories_dict[mail_id] = categories
-        actions_dict[mail_id] = actions
-
-        df.loc[mail_id, ["categories", "actions"]] = [categories, actions]
-
-    df.to_csv("evaluation/data/generated_category.csv")
+    pd.DataFrame(
+        {
+            "id": list(summary_dict.keys()),
+            "categories": list(categories_dict.values()),
+            "actions": list(actions_dict.values()),
+        },
+        index=categories_dict.keys(),
+    ).to_csv("evaluation/data/generated_category.csv", index=False)
 
     category_dict = {
         mail_id: Counter(categories).most_common(1)[0][0] for mail_id, categories in categories_dict.items()

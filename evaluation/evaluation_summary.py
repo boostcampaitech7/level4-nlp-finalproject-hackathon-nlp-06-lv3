@@ -3,7 +3,7 @@ from evaluation.quantitative_eval import calculate_bert, calculate_rouge
 from utils.configuration import Config
 
 
-def evaluate_summary(source_texts, report_texts, reference_texts):
+def evaluate_summary(source_texts: list[str], report_texts: list[str], reference_texts: list[str]):
     """
     설정(config)에 따라 ROUGE / BERT / G-EVAL 계산
     """

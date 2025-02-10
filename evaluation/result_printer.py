@@ -1,7 +1,4 @@
-from utils.configuration import Config
-
-
-def calculate_average_scores(results, eval_type: str, n_items: int, additional: bool) -> dict:
+def calculate_average_scores(results, eval_type: str, n_items: int) -> dict:
     """
     결과 데이터에서 평균 점수를 계산하는 함수.
 
@@ -45,8 +42,6 @@ def calculate_average_scores(results, eval_type: str, n_items: int, additional: 
     if "g-eval" in results:
         geval_list = results["g-eval"]
         eval_keys = ["consistency", "coherence", "fluency", "relevance"]
-        if additional:
-            eval_keys.extend(["readability", "clearance", "practicality"])
 
         avg_scores["g-eval"] = {k: 0.0 for k in eval_keys}
 
@@ -64,8 +59,6 @@ def print_evaluation_results(results: dict, eval_type: str):
     Summary 또는 Report 평가 결과를 보기 좋게 출력하는 메인 함수
     """
     print(f"\n===== {eval_type.upper()} Evaluation Results =====")
-
-    additional = Config.config[eval_type]["g_eval"]["additional"]
 
     n_items = len(next(iter(results.values())))  # 결과 리스트 길이 가져오기
 
@@ -98,19 +91,10 @@ def print_evaluation_results(results: dict, eval_type: str):
                 f"relevance={gitem['relevance']:.4f}"
             )
 
-            # 추가 G-EVAL 항목 출력 (additional=True일 때)
-            if additional:
-                print(
-                    "[G-EVAL Additional] "
-                    f"readability={gitem['readability']:.4f}, "
-                    f"clearance={gitem['clearance']:.4f}, "
-                    f"practicality={gitem['practicality']:.4f}"
-                )
-
     # 평균 점수 출력
     print("\n===== Averages =====")
 
-    avg_scores = calculate_average_scores(results, eval_type, n_items, additional)
+    avg_scores = calculate_average_scores(results, eval_type, n_items)
 
     # ROUGE 평균 출력 (Summary만)
     if eval_type == "summary" and "rouge" in avg_scores:
@@ -149,10 +133,3 @@ def print_evaluation_results(results: dict, eval_type: str):
             f"fluency={avg_scores['g-eval']['fluency']:.4f}, "
             f"relevance={avg_scores['g-eval']['relevance']:.4f}"
         )
-
-        if additional:
-            print(
-                f"  readability={avg_scores['g-eval']['readability']:.4f}, "
-                f"clearance={avg_scores['g-eval']['clearance']:.4f}, "
-                f"practicality={avg_scores['g-eval']['practicality']:.4f}"
-            )
