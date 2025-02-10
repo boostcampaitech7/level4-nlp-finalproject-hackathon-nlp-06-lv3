@@ -11,17 +11,13 @@ class ReflexionSelfReflection:
         self.temperature = 0.7
         self.seed = 42
         self.reflection_memory = []
-        self.reflection_template = None
-        self.aspects_description = None
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
-
-    def save_reflection(self, reflection_text):
-        """reflection 메모리에 reflection을 저장한다.
-
-        Args:
-            reflection_text (str)
-        """
-        self.reflection_memory.append(reflection_text)
+        # Reflexion 프롬프트 템플릿을 읽어온다
+        with open("prompt/template/reflexion/reflexion_final.txt", "r", encoding="utf-8") as file:
+            self.reflection_template = file.read()
+        # aspect 별 채점 기준을 읽어온다
+        with open("prompt/template/reflexion/g_eval/aspects_description_final.txt", "r", encoding="utf-8") as file:
+            self.aspects_description = file.read()
 
     @retry_with_exponential_backoff()
     def generate_reflection(self, source_text, output_text, eval_result):
@@ -36,29 +32,19 @@ class ReflexionSelfReflection:
         Returns:
             str: generated reflection
         """
-        if not self.reflection_memory:
-            previous_reflections = "없음"
-        else:
-            previous_reflections = "\n".join(self.reflection_memory)
-
-        # Reflexion 프롬프트 템플릿을 읽어온다
-        with open("prompt/template/reflexion/reflexion_final.txt", "r", encoding="utf-8") as file:
-            reflection_template = file.read()
-
-        # aspect 별 채점 기준을 읽어온다
-        with open("prompt/template/reflexion/g_eval/aspects_description_final.txt", "r", encoding="utf-8") as file:
-            aspects_description = file.read()
-
-        formatted_prompt = reflection_template.format(
+        formatted_prompt = self.reflection_template.format(
             source_input=source_text,
             source_output=output_text,
             eval_result=eval_result,
             eval_aspects_description=self.aspects_description,
-            previous_reflections=previous_reflections,
+            previous_reflections=self.get_reflection_memory_str(),
         )
 
         # 메시지 구성
-        messages = [{"role": "system", "content": formatted_prompt}, {"role": "user", "content": aspects_description}]
+        messages = [
+            {"role": "system", "content": formatted_prompt},
+            {"role": "user", "content": self.aspects_description},
+        ]
 
         # 모델에게 메시지를 전달해 리플렉션 결과 받기
         reflection_response = self.client.chat.completions.create(
@@ -72,4 +58,14 @@ class ReflexionSelfReflection:
         TokenUsageCounter.add_usage("reflexion", "self-reflection", reflection_response.usage.total_tokens)
 
     def get_reflection_memory_str(self):
+        if not self.reflection_memory:
+            return "없음"
         return "\n".join(self.reflection_memory)
+
+    def save_reflection(self, reflection_text):
+        """reflection 메모리에 reflection을 저장한다.
+
+        Args:
+            reflection_text (str)
+        """
+        self.reflection_memory.append(reflection_text)
