@@ -34,40 +34,31 @@ class SummaryAgent:
         self.seed = seed
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
-    @retry_with_exponential_backoff()
-    def process(self, mail: str, max_iteration: int = 3, reflections: list = []) -> str:
-        """
-        주어진 메일(또는 메일 리스트)을 요약하여 JSON 형태로 반환합니다.
-        내부적으로는 미리 정의된 템플릿과 결합하여 Solar 모델에 요약 요청을 보냅니다.
+    def process_with_reflection(self, mail: str, reflections: list = [], max_iteration: int = 3) -> str:
+        input_reflections = "제공된 피드백 없음" if reflections else "\n".join(reflections)
 
-        Args:
-            mail (dict[Mail] | Mail): 요약할 메일 객체(Mail) 또는 문자열 리스트.
-            max_iteration (int): 최대 Groundness Check 횟수.
+        with open("prompt/template/reflexion/single_reflexion_system.txt", "r", encoding="utf-8") as file:
+            system_prompt = file.read().strip()
+        with open("prompt/template/reflexion/single_reflexion_user.txt", "r", encoding="utf-8") as file:
+            user_prompt = file.read().strip()
 
-        Returns:
-            dict: 요약된 결과 JSON.
-        """
-        if reflections:
-            input_reflections = "제공된 피드백 없음" if reflections[0] == "start" else "\n".join(reflections)
+        user_prompt = user_prompt.format(mail=mail, previous_reflections=input_reflections)
 
-            with open("prompt/template/reflexion/single_reflexion_system.txt", "r", encoding="utf-8") as file:
-                system_prompt = file.read().strip()
-            with open("prompt/template/reflexion/single_reflexion_user.txt", "r", encoding="utf-8") as file:
-                user_prompt = file.read().strip()
-
-            user_prompt = user_prompt.format(mail=mail, previous_reflections=input_reflections)
-
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-
-        else:
-            messages = build_messages(
-                template_type="summary", target_range=self.summary_type, action="summary", mail=mail
-            )
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
 
         # max_iteration 번 Groundness Check 수행
+        return self._generate_with_groundedness(mail, messages, max_iteration)
+
+    def process(self, mail: str, max_iteration: int = 3) -> str:
+        messages = build_messages(template_type="summary", target_range=self.summary_type, action="summary", mail=mail)
+
+        return self._generate_with_groundedness(mail, messages, max_iteration)
+
+    @retry_with_exponential_backoff()
+    def _generate_with_groundedness(self, mail: str, messages: list[dict], max_iteration: int):
         for i in range(max_iteration):
             response = self.client.chat.completions.create(
                 model=self.model_name,

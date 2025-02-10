@@ -3,33 +3,34 @@ gmail:
   end_date: # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
   max_mails: 15 # gmail에서 불러올 메일 최대 개수
 
-evaluation: # 평가 설정
-  summary_eval: false # Summary 평가 수행 여부
-  classification_eval: false # Classification 평가 수행 여부
-  report_eval: false # Final Report 평가 수행 여부
-
+# 전체 모델에 적용하는 seed와 temperature
 seed: 42
 temperature:
   summary: 0
   classification: 0
 
-self_reflection:
-  type: self-refine # self-refine | reflexion 변경 가능
-  max_iteration: 3 # TODO: 3으로 원상복구
-  reflexion:
-    threshold_type: "average"
-    threshold: 4.5
+# 개별 메일 요약
+self_refine:
+  max_iteration: 3
 
-common_prompts: &common_prompts
-  consistency: "prompt/template/g_eval/con_{eval_type}.txt"
-  coherence: "prompt/template/g_eval/coh_{eval_type}.txt"
-  fluency: "prompt/template/g_eval/flu_{eval_type}.txt"
-  relevance: "prompt/template/g_eval/rel_{eval_type}.txt"
-  readability: "prompt/template/g_eval/rdb_{eval_type}.txt"
-  clearance: "prompt/template/g_eval/clr_{eval_type}.txt"
-  practicality: "prompt/template/g_eval/prc_{eval_type}.txt"
+embedding:
+  model_name: "bge-m3" # "bge-m3" | "upstage"
+  similarity_metric: "cosine-similarity" # "cosine-similarity" | "dot-product"
+  similarity_threshold: 0.8
+  save_results: true
 
-summary: # Summary 평가 관련 설정
+# 최종 리포트 요약
+reflexion:
+  max_iteration: 3
+  threshold: 4.5
+  g-eval:
+    prompt_path: "prompt/template/reflexion/g_eval/"
+
+token_tracking: true
+
+# 평가 세팅
+# Summary 평가 관련 설정
+summary:
   metrics:
     - rouge
     - bert
@@ -38,10 +39,8 @@ summary: # Summary 평가 관련 설정
   bert_model: "distilbert-base-uncased"
 
   g_eval:
-    openai_model: "gpt-4" # summary는 gpt-4가 아니면 정확한 답변 생성이 어려움
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
+    openai_model: "gpt-4"
+    prompt_path: "prompt/template/summary/g_eval/"
 
 # Report 평가 관련 설정
 report:
@@ -49,19 +48,8 @@ report:
     - g-eval
 
   g_eval:
-    openai_model: "gpt-4o" # report는 gpt-4o로도 가능
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
+    openai_model: "gpt-4o"
+    prompt_path: "prompt/template/reflexion/g_eval/"
 
 classification:
-  do_manual_filter: False
-  inference: 1 # TODO: 5로 원상 복구, Consistency 평가 용 반복 추론 횟수 설정
-
-embedding:
-  model_name: "bge-m3" # 혹은 "upstage"
-  similarity_metric: "cosine-similarity" # 혹은 "dot-product"
-  similarity_threshold: 0.8
-  save_results: true
-
-token_tracking: true
+  inference: 1 # Consistency 평가 용 반복 추론 횟수 설정

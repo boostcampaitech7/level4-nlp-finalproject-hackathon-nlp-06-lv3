@@ -5,12 +5,19 @@ from utils.configuration import Config
 
 
 class ReflexionFramework:
-    def __init__(self, task: str):
-        self.task = task
-        self.evaluator = ReflexionEvaluator(task)
-        self.self_reflection = ReflexionSelfReflection(task)
+    def __init__(self):
+        self.summary_agent = SummaryAgent(
+            model_name="solar-pro",
+            summary_type="final",
+            temperature=Config.config["temperature"]["summary"],
+            seed=Config.config["seed"],
+        )
+        self.evaluator = ReflexionEvaluator()
+        self.self_reflection = ReflexionSelfReflection()
+        self.threshold = Config.config["reflexion"]["threshold"]
+        self.max_iteration = Config.config["reflexion"]["max_iteration"]
 
-    def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
+    def process(self, origin_mail) -> str:
         """
         Reflexion을 실행합니다.
 
@@ -19,58 +26,60 @@ class ReflexionFramework:
         Returns:
             모든 aspect 점수의 평균값이 제일 높은 text가 반환됩니다.
         """
-        threshold_type = Config.config["self_reflection"]["reflexion"]["threshold_type"]
-        threshold = Config.config["self_reflection"]["reflexion"]["threshold"]
-
-        scores = []
         outputs = []
-        output_text = summary_agent.process(origin_mail, 3, ["start"])
-        print("\n\nINITIATE REFLEXION\n")
-        print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
-        for i in range(Config.config["self_reflection"]["max_iteration"]):
-            # 평가하기
-            eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)
-            eval_result_str = ""
-            aspect_score = 0
-            for eval_result in eval_result_list:
-                aspect_len = len(eval_result)
-                for aspect, score in eval_result.items():
-                    eval_result_str += f"항목: {aspect} 점수: {score}\n"
-                    aspect_score += score
+        eval_results = []
+        final_output = ""
+        max_score = 0
 
-            # 성찰하기
-            self.self_reflection.generate_reflection(origin_mail, output_text, eval_result_str)
-
-            # 출력문 다시 생성하기
-            previous_reflections = self.self_reflection.reflection_memory
-            output_text = summary_agent.process(origin_mail, 3, previous_reflections)
-
-            eval_average = round(aspect_score / aspect_len, 1)
-            scores.append(eval_average)
+        for i in range(self.max_iteration):
+            # 출력문 재생성
+            output_text = self.summary_agent.process_with_reflection(
+                origin_mail, self.self_reflection.reflection_memory
+            )
             outputs.append(output_text)
-            previous_reflections_msg = "\n".join(previous_reflections)
-            print(
-                f"{'=' * 25}\n"
-                f"{i + 1}회차\n"
-                f"{'-' * 25}\n"
-                f"{eval_result_str}, 평균 {eval_average}점\n"
-                f"{'-' * 25}\n"
-                f"Reflection 메모리:\n{previous_reflections_msg}\n\n"
-                f"{'-' * 25}\n"
-                f"성찰 후 재생성된 텍스트:\n{output_text}"
+
+            # 평가하기
+            eval_result: dict = self.evaluator.get_geval_scores(origin_mail, output_text)
+            eval_results.append(eval_result)
+            score = round(sum(eval_result.values()) / len(eval_result), 1)
+
+            if max_score < score:
+                max_score = score
+                final_output = output_text
+                if round(sum(eval_result.values()) / len(eval_result), 1) >= self.threshold:
+                    break
+
+            # 점수 도달 실패 시 이유 성찰
+            self.self_reflection.generate_reflection(
+                origin_mail, output_text, self._create_eval_result_str(eval_result)
             )
 
-            if (threshold_type == "all" and all(value > threshold for value in scores)) or (
-                threshold_type == "average" and eval_average >= threshold
-            ):
-                print(f"{'=' * 25}\n" "Evaluation 점수 만족, Reflexion 루프 종료\n" f"{'=' * 25}")
-                break
+        self._print_result(eval_results, outputs)
 
-        for i, score in enumerate(scores):
-            print(f"{i+1}회차 평균 {score}점")
-        print("=" * 25)
-        print(f"\n최종 출력문 ({scores.index(max(scores)) + 1}회차, 평균: {max(scores)}점)")
-        final = outputs[scores.index(max(scores))]
-        print(f"{final}")
+        return final_output
 
-        return final
+    def _create_eval_result_str(self, eval_result: dict):
+        return "\n".join([f"항목: {aspect} 점수: {score}" for aspect, score in eval_result.items()])
+
+    def _print_result(self, eval_results: list[dict], outputs: list[str]):
+        max_score = 0
+        final_output = ""
+        max_index = 0
+
+        for i, (eval_result, output) in enumerate(zip(eval_results, outputs)):
+            score = round(sum(eval_result.values()) / len(eval_result), 1)
+            print(
+                f"{'=' * 25}\n"
+                f"{i+1}회차 평균 {score}점\n"
+                f"{self._create_eval_result_str(eval_result)}\n"
+                f"Reflection 메모리:\n{self.self_reflection.get_reflection_memory_str()}\n"
+                f"{'-' * 25}\n"
+                f"생성된 텍스트:\n{output}\n"
+                f"{'-' * 25}\n"
+            )
+            if max_score < score:
+                max_score = score
+                final_output = output
+                max_index = i
+
+        print(f"{'=' * 25}\n최종 출력:{max_index+1}회차 평균 {max_score}점\n{final_output}\n{'=' * 25}\n")

@@ -15,7 +15,7 @@ def pipeline(gmail_service: GmailService):
         mail_dict: dict[str, Mail] = gmail_service.fetch_mails()
 
         summary_dict = summary_single_mail(mail_dict)
-        category_dict, action_dict = classify_single_mail(mail_dict, summary_dict)
+        category_dict, action_dict = classify_single_mail(summary_dict)
 
         similar_mails_dict = cluster_mails(mail_dict, category_dict)
 
