@@ -32,7 +32,6 @@ class TokenUsageCounter:
             agent_name = record["agent_name"]
             usage_type = record["usage_type"]
             tokens = record["tokens"]
-            print(f"Agent: {agent_name}\nType: {usage_type}\nUsage: {tokens}\n")
 
             usage_dict[(agent_name, usage_type)] += tokens
             agents_set.add(agent_name)
@@ -53,7 +52,11 @@ class TokenUsageCounter:
         for i, agent in enumerate(agents_list):
             y_values = []
             for usage_type in usage_types_list:
-                y_values.append(usage_dict.get((agent, usage_type), 0))
+                token_usage = usage_dict.get((agent, usage_type), 0)
+                y_values.append(token_usage)
+                if token_usage == 0:
+                    continue
+                print(f"Usage Type: {usage_type}\nToken Usage :{token_usage}\n")
 
             # 막대를 오른쪽으로 조금씩 이동
             plt.bar(x + i * bar_width, y_values, bar_width, label=agent)
