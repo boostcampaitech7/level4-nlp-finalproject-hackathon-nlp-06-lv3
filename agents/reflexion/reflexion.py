@@ -30,14 +30,13 @@ class ReflexionFramework:
         print(f"{'=' * 25}\n" f"초기 출력문:\n{output_text}\n" f"{'=' * 25}\n")
         for i in range(max_iteration):
             # 평가하기
-            eval_result_list = self.evaluator.get_geval_scores(origin_mail, output_text)
+            eval_result = self.evaluator.get_geval_scores(origin_mail, output_text)
             eval_result_str = ""
             aspect_score = 0
-            for eval_result in eval_result_list:
-                aspect_len = len(eval_result)
-                for aspect, score in eval_result.items():
-                    eval_result_str += f"항목: {aspect} 점수: {score}\n"
-                    aspect_score += score
+            aspect_len = len(eval_result)
+            for aspect, score in eval_result.items():
+                eval_result_str += f"항목: {aspect} 점수: {score}\n"
+                aspect_score += score
 
             # 성찰하기
             self.self_reflection.generate_reflection(origin_mail, output_text, eval_result_str)
