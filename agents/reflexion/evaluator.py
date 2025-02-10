@@ -32,49 +32,43 @@ class ReflexionEvaluator:
 
         aspect_scores = {}
         for aspect in aspects:
-            prompt_path: str = prompt_path + aspect + ".txt"
-            if not prompt_path:
-                aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
-                continue
-
             try:
-                with open(prompt_path, "r", encoding="utf-8") as f:
+                with open(f"{prompt_path}{aspect}.txt", "r", encoding="utf-8") as f:
                     base_prompt = f.read()
-
-                # {Document}, {Summary} 치환
-                cur_prompt = base_prompt.format(Document=source_text, Summary=output_text)
-
-                # OpenAI API 호출
-                response = self.client.chat.completions.create(
-                    model=self.model_name,
-                    messages=[{"role": "system", "content": cur_prompt}],
-                    temperature=0.7,
-                    max_tokens=50,
-                    n=1,
-                )
-
-                # GPT가 준 output을 float로 변환
-                gpt_text = response.choices[0].message.content.strip()
-
-                # 정규표현식으로 숫자만 추출, 예: "abc123def" -> numbers = ['1','2','3']
-                numbers = re.findall(r"\d", gpt_text)
-
-                # 숫자 중 마지막으로 출력된 점수를 Score Value 로
-                if not numbers:
-                    score_value = 0.0
-                else:
-                    score_value = float(numbers[-1])
-                    if score_value > 5:
-                        score_value = 1.0
-
-                total_token_usage += response.usage.total_tokens
-
-                aspect_scores[aspect] = score_value
-
-            except (FileNotFoundError, ValueError) as e:
-                # TODO: 숫자 변환 실패 could not convert string to float: 해결해야함(프롬프트적인 문제)
+            except FileNotFoundError as e:
                 print(f"[Error] eval_type=report, aspect={aspect}, error={e}")
                 aspect_scores[aspect] = 0.0
+                continue
+
+            # {Document}, {Summary} 치환
+            cur_prompt = base_prompt.format(Document=source_text, Summary=output_text)
+
+            # OpenAI API 호출
+            response = self.client.chat.completions.create(
+                model=self.model_name,
+                messages=[{"role": "system", "content": cur_prompt}],
+                temperature=0.7,
+                max_tokens=50,
+                n=1,
+            )
+
+            # GPT가 준 output을 float로 변환
+            gpt_text = response.choices[0].message.content.strip()
+
+            try:
+                # 정규표현식으로 숫자만 추출, 예: "abc123def" -> numbers = ['1','2','3']
+                numbers = re.findall(r"\d", gpt_text)
+                score_value = float(numbers[-1])
+                if score_value > 5:
+                    aspect_scores[aspect] = 1.0
+                else:
+                    aspect_scores[aspect] = score_value
+            except Exception as e:
+                print(f"[Error] eval_type=report, aspect={aspect}, error={e}")
+                aspect_scores[aspect] = 0.0
+                continue
+
+            total_token_usage += response.usage.total_tokens
 
         TokenUsageCounter.add_usage("reflexion", "evaluator", total_token_usage)
 
