@@ -6,14 +6,13 @@ from utils.token_usage_counter import TokenUsageCounter
 
 
 class ReflexionSelfReflection:
-    def __init__(self, task):
+    def __init__(self):
         self.model_name = "solar-pro"
         self.temperature = 0.7
         self.seed = 42
         self.reflection_memory = []
         self.reflection_template = None
         self.aspects_description = None
-        self.task = task
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
     def save_reflection(self, reflection_text):

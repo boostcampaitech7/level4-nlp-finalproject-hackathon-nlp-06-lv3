@@ -8,11 +8,9 @@ from utils.token_usage_counter import TokenUsageCounter
 
 
 class ReflexionEvaluator:
-    def __init__(self, task: str):
-        self.task = task
+    def __init__(self):
         self.model_name = "solar-pro"
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
-        self.eval_type = "summary" if self.task == "single" else "report"
 
     @retry_with_exponential_backoff()
     def get_geval_scores(self, source_text: str, output_text: str) -> dict:
@@ -25,8 +23,8 @@ class ReflexionEvaluator:
         Returns:
             g_eval_result (dict): g-eval 결과 딕셔너리
         """
-        prompt_files: dict[str, str] = Config.config[self.eval_type]["g_eval"]["prompts"]
-        is_additional: bool = Config.config[self.eval_type]["g_eval"]["additional"]
+        prompt_files: dict[str, str] = Config.config["report"]["g_eval"]["prompts"]
+        is_additional: bool = Config.config["report"]["g_eval"]["additional"]
 
         # 평가할 기준 (기본 4개 + 추가 옵션 포함 시 7개)
         aspects = ["consistency", "coherence", "fluency", "relevance"]
@@ -37,7 +35,7 @@ class ReflexionEvaluator:
 
         aspect_scores = {}
         for aspect in aspects:
-            prompt_path: str = prompt_files[aspect].format(eval_type=self.eval_type)
+            prompt_path: str = prompt_files[aspect].format(eval_type="report")
             if not prompt_path:
                 aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
                 continue
@@ -78,7 +76,7 @@ class ReflexionEvaluator:
 
             except (FileNotFoundError, ValueError) as e:
                 # TODO: 숫자 변환 실패 could not convert string to float: 해결해야함(프롬프트적인 문제)
-                print(f"[Error] eval_type={self.eval_type}, aspect={aspect}, error={e}")
+                print(f"[Error] eval_type=report, aspect={aspect}, error={e}")
                 aspect_scores[aspect] = 0.0
 
         TokenUsageCounter.add_usage("reflexion", "evaluator", total_token_usage)

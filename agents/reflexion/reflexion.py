@@ -5,10 +5,9 @@ from utils.configuration import Config
 
 
 class ReflexionFramework:
-    def __init__(self, task: str):
-        self.task = task
-        self.evaluator = ReflexionEvaluator(task)
-        self.self_reflection = ReflexionSelfReflection(task)
+    def __init__(self):
+        self.evaluator = ReflexionEvaluator()
+        self.self_reflection = ReflexionSelfReflection()
 
     def process(self, origin_mail, summary_agent: SummaryAgent) -> str:
         """
