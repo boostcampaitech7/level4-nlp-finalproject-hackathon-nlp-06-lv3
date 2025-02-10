@@ -23,19 +23,16 @@ class ReflexionEvaluator:
         Returns:
             g_eval_result (dict): g-eval 결과 딕셔너리
         """
-        prompt_files: dict[str, str] = Config.config["report"]["g_eval"]["prompts"]
-        is_additional: bool = Config.config["report"]["g_eval"]["additional"]
+        prompt_path: str = Config.config["report"]["g_eval"]["prompt_path"]
 
         # 평가할 기준 (기본 4개 + 추가 옵션 포함 시 7개)
         aspects = ["consistency", "coherence", "fluency", "relevance"]
-        if is_additional:
-            aspects += ["readability", "clearance", "practicality"]
 
         total_token_usage = 0
 
         aspect_scores = {}
         for aspect in aspects:
-            prompt_path: str = prompt_files[aspect].format(eval_type="report")
+            prompt_path: str = prompt_path + aspect + ".txt"
             if not prompt_path:
                 aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
                 continue

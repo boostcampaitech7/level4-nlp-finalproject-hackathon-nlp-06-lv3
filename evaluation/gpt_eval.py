@@ -16,8 +16,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
         g_eval_config (dict): g-eval 관련 설정만 포함된 딕셔너리
     """
 
-    prompt_files: dict[str, str] = Config.config[eval_type]["g_eval"]["prompts"]
-    is_additional: bool = Config.config[eval_type]["g_eval"]["additional"]
+    prompt_files: str = Config.config[eval_type]["g_eval"]["prompt_path"]
 
     if model_name == "solar-pro":
         client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
@@ -28,8 +27,6 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
 
     # 평가할 기준 (기본 4개 + 추가 옵션 포함 시 7개)
     aspects = ["consistency", "coherence", "fluency", "relevance"]
-    if is_additional:
-        aspects += ["readability", "clearance", "practicality"]
 
     total_token_usage = 0
     results_list = []
@@ -37,7 +34,7 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
         aspect_scores = {}
         print("=====================================================")
         for aspect in aspects:
-            prompt_path: str = prompt_files[aspect].format(eval_type=eval_type)
+            prompt_path: str = prompt_files + aspects + ".txt"
             if not prompt_path:
                 aspect_scores[aspect] = 0.0  # 프롬프트 파일이 없으면 0점 처리
                 continue
@@ -84,6 +81,6 @@ def calculate_g_eval(source_texts: list[str], generated_texts: list[str], eval_t
 
         results_list.append(aspect_scores)
 
-    TokenUsageCounter.add_usage("reflexion", "evaluator", total_token_usage)
+    TokenUsageCounter.add_usage(eval_type, "g-eval", total_token_usage)
 
     return results_list

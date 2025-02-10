@@ -46,7 +46,7 @@ class ReflexionSelfReflection:
             reflection_template = file.read()
 
         # aspect 별 채점 기준을 읽어온다
-        with open("prompt/template/g_eval/aspects_description_final.txt", "r", encoding="utf-8") as file:
+        with open("prompt/template/reflexion/g_eval/aspects_description_final.txt", "r", encoding="utf-8") as file:
             aspects_description = file.read()
 
         formatted_prompt = reflection_template.format(

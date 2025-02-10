@@ -18,16 +18,8 @@ reflexion:
   max_iteration: 3
   threshold_type: "average" # "average" | "all"
   threshold: 4.5
-
-# G-Eval 프롬프트 경로
-common_prompts: &common_prompts
-  consistency: "prompt/template/g_eval/con_{eval_type}.txt"
-  coherence: "prompt/template/g_eval/coh_{eval_type}.txt"
-  fluency: "prompt/template/g_eval/flu_{eval_type}.txt"
-  relevance: "prompt/template/g_eval/rel_{eval_type}.txt"
-  readability: "prompt/template/g_eval/rdb_{eval_type}.txt"
-  clearance: "prompt/template/g_eval/clr_{eval_type}.txt"
-  practicality: "prompt/template/g_eval/prc_{eval_type}.txt"
+  g-eval:
+    prompt_path: "prompt/template/reflexion/g_eval/"
 
 token_tracking: true
 
@@ -43,9 +35,7 @@ summary:
 
   g_eval:
     openai_model: "gpt-4"
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
+    prompt_path: "prompt/template/summary/g_eval/"
 
 # Report 평가 관련 설정
 report:
@@ -54,9 +44,7 @@ report:
 
   g_eval:
     openai_model: "gpt-4o"
-    additional: False # "readability", "clearance", "practicality"를 G-Eval에 적용할 여부
-    prompts:
-      <<: *common_prompts
+    prompt_path: "prompt/template/reflexion/g_eval/"
 
 classification:
   do_manual_filter: False
