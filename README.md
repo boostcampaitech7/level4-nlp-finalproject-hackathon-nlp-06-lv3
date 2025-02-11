@@ -10,7 +10,7 @@
 
 > 프로젝트 진행 및 자세한 실험 내역은 [노션 링크](https://www.notion.so/gamchan/Upstage-234368a08ffd4965aad55b1a93b3cc3d?pvs=4)에서 확인하실 수 있습니다.
 
-### 🪟 DEMO
+### 🎬 DEMO
 
 ![main](./assets/demo1.png)
 
@@ -202,6 +202,11 @@
 - [최종 리포트 사용자 프롬프트](prompt/template/reflexion/single_reflexion_user.txt)
 - [Evaluator(G-Eval) 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 - [self refletion 생성 프롬프트](prompt/template/reflexion/reflexion_final.txt)
+
+## 🧩 Chrome Extension Setup
+
+- [매일메일 Chrome Extension🧩 시작하기](/chrome-extension/)
+- [매일메일 FastAPI 서버⚡ 시작하기](/server/)
 
 ## ⚙️ Project Quick Setup
 
