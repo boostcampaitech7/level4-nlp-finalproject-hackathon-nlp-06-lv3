@@ -66,9 +66,6 @@
 
 `정확도/토큰 사용량` 지표를 바탕으로 현재 프롬프트를 채택했습니다.
 
-- [목적 별 분류](prompt/template/classification/category.yaml)
-- [추가 행동 필요 여부 분류](prompt/template/classification/action.yaml)
-
 ### 메일 전체 요약
 
 | Condition                                                 | G-eval score |
@@ -81,10 +78,6 @@
 | **Reflexion: Detailed Instructions + Formatting Penalty** | **4.19**     |
 
 `G-Eval` 평가 평균 점수(5점 만점)에서 **0.44점** 상승이 있었습니다.
-
-- [G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
-- [전체 요약 시스템 프롬프트](prompt/template/summary/final_summary_system.txt)
-- [전체 요약 사용자 프롬프트](prompt/template/summary/final_summary_user.txt)
 
 ## 👥 Collaborators
 
@@ -171,13 +164,21 @@
 - **처리 필요 여부 분류**
   - `처리 필요`, `읽기`
 
+각 분류의 기준은 다음 파일을 참고해주세요:
+
+- [목적 별 분류](prompt/template/classification/category.yaml)
+- [추가 행동 필요 여부 분류](prompt/template/classification/action.yaml)
+
 ### 최종 리포트 생성
 
-개별 요약문들을 활용한 최종 레포트 생성
+개별 요약문들을 활용하여 `Reflexion` 루프를 통해 수신된 이메일들의 핵심을 정리하여 최종 레포트 생성
 
 ![reflexion](./assets/reflexion.png)
 
-- 스스로 발전하는 `Reflexion` 루프를 통해 수신된 이메일들의 핵심을 정리
+- [최종 리포트 시스템 프롬프트](prompt/template/reflexion/single_reflexion_system.txt)
+- [최종 리포트 사용자 프롬프트](prompt/template/reflexion/single_reflexion_user.txt)
+- [Evaluator(G-Eval) 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
+- [self refletion 생성 프롬프트](prompt/template/reflexion/reflexion_final.txt)
 
 ## ⚙️ Project Quick Setup
 
