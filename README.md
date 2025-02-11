@@ -79,7 +79,7 @@
 | Reflexion: Detailed Instructions                          | 3.50         |
 | **Reflexion: Detailed Instructions + Formatting Penalty** | **4.19**     |
 
-`G-Eval` 평가 평균 점수(5점 만점)에서 **0.44점** 상승이 있었습니다.
+`G-Eval` 평가 평균 점수(4.5점 만점)에서 **0.44점** 상승이 있었습니다.
 
 > [리포트 G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 
