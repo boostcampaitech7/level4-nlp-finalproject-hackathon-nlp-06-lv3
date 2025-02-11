@@ -43,7 +43,7 @@
 - [실험 내용](https://www.notion.so/gamchan/18c815b39d39805e916ad56f39fa2c6b?pvs=4)
 - [프롬프트 버저닝](https://www.notion.so/gamchan/c77dbeb277fd476bbc08d3ecab3ce3a2?v=398efc762f394868a3f241dd62ec48e0&pvs=4)
 
-### 메일 개별 요약
+### 📝 개별 메일 요약
 
 | Condition              | ROUGE-1 Recall | ROUGE-1 Precision | ROUGE-1 F1 | BERT Score Recall | BERT Score Precision | BERT Score F1 | G-EVAL Conciseness |
 | ---------------------- | -------------- | ----------------- | ---------- | ----------------- | -------------------- | ------------- | ------------------ |
@@ -54,7 +54,9 @@
 
 `ROUGE-1`에서 **24.0 ~ 30.1%p**, `BERTScore`에서 **5.3 ~ 6.8%p**, `G-Eval conciseness` 항목(5점 만점)에서 **0.52점** 상승폭이 있었습니다.
 
-### 분류
+> [요약 G-eval 평가 항목 별 프롬프트](prompt/template/summary/g_eval/)
+
+### 🏷️ 메일 분류
 
 | Condition                | Accuracy   | Tokens     | Accuracy per Token |
 | ------------------------ | ---------- | ---------- | ------------------ |
@@ -66,7 +68,7 @@
 
 `정확도/토큰 사용량` 지표를 바탕으로 현재 프롬프트를 채택했습니다.
 
-### 메일 전체 요약
+### 📜 최종 리포트
 
 | Condition                                                 | G-eval score |
 | --------------------------------------------------------- | ------------ |
@@ -78,6 +80,8 @@
 | **Reflexion: Detailed Instructions + Formatting Penalty** | **4.19**     |
 
 `G-Eval` 평가 평균 점수(5점 만점)에서 **0.44점** 상승이 있었습니다.
+
+> [리포트 G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 
 ## 👥 Collaborators
 
@@ -125,11 +129,11 @@
 
 </div>
 
-## Core Pipeline
+## 🚀 Core Pipeline
 
 ![core pipeline](./assets/core-pipeline.png)
 
-### Gmail 데이터 텍스트화
+### 📩 mail 데이터 텍스트화
 
 다양한 첨부 파일과 사진 등 비정형 데이터가 포함된 메일 데이터를 `LLM`이 이해할 수 있는 텍스트로 변경
 
@@ -140,7 +144,7 @@
 - **Mail Metadata**
   - 받은 시간, 보낸 이 정보 등 메타데이터를 함께 활용
 
-### 개별 메일 요약
+### 📝 개별 메일 요약
 
 개별 메일들을 요약하여 체크리스트화
 
@@ -155,7 +159,13 @@
 - **유사 메일 묶기**
   - 메일 제목 및 요약문을 `Embedding`해 유사한 메일들을 하나의 그룹 설정
 
-### 메일 분류
+#### 🗣️ 프롬프트
+
+- [메일 요약 시스템 프롬프트](prompt/template/summary/single_summary_system.txt)
+- [메일 요약 사용자 프롬프트](prompt/template/summary/single_summary_user.txt)
+- [self refine 관련 프롬프트들](prompt/template/self_refine/)
+
+### 🏷️ 메일 분류
 
 요약된 메일 정보를 기준으로 다중 분류 진행
 
@@ -164,16 +174,23 @@
 - **처리 필요 여부 분류**
   - `처리 필요`, `읽기`
 
-각 분류의 기준은 다음 파일을 참고해주세요:
+#### 🗣️ 프롬프트
+
+- [메일 분류 시스템 프롬프트](prompt/template/classification/single_classification_system.txt)
+- [메일 분류 사용자 프롬프트](prompt/template/classification/single_classification_user.txt)
+
+각 분류의 기준은 다음과 같이 전달됩니다:
 
 - [목적 별 분류](prompt/template/classification/category.yaml)
 - [추가 행동 필요 여부 분류](prompt/template/classification/action.yaml)
 
-### 최종 리포트 생성
+### 📜 최종 리포트 생성
 
 개별 요약문들을 활용하여 `Reflexion` 루프를 통해 수신된 이메일들의 핵심을 정리하여 최종 레포트 생성
 
 ![reflexion](./assets/reflexion.png)
+
+#### 🗣️ 프롬프트
 
 - [최종 리포트 시스템 프롬프트](prompt/template/reflexion/single_reflexion_system.txt)
 - [최종 리포트 사용자 프롬프트](prompt/template/reflexion/single_reflexion_user.txt)
