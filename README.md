@@ -52,18 +52,64 @@ LLM Agent 기반 일별 메일 요약 비서 Chrome Extension 서비스입니다
 
 | Condition                                                 | G-eval score |
 | --------------------------------------------------------- | ------------ |
-| Baseline(Self-Refine)                                     | 3.75         |
-| Baseline(Reflexion)                                       | 4.00         |
-| Detailed Instructions(Self-Refine)                        | 3.50         |
-| Detailed Instructions(Reflexion)                          | 3.50         |
-| Detailed Instructions + Formatting Penalty(Self-Refine)   | 3.94         |
-| **Detailed Instructions + Formatting Penalty(Reflexion)** | **4.19**     |
+| Self-Refine: Baseline                                     | 3.75         |
+| Self-Refine: Detailed Instructions                        | 3.50         |
+| Self-Refine: Detailed Instructions + Formatting Penalty   | 3.94         |
+| Reflexion: Baseline                                       | 4.00         |
+| Reflexion: Detailed Instructions                          | 3.50         |
+| **Reflexion: Detailed Instructions + Formatting Penalty** | **4.19**     |
 
 `G-Eval` 평가 평균 점수(5점 만점)에서 **0.44** 상승폭이 있었습니다.
 
 - [G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 - [전체 요약 시스템 프롬프트](prompt/template/summary/final_summary_system.txt)
 - [전체 요약 사용자 프롬프트](prompt/template/summary/final_summary_user.txt)
+
+## 👥 Collaborators
+
+<div align="center">
+
+|                                                   팀원                                                    | 역할                                                                  |
+| :-------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------- |
+|     <a href="https://github.com/gsgh3016"><img src="https://github.com/gsgh3016.png" width="100"></a>     | Self-refine 및 클러스터링 구현, 요약 및 분류 평가 진행, 서비스 개발   |
+|       <a href="https://github.com/eyeol"> <img src="https://github.com/eyeol.png" width="100"></a>        | 페르소나 세부 설정, 평가용 데이터셋 구성 및 제작, 평가 지표 설계      |
+|    <a href="https://github.com/jagaldol"> <img src="https://github.com/jagaldol.png" width="100"> </a>    | 파이프라인 설계, Reflexion 구현, 서비스 개발, DB 관리, 코드 품질 관리 |
+|     <a href="https://github.com/Usunwoo"> <img src="https://github.com/Usunwoo.png" width="100"> </a>     | PM, 기획 및 디자인(UI/UX), 파이프라인 설계, 요약 및 분류 평가 진행    |
+| <a href="https://github.com/canolayoo78"> <img src="https://github.com/canolayoo78.png" width="100"> </a> | Gmail 데이터 파싱 및 Mail Class 구현, 분류 파이프라인 설계 및 구현    |
+|   <a href="https://github.com/chell9999"> <img src="https://github.com/chell9999.png" width="100"> </a>   | 페르소나 설정, Reflexion 구현 및 고도화, 최종 요약 G-eval 평가 고도화 |
+
+</div>
+
+## 🛠️ Tools and Technologies
+
+<div align="center">
+
+![Python](https://img.shields.io/badge/-Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Agent](https://img.shields.io/badge/-LLM%20Agent-211b2b?style=for-the-badge)
+![upstage solarpro](https://img.shields.io/badge/-upstage%20solar%20pro-805cfb?style=for-the-badge)
+![gmail](https://img.shields.io/badge/-gmail-EA4335?style=for-the-badge&logo=gmail&logoColor=white)
+
+![upstage DocumentParse](https://img.shields.io/badge/-upstage%20Document%20Parse-805cfb?style=for-the-badge)
+![Self Refine](https://img.shields.io/badge/-Self%20Refine-2ca02c?style=for-the-badge)
+![Reflexion](https://img.shields.io/badge/-Reflexion-1f77b4?style=for-the-badge)
+![G-eval](https://img.shields.io/badge/-G%20eval-ff7f0e?style=for-the-badge)
+![upstage solar embedding](https://img.shields.io/badge/-upstage%20solar%20embedding-805cfb?style=for-the-badge)
+
+![fastapi](https://img.shields.io/badge/-fastapi-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![mysql](https://img.shields.io/badge/-mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![docker](https://img.shields.io/badge/-docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![amazonec2](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white)
+![nginx](https://img.shields.io/badge/-nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![github action](https://img.shields.io/badge/GITHUB%20ACTIONS-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+![Chrome Extension](https://img.shields.io/badge/Chrome%20Extension-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)
+![typescript](https://img.shields.io/badge/typescript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/react-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![vite](https://img.shields.io/badge/vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![tailwindcss](https://img.shields.io/badge/tailwindcss-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)
+![reactquery](https://img.shields.io/badge/react%20query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
+
+</div>
 
 ## ⚙️ Project Quick Setup
 
@@ -132,42 +178,3 @@ GOOGLE_CLIENT_SECRET=1234567890
 - Lianmin Zheng, Wei-Lin Chiang, Ying Sheng, Siyuan Zhuang, Zhanghao Wu, Yonghao Zhuang, Zi Lin, Zhuohan Li, Dacheng Li, Eric P. Xing, Hao Zhang, Joseph E. Gonzalez, Ion Stoica, "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena", 24 Dec, 2023. https://arxiv.org/abs/2306.05685.
 - Yang Liu, Dan Iter, Yichong Xu, Shuohang Wang, Ruochen Xu, Chenguang Zhu, "G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment", 23 May, 2023. https://arxiv.org/abs/2303.16634.
 - Yukyung Lee, Joonghoon Kim, Jaehee Kim, Hyowon Cho, Pilsung Kang, "CheckEval: Robust Evaluation Framework using Large Language Model via Checklist", 27 Mar, 2024. https://arxiv.org/abs/2403.18771.
-
-- 기타 등
-- 등등
-
-## 👥 Collaborators
-
-<div align="center">
-
-|                                                   팀원                                                    |                                  역할                                  |
-| :-------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------: |
-|     <a href="https://github.com/gsgh3016"><img src="https://github.com/gsgh3016.png" width="100"></a>     |  Streamlit app 개발 참여, 데이터 관찰 및 분석, 데이터 재구성 및 증강   |
-|       <a href="https://github.com/eyeol"> <img src="https://github.com/eyeol.png" width="100"></a>        |             Streamlit app 개발 참여, RAG 구현 및 성능 평가             |
-|    <a href="https://github.com/jagaldol"> <img src="https://github.com/jagaldol.png" width="100"> </a>    |  협업 초기 환경 세팅 및 코드 모듈화, CoT 방식 실험 설계 및 성능 평가   |
-|     <a href="https://github.com/Usunwoo"> <img src="https://github.com/Usunwoo.png" width="100"> </a>     |        베이스라인 모듈화, 메모리 사용 최적화, 모델 서치 및 실험        |
-| <a href="https://github.com/canolayoo78"> <img src="https://github.com/canolayoo78.png" width="100"> </a> |  Streamlit app 개발 참여, 데이터 분석 및 정제, RAG 구현 및 성능 평가   |
-|   <a href="https://github.com/chell9999"> <img src="https://github.com/chell9999.png" width="100"> </a>   | 문서 작업, RAG 전용 Vector DB 구성, 벤치마크 데이터셋 기반 데이터 증강 |
-
-</div>
-
-## 🛠️ Tools and Technologies
-
-<div align="center">
-
-![Python](https://img.shields.io/badge/-Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![jupyter](https://img.shields.io/badge/-jupyter-F37626?style=for-the-badge&logo=jupyter&logoColor=white)
-![PyTorch](https://img.shields.io/badge/-PyTorch-EE4C2C?style=for-the-badge&logo=PyTorch&logoColor=white)
-![huggingface](https://img.shields.io/badge/-huggingface-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black)
-
-![unsloth](https://img.shields.io/badge/-unsloth-14B789?style=for-the-badge&logo=unsloth&logoColor=white)
-![BitsandBytes](https://img.shields.io/badge/BitsandBytes-36474F?style=for-the-badge&logo=BitsandBytes&logoColor=white)
-![LoRA](https://img.shields.io/badge/LoRA-40B5A4?style=for-the-badge&logo=LoRA&logoColor=white)
-![langchain](https://img.shields.io/badge/-langchain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
-
-![RAG](https://img.shields.io/badge/RAG-1868F2?style=for-the-badge&logo=RAG&logoColor=white)
-![pinecone](https://img.shields.io/badge/pinecone-000000?style=for-the-badge&logo=pinecone&logoColor=white)
-![Cot](https://img.shields.io/badge/cot-535051?style=for-the-badge&logo=cot&logoColor=white)
-![github action](https://img.shields.io/badge/GITHUB%20ACTIONS-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
-
-</div>
