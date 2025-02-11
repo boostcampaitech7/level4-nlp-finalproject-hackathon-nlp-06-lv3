@@ -33,6 +33,10 @@
 
 ![service_pipeline](./assets/service_pipeline.png)
 
+### 🗓️ Project Timeline
+
+![timeline](./assets/timeline.png)
+
 ## 💯 평가 지표 및 결과
 
 - [결과 정리](https://www.notion.so/gamchan/195815b39d3980078aa1c8e645bf435c?pvs=4)
@@ -127,6 +131,53 @@
 ![reactquery](https://img.shields.io/badge/react%20query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white)
 
 </div>
+
+## Core Pipeline
+
+![core pipeline](./assets/core-pipeline.png)
+
+### Gmail 데이터 텍스트화
+
+다양한 첨부 파일과 사진 등 비정형 데이터가 포함된 메일 데이터를 `LLM`이 이해할 수 있는 텍스트로 변경
+
+- **Rule-based Filtering**
+  - LLM 토큰의 효율적 활용을 위해 광고 메일은 파이프라인에서 제외
+- **Upstage Document Parse**
+  - 이미지에 포함된 텍스트 추출
+- **Mail Metadata**
+  - 받은 시간, 보낸 이 정보 등 메타데이터를 함께 활용
+
+### 개별 메일 요약
+
+개별 메일들을 요약하여 체크리스트화
+
+![self-refine](./assets/self-refine.png)
+
+- **LLM을 통한 요약**
+  - `Upstage Solar Pro` 활용
+- **Upstege Groundedness Check**
+  - 원문과의 불일치나 사실관계 오류가 없는지 검증
+- **Self-Refine**
+  - 지정한 요약문 형식을 따르고 있는지 `Self-Refine`을 통한 검토
+- **유사 메일 묶기**
+  - 메일 제목 및 요약문을 `Embedding`해 유사한 메일들을 하나의 그룹 설정
+
+### 메일 분류
+
+요약된 메일 정보를 기준으로 다중 분류 진행
+
+- **카테고리 분류**
+  - `학술/연구`, `행정 처리`, `기타`
+- **처리 필요 여부 분류**
+  - `처리 필요`, `읽기`
+
+### 최종 리포트 생성
+
+개별 요약문들을 활용한 최종 레포트 생성
+
+![reflexion](./assets/reflexion.png)
+
+- 스스로 발전하는 `Reflexion` 루프를 통해 수신된 이메일들의 핵심을 정리
 
 ## ⚙️ Project Quick Setup
 
