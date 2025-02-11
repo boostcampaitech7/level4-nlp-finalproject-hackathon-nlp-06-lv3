@@ -205,14 +205,12 @@ credentials.json
 credentials*.json
 token.json
 
-*.png
+evaluation/classification/figure/*.png
 
 # 평가 테스트용 pair texts
 gold.txt
 generated.txt
 *.pkl
-*.png
-!assets/service_pipeline.png
 
 example_data.json
 example_data_2.json

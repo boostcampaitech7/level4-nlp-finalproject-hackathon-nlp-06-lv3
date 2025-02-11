@@ -1,18 +1,20 @@
-# 매일메일: 일간 메일 요약 비서
+# 매일메일: 일간 메일 보고서 비서
 
-LLM Agent 기반 일별 메일 요약 비서 Chrome Extension 서비스입니다.
+![banner](./assets/banner.png)
+
+LLM Agent 기반 **Daily Mail Report 비서** `Chrome Extension` 서비스입니다.
 
 ## 📌 프로젝트 개요
 
 온 종일 쌓이는 메일을 핵심만 빠르게 파악하고, 놓치는 정보 없이 우선순위를 정해 효율적으로 업무를 처리할 수 있도록 돕자!
 
-> 프로젝트 진행 경황 및 자세한 실험 내역은 [노션 링크](https://www.notion.so/gamchan/Upstage-234368a08ffd4965aad55b1a93b3cc3d?pvs=4)에서 확인하실 수 있습니다.
+> 프로젝트 진행 및 자세한 실험 내역은 [노션 링크](https://www.notion.so/gamchan/Upstage-234368a08ffd4965aad55b1a93b3cc3d?pvs=4)에서 확인하실 수 있습니다.
 
-## 🏅 최종 결과
+### 🪟 DEMO
 
-시연 영상 링크
+![main](./assets/main.png)
 
-## 🏛️ System Structures
+### 🏛️ System Structures
 
 ![service_pipeline](./assets/service_pipeline.png)
 
@@ -35,13 +37,13 @@ LLM Agent 기반 일별 메일 요약 비서 Chrome Extension 서비스입니다
 
 ### 분류
 
-| Condition                | Accuracy   | Tokens     | Accuracy per Tokens |
-| ------------------------ | ---------- | ---------- | ------------------- |
-| Baseline                 | 0.8104     | 97,436     | 8.32e-6             |
-| **summary based**        | 0.7708     | **52,477** | **1.47e-5**         |
-| summary based + 1-shot   | 0.8021     | 63,599     | 1.27e-5             |
-| summary based + 5-shots  | 0.7708     | 86,878     | 8.87e-6             |
-| summary based + 10-shots | **0.8146** | 115,558    | 7.05e-6             |
+| Condition                | Accuracy   | Tokens     | Accuracy per Token |
+| ------------------------ | ---------- | ---------- | ------------------ |
+| Baseline                 | 0.8104     | 97,436     | 8.32e-6            |
+| **summary based**        | 0.7708     | **52,477** | **1.47e-5**        |
+| summary based + 1-shot   | 0.8021     | 63,599     | 1.27e-5            |
+| summary based + 5-shots  | 0.7708     | 86,878     | 8.87e-6            |
+| summary based + 10-shots | **0.8146** | 115,558    | 7.05e-6            |
 
 `정확도/토큰 사용량` 지표를 바탕으로 현재 프롬프트를 채택했습니다.
 
@@ -59,7 +61,7 @@ LLM Agent 기반 일별 메일 요약 비서 Chrome Extension 서비스입니다
 | Reflexion: Detailed Instructions                          | 3.50         |
 | **Reflexion: Detailed Instructions + Formatting Penalty** | **4.19**     |
 
-`G-Eval` 평가 평균 점수(5점 만점)에서 **0.44** 상승폭이 있었습니다.
+`G-Eval` 평가 평균 점수(5점 만점)에서 **0.44점** 상승이 있었습니다.
 
 - [G-Eval 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
 - [전체 요약 시스템 프롬프트](prompt/template/summary/final_summary_system.txt)
@@ -170,6 +172,21 @@ GOOGLE_CLIENT_SECRET=1234567890
 (.venv) $ docker-compose -f server/docker-compose.yml up -d
 (.venv) $ python batch_main.py
 ```
+
+## 📖 Contribution Guide
+
+프로젝트에 기여하는 방법에 대한 [가이드](https://github.com/boostcampaitech7/level2-nlp-generationfornlp-nlp-06-lv3/blob/main/CONTRIBUTING.md)입니다.
+
+### 커밋 템플릿 사용법
+
+프로젝트에서 커밋 메시지 형식을 통일하기 위해 커밋 템플릿을 설정할 수 있습니다. 아래 명령어를 실행하여 템플릿을 적용하세요:
+
+```
+$ git config commit.template .gitcommit_template
+```
+
+- `.gitcommit_template` 파일은 프로젝트 루트에 있는 커밋 템플릿 파일입니다.
+- 위 명령어를 실행하면 커밋 시 템플릿이 자동으로 불러와집니다.
 
 ## 🔬 References
 
