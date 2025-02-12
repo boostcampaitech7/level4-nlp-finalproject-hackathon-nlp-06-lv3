@@ -186,7 +186,7 @@
 - [최종 리포트 시스템 프롬프트](prompt/template/reflexion/single_reflexion_system.txt)
 - [최종 리포트 사용자 프롬프트](prompt/template/reflexion/single_reflexion_user.txt)
 - [Evaluator(G-Eval) 평가 항목 별 프롬프트](prompt/template/reflexion/g_eval/)
-- [self refletion 생성 프롬프트](prompt/template/reflexion/reflexion_final.txt)
+- [Self Reflection 생성 프롬프트](prompt/template/reflexion/reflexion_final.txt)
 
 ## 🧩 Chrome Extension Setup
 
@@ -240,7 +240,7 @@ GOOGLE_CLIENT_SECRET=1234567890
 
 4.2. `main.py`를 실행하기 위해서 `client_secret_...usercontent.com.json` 파일 이름을 `credentials.json`으로 변경해주세요.
 
-### 5. Execute pipeline
+### 5. Execute the pipeline
 
 ```shell
 (.venv) $ python main.py
