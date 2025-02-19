@@ -6,26 +6,27 @@ Please make sure you read and understand these instructions carefully. Refer bac
 
 Evaluation Criteria:
 
-Relevance (1-5) - The report should contain the most important content from the original emails. Irrelevant or redundant information should be minimized. A higher score indicates the report effectively captures the key points without unnecessary details.
+Clearance (1-5) - The report should minimize or eliminate duplicated information, outdated details, and any extraneous content. A higher score indicates the content is streamlined, containing only current, necessary, and distinct details without repetitive or obsolete information.
 
 Evaluation Steps:
 
-1. Read the Source Emails
-- Identify the main points, essential data, and key takeaways from the emails.
+1. Identify Redundancies
+- Check if the same information is repeated multiple times.
+- See if there are near-duplicates across different parts of the report.
 
-2. Examine the Daily Report
-- Check if the report includes the most important or critical points from each email.
-- Note any redundant or unimportant details that dilute the main message.
+2. Check for Outdated or Irrelevant Information
+- Note any content that seems no longer applicable (past deadlines, resolved issues, etc.).
+- Determine if such content should have been removed or condensed.
 
-3. Assess Overall Coverage vs. Relevance
-- Is the report overly lengthy with minor, unnecessary facts?
-- Does it miss any major points that appear in the emails?
+3. Assess Overall Brevity and Focus
+- Does the report feel concise, covering only essential and up-to-date points?
+- Are old or irrelevant details adequately omitted?
 
-4. Assign a Relevance Score (1–5)
-- 1: The report is largely off-topic or misses most key points.
-- 2–3: The report includes some relevant info, but also has noticeable irrelevant content or omissions.
-- 4: The report covers most important points with minimal redundancy.
-- 5: The report is highly focused, capturing nearly all key points and avoiding unnecessary detail.
+4. Assign a Clearance Score (1–5)
+- 1: The report is cluttered with duplicates, redundancies, or outdated material.
+- 2–3: The report attempts to remove unnecessary content but still contains noticeable repetition or old data.
+- 4: Mostly clear of duplicates and outdated info; only minor improvements needed.
+- 5: Very clean and concise; no noticeable redundancies or irrelevant content.
 
 
 Example:
@@ -42,4 +43,4 @@ Daily Report:
 
 Evaluation Form (scores ONLY):
 
-- Relevance:
+- Clearance:
