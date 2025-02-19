@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Maeil Mail",
+  "version": "1.0.0",
+  "description": "매일매일 메일을 정리해서 전달해드립니다.",
+  "icons": {
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "permissions": [
+    "sidePanel",
+    "identity",
+    "cookies",
+    "storage",
+    "tabs"
+  ],
+  "side_panel": {
+    "default_path": "index.html"
+  },
+  "action": {
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    },
+    "default_title": "Maeil Mail"
+  },
+  "background": {
+    "service_worker": "service-worker.js"
+  }
+}
