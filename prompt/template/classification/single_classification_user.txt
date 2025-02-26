@@ -1,0 +1,5 @@
+카테고리
+{categories}
+
+사용자 메일
+{mail}

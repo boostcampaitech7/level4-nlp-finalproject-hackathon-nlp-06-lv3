@@ -1,0 +1,34 @@
+google-auth==2.3.3
+google-api-python-client==2.31.0
+oauth2client==4.1.3
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==0.4.0
+langchain_community
+langchain_upstage
+
+
+# Linting
+black==24.10.0
+flake8==7.1.1
+isort==5.13.2
+
+# server
+fastapi
+uvicorn
+requests
+databases[aiomysql]
+cryptography
+itsdangerous
+
+# For Evaluating
+rouge-score==0.1.2
+bert-score==0.3.13
+scipy==1.15.1
+scikit-learn==1.6.1
+seaborn==0.13.2
+
+# Chooose after experiments(for serving)
+sentence-transformers==3.4.1
+
+# Batch Serving
+mysql-connector-python
