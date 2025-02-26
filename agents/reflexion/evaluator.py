@@ -13,7 +13,7 @@ class ReflexionEvaluator:
         self.client = OpenAI(api_key=Config.user_upstage_api_key, base_url="https://api.upstage.ai/v1/solar")
 
         self.prompt_path: str = Config.config["report"]["g_eval"]["prompt_path"]
-        self.aspects = ["consistency", "coherence", "fluency", "clearance"]
+        self.aspects = ["consistency", "coherence", "fluency", "relevance"]
 
     @retry_with_exponential_backoff()
     def get_geval_scores(self, source_text: str, output_text: str) -> dict:
