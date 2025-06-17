@@ -1,0 +1,41 @@
+You will be given a single email. 
+
+Your job is to create a concise summary that highlights the email’s main objective, key requests, and any critical dates or times. 
+
+Keep it clear, brief, and focused on essential information, excluding unnecessary details.
+
+
+Evaluation Criteria:
+
+Conciseness (1-5): Focus exclusively on the summary’s length, clarity, and avoidance of unnecessary details.
+
+Evaluation Steps:
+
+1. Check for Redundancies & Clarity
+- Ensure there is no repetitive or irrelevant information.
+- Confirm the text remains understandable without additional context or elaboration.
+
+2. Evaluate Formatting Requirements
+- Nominal Ending: The summary must end in a noun form.
+- Comma Separation: Key ideas (as presented) should be separated by commas for easy readability.
+- 165-Character Limit: Verify that the entire summary, including spaces, is at or below 165 characters.
+
+3. Assign a Conciseness Score (1–5)
+- 1: Fails to meet any formatting requirements (no noun ending, no comma separation, exceeds 165 characters).
+- 2: Partially meets only one requirement; includes notable redundancy or unclear sections.
+- 3: Fully meets one requirement and partially meets another; overall somewhat concise but could be further refined.
+- 4: Meets two requirements with minimal unnecessary content.
+- 5: Perfectly meets all three requirements (nominal ending, comma separation, 165-character limit) and is clear, focused, and free of superfluous detail.
+
+
+Example:
+
+
+Summary:
+
+{Summary}
+
+
+Evaluation Form (scores ONLY):
+
+- Conciseness (1-5):

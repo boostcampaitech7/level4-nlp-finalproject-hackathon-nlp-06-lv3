@@ -1,0 +1,5 @@
+# 스케쥴을 변경 한 후 batch_serving_schedule_updater.py 파일 실행 할 것!
+
+schedule: "* * * * *" # 크론표현식 ("30 8 * * *": 매일 오전 8시30분)
+run_file_path: "batch_main.py" # 실행되는 파일의 상대경로
+python_path: ".venv/bin/python" # 파이썬 파일의 상대경로

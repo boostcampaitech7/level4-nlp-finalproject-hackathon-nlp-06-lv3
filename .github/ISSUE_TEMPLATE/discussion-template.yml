@@ -1,0 +1,51 @@
+name: Discussion
+title: "[DISC] "
+description: Share and discuss ideas or questions related to the project.
+labels: ["Type: Discussion", "Priority: Medium", "Status: Pending"]
+body:
+  - type: checkboxes
+    id: no-duplicate-discussion
+    attributes:
+      label: "⚠️ Please check that this topic hasn't been discussed already."
+      description: "Make sure to search through previous discussions to avoid duplicates. This helps keep our discussion organized and focused."
+      options:
+        - label: "이전에 진행된 [논의](https://github.com/boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-06-lv3/issues?q=is%3Aissue+label%3A%22Type%3A+Discussion%22+)들을 확인했으며, 유사한 주제가 없습니다."
+          required: true
+        - label: "한 가지 주제만 제출했습니다. 여러 주제를 다룰 경우, 각각 개별적으로 논의 이슈를 생성하겠습니다."
+          required: true
+
+  - type: textarea
+    id: topic-summary
+    validations:
+      required: true
+    attributes:
+      label: "📌 주제 요약"
+      description: "회의 때 논의하고 싶은 주제에 대해 간단히 요약해주세요."
+      placeholder: "논의 주제는..."
+
+  - type: textarea
+    id: background-context
+    validations:
+      required: true
+    attributes:
+      label: "📖 배경 설명"
+      description: "팀원들이 이해할 수 있도록, 이 주제가 왜 중요한지 간단히 설명해주세요."
+      placeholder: "이 논의가 중요한 이유는..."
+
+  - type: textarea
+    id: discussion-points
+    validations:
+      required: true
+    attributes:
+      label: "💬 논의 포인트"
+      description: "논의 중 다뤄보고 싶은 주요 포인트나 질문이 있으면 간단히 작성해주세요."
+      placeholder: "예: 모델의 학습 속도 개선 방안, 데이터 전처리 방식 개선 등"
+
+  - type: textarea
+    id: related-issues
+    validations:
+      required: false
+    attributes:
+      label: "🔗 관련 이슈"
+      description: "이 논의와 관련된 이전 이슈가 있다면 이슈 번호를 간단히 언급해주세요."
+      placeholder: "예: 관련 이슈 - #13, #17"
