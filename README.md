@@ -277,7 +277,7 @@ $ git config commit.template .gitcommit_template
 |     <a href="https://github.com/gsgh3016"><img src="https://github.com/gsgh3016.png" width="100"></a>     |  Self-refine 및 클러스터링 구현, 요약 및 분류 평가 진행, 서비스 개발  |
 |       <a href="https://github.com/eyeol"> <img src="https://github.com/eyeol.png" width="100"></a>        |   페르소나 세부 설정, 평가용 데이터셋 구성 및 제작, 평가 지표 설계    |
 |    <a href="https://github.com/jagaldol"> <img src="https://github.com/jagaldol.png" width="100"> </a>    | 파이프라인 설계, Reflexion 구현, 서비스 개발, DB 관리, 코드 품질 관리 |
-|     <a href="https://github.com/Usunwoo"> <img src="https://github.com/Usunwoo.png" width="100"> </a>     |  PM, 기획 및 디자인(UI/UX), 파이프라인 설계, 요약 및 분류 평가 진행   |
+|     <a href="https://github.com/sunvvis"> <img src="https://github.com/sunvvis.png" width="100"> </a>     |  PM, 기획 및 디자인(UI/UX), 파이프라인 설계, 요약 및 분류 평가 진행   |
 | <a href="https://github.com/canolayoo78"> <img src="https://github.com/canolayoo78.png" width="100"> </a> |  Gmail 데이터 파싱 및 Mail Class 구현, 분류 파이프라인 설계 및 구현   |
 |   <a href="https://github.com/chell9999"> <img src="https://github.com/chell9999.png" width="100"> </a>   | 페르소나 설정, Reflexion 구현 및 고도화, 최종 요약 G-eval 평가 고도화 |
 
