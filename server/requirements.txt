@@ -1,0 +1,19 @@
+google-auth==2.3.3
+google-api-python-client==2.31.0
+oauth2client==4.1.3
+google-auth-httplib2==0.1.0
+google-auth-oauthlib==0.4.0
+
+# Linting
+black==24.10.0
+flake8==7.1.1
+isort==5.13.2
+
+# server
+fastapi
+uvicorn
+requests
+databases[aiomysql]
+cryptography
+itsdangerous
+python-dotenv

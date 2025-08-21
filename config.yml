@@ -1,0 +1,55 @@
+gmail:
+  start_date: # gmail에서 불러올 시작 날짜 (값이 없는 경우 2025/01/10)
+  end_date: # gmail에서 불러올 끝 날짜 (값이 없는 경우 오늘 날짜)
+  max_mails: 15 # gmail에서 불러올 메일 최대 개수
+
+# 전체 모델에 적용하는 seed와 temperature
+seed: 42
+temperature:
+  summary: 0
+  classification: 0
+
+# 개별 메일 요약
+self_refine:
+  max_iteration: 3
+
+embedding:
+  model_name: "bge-m3" # "bge-m3" | "upstage"
+  similarity_metric: "cosine-similarity" # "cosine-similarity" | "dot-product"
+  similarity_threshold: 0.8
+  save_results: true
+
+# 최종 리포트 요약
+reflexion:
+  max_iteration: 3
+  threshold: 4.5
+  g-eval:
+    prompt_path: "prompt/template/reflexion/g_eval/"
+
+token_tracking: true
+
+# 평가 세팅
+# Summary 평가 관련 설정
+summary:
+  metrics:
+    - rouge
+    - bert
+    - g-eval
+
+  bert_model: "distilbert-base-uncased"
+
+  g_eval:
+    openai_model: "gpt-4"
+    prompt_path: "prompt/template/summary/g_eval/"
+
+# Report 평가 관련 설정
+report:
+  metrics:
+    - g-eval
+
+  g_eval:
+    openai_model: "gpt-4o"
+    prompt_path: "prompt/template/reflexion/g_eval/"
+
+classification:
+  inference: 1 # Consistency 평가 용 반복 추론 횟수 설정

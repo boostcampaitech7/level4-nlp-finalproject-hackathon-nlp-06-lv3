@@ -1,0 +1,157 @@
+@import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "GmarketSansMedium";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "SUIT-Regular";
+  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_suit@1.0/SUIT-Regular.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer base {
+  body {
+    @apply bg-background font-Inter text-base;
+    -ms-overflow-style: none;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  hr {
+    @apply border-border-gray;
+  }
+
+  input:focus {
+    outline: none;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  /* 파이어폭스에서의 초기화 방법 */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .markdown-container h1 {
+    @apply text-3xl max-md:text-xl font-bold mt-5 mb-4;
+  }
+
+  .markdown-container h2 {
+    @apply text-2xl max-md:text-lg font-semibold mt-4 mb-3;
+  }
+
+  .markdown-container h3 {
+    @apply text-xl max-md:text-base font-semibold mt-3 mb-2;
+  }
+
+  .markdown-container p {
+    @apply my-3;
+  }
+
+  .markdown-container ul {
+    @apply list-disc ml-5;
+  }
+
+  .markdown-container ul:first-child {
+    @apply list-disc ml-5;
+  }
+
+  .markdown-container ol {
+    @apply list-decimal ml-5;
+  }
+
+  .markdown-container a {
+    @apply text-blue-600 hover:text-blue-800;
+  }
+
+  .markdown-container img {
+    @apply max-w-full h-auto inline-block;
+  }
+
+  .markdown-container pre {
+    @apply rounded;
+  }
+
+  .markdown-container pre > div {
+    @apply rounded-lg;
+  }
+
+  .markdown-container code {
+    @apply bg-gray-200 rounded text-blue-500 px-1 font-semibold;
+  }
+
+  .markdown-container pre code {
+    @apply bg-transparent font-normal;
+  }
+
+  .markdown-container hr {
+    @apply border border-b-gray-400 rounded-full;
+  }
+
+  .markdown-container blockquote {
+    @apply border-l-4 border-gray-400 pl-4 italic;
+  }
+
+  .markdown-container summary {
+    @apply hover:cursor-pointer;
+  }
+}
+
+@layer utilities {
+  .loading-dots {
+    width: 50px;
+    aspect-ratio: 2;
+    --_g: no-repeat radial-gradient(circle closest-side, theme("colors.main-theme") 90%, #0000);
+    background:
+      var(--_g) 0% 50%,
+      var(--_g) 50% 50%,
+      var(--_g) 100% 50%;
+    background-size: calc(100% / 5) 50%;
+    animation: d3 1s infinite linear;
+  }
+
+  @keyframes d3 {
+    20% {
+      background-position:
+        0% 0%,
+        50% 50%,
+        100% 50%;
+    }
+    40% {
+      background-position:
+        0% 100%,
+        50% 0%,
+        100% 50%;
+    }
+    60% {
+      background-position:
+        0% 50%,
+        50% 100%,
+        100% 0%;
+    }
+    80% {
+      background-position:
+        0% 50%,
+        50% 50%,
+        100% 100%;
+    }
+  }
+}

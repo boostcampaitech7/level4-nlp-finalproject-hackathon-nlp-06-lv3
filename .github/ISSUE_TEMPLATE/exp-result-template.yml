@@ -1,0 +1,49 @@
+name: Experiments
+title: "[EXP] "
+description: Share and discuss experiments related to the project.
+labels: ["Type: Experiment", "Priority: Medium", "Status: Pending"]
+body:
+  - type: checkboxes
+    id: no-duplicate-experiment
+    attributes:
+      label: "⚠️ Please check that similar experiments haven't been shared already."
+      description: "This helps us avoid redundancy and keeps experiment records organized."
+      options:
+        - label: "이전에 공유된 [실험들](https://github.com/boostcampaitech7/level4-nlp-finalproject-hackathon-nlp-06-lv3/issues?q=+is%3Aissue+label%3A%22Type%3A+Experiment%22+) 중 중복되는 것이 없습니다."
+          required: true
+
+  - type: textarea
+    id: experiment-summary
+    validations:
+      required: true
+    attributes:
+      label: "📊 실험 요약"
+      description: "실험의 주요 결과와 결론을 간략히 요약해주세요."
+      placeholder: "예: 데이터 증강을 통해 정확도가 3% 상승하였음..."
+
+  - type: textarea
+    id: key-observations
+    validations:
+      required: false
+    attributes:
+      label: "🔍 주요 관찰 내용"
+      description: "실험 중에 특히 눈에 띄었던 점이나 흥미로운 발견이 있다면 공유해주세요."
+      placeholder: "예: 특정 데이터 증강 기법에서 성능 저하가 관찰됨..."
+
+  - type: textarea
+    id: next-steps
+    validations:
+      required: false
+    attributes:
+      label: "➡️ 다음 단계 제안"
+      description: "이 실험에 기반하여 제안할 수 있는 다음 실험이나 개선 사항이 있으면 작성해주세요."
+      placeholder: "예: 증강 기법 조합을 달리하여 추가 실험 필요."
+
+  - type: textarea
+    id: related-experiments
+    validations:
+      required: false
+    attributes:
+      label: "🔗 관련 이슈"
+      description: "이 실험과 관련된 이전 이슈가 있다면 이슈 번호를 간단히 언급해주세요."
+      placeholder: "예: 관련 실험 - #45, #50"

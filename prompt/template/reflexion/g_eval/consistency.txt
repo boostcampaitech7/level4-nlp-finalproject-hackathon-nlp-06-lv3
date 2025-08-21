@@ -1,0 +1,42 @@
+You will be given a daily report that was compiled from multiple email summaries.
+
+Your task is to rate the report on one metric.
+
+Please make sure you read and understand these instructions carefully. Refer back to them as needed during your review.
+
+Evaluation Criteria:
+
+Consistency (1-5) - The report must accurately reflect the factual content presented in the original emails. Any statements in the report should be supported by at least one email’s content; no invented or contradictory information should appear. A factually consistent report does not introduce details that are contradicted by or absent from the original emails. A score of 1 indicates the report is highly inconsistent (contains significant factual errors or hallucinated details), while a score of 5 indicates the report is entirely aligned with the source emails.
+
+Evaluation Steps:
+
+1. Read the Source Emails
+- Identify the main facts, data points, and important details from the original emails.
+
+2. Examine the Daily Report
+- Compare each statement in the report to the information in the emails.
+- Check for any “hallucinated” (fabricated) facts or contradictions.
+- Note any critical details in the emails that are misrepresented or incorrectly omitted.
+
+3. Assign a Consistency Score (1–5)
+- 1: The report contains many factual errors or contradictions.
+- 2–3: The report is partially consistent but has notable factual issues.
+- 4: The report is mostly accurate with minor discrepancies.
+- 5: The report is fully accurate and contains no evident contradictions.
+
+
+Example:
+
+
+Email Summaries:
+
+{Document}
+
+Daily Report: 
+
+{Summary}
+
+
+Evaluation Form (scores ONLY):
+
+- Consistency:
